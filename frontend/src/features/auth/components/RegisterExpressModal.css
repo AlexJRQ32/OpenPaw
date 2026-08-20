@@ -1,0 +1,104 @@
+@import "../../../shared/styles/tokens.css";
+
+.reg-express-modal {
+  max-width: 460px !important;
+}
+
+.reg-express-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.reg-express-icon {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--color-primary), #087dce);
+  color: #fff;
+  border-radius: var(--radius-lg);
+  font-size: 18px;
+}
+
+.reg-express-head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-text);
+}
+
+.reg-express-head p {
+  margin: 4px 0 0;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+
+.reg-express .field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.reg-express .field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.reg-express .field--wide {
+  grid-column: 1 / -1;
+}
+
+.reg-express .field > span {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gray-700);
+}
+
+.reg-express .field input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-gray-150);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--fs-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.reg-express .field input:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(0, 102, 232, 0.12);
+}
+
+.reg-express .field small {
+  color: var(--color-error);
+  font-size: var(--fs-xs);
+}
+
+.reg-express .submit-error {
+  padding: 10px 14px;
+  margin-top: 12px;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+.reg-express-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 480px) {
+  .reg-express .field-grid {
+    grid-template-columns: 1fr;
+  }
+}

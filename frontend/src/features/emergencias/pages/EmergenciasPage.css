@@ -1,0 +1,263 @@
+@import "../../../shared/styles/tokens.css";
+
+.emergencias-page {
+  max-width: 980px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.emergencias-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.emergencias-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-extrabold);
+  color: var(--color-text);
+}
+
+.emergencias-subtitle {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-base);
+}
+
+.emergencias-filtro {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.emergencias-filtro .field {
+  display: grid;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  max-width: 420px;
+  width: 100%;
+}
+
+.emergencias-filtro .field input,
+.emergencias-filtro .field select {
+  height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 12px;
+  border: 1.5px solid var(--color-gray-150);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--fs-base);
+}
+
+.emergencias-filtro .field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.emergencias-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 16px;
+}
+
+.emergencias-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid #dc2626;
+  border-radius: var(--radius-lg);
+  padding: 16px 18px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.emergencias-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.emergencias-card-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  font-weight: var(--fw-semibold);
+}
+
+.emergencias-card-date i {
+  color: var(--color-primary);
+}
+
+.emergencias-card-motivo {
+  margin: 0;
+  font-weight: var(--fw-bold);
+  font-size: var(--fs-md);
+  color: var(--color-text);
+}
+
+.emergencias-card-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 12px;
+}
+
+.emergencias-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.emergencias-detail-label {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin: 0;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.emergencias-detail-label i {
+  color: var(--color-primary);
+  width: 14px;
+}
+
+.emergencias-detail-value {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.emergencias-adjunto {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: auto;
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+}
+
+.emergencias-adjunto:hover {
+  background: var(--color-accent-light);
+  border-color: var(--color-primary);
+}
+
+/* Modal */
+.emergencias-modal h2 {
+  margin: 0 0 20px;
+  font-size: var(--fs-lg);
+  font-family: var(--font-heading);
+  color: var(--color-text);
+}
+
+.emergencias-modal .field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.emergencias-modal .field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.emergencias-modal .field-full {
+  grid-column: 1 / -1;
+}
+
+.emergencias-modal .field > span {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gray-700);
+}
+
+.emergencias-modal .field input,
+.emergencias-modal .field select,
+.emergencias-modal .field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-gray-150);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--fs-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.emergencias-modal .field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.emergencias-modal .field input:focus,
+.emergencias-modal .field select:focus,
+.emergencias-modal .field textarea:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(0, 102, 232, 0.12);
+}
+
+.emergencias-modal .field small {
+  color: var(--color-error);
+  font-size: var(--fs-xs);
+}
+
+.emergencias-modal .submit-error {
+  padding: 10px 14px;
+  margin-top: 12px;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+.emergencias-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 640px) {
+  .emergencias-page {
+    padding: 16px 14px;
+  }
+  .emergencias-modal .field-grid {
+    grid-template-columns: 1fr;
+  }
+  .emergencias-card-grid {
+    grid-template-columns: 1fr;
+  }
+}

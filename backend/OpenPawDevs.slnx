@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/tests/">
+    <Project Path="tests/OpenPawDevs.Tests/OpenPawDevs.Tests.csproj" />
+  </Folder>
+  <Project Path="OpenPawDevs.Core/OpenPawDevs.Core.csproj" />
+  <Project Path="OpenPawDevs.Data/OpenPawDevs.Data.csproj" />
+  <Project Path="OpenPawDevs.WebAPI/OpenPawDevs.WebAPI.csproj" />
+</Solution>

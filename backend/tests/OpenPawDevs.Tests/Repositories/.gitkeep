@@ -1,0 +1,4 @@
+# Repositories tests
+
+Carpeta para tests de los repositorios (IUsuarioRepository, implementaciones de EF Core, etc.).
+Agrega aquí los fixtures y tests de integración de Data cuando correspondan.

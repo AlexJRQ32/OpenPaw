@@ -1,0 +1,29 @@
+@import "../../../shared/styles/tokens.css";
+
+.prof-field {
+  display: grid;
+  gap: var(--space-1);
+}
+.prof-label {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gray-700);
+}
+.prof-input {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-gray-150);
+  border-radius: 10px;
+  font: inherit;
+  font-size: var(--fs-base);
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+.prof-input:focus {
+  border-color: var(--color-primary);
+}
+.prof-input-error {
+  border-color: var(--color-error);
+}
+.prof-field-error { color: var(--color-error); font-size: 12px; }

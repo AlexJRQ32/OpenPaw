@@ -1,0 +1,103 @@
+:root {
+  /* Primary palette */
+  --color-primary: #0066e8;
+  --color-primary-hover: #0052b8;
+  --color-primary-light: #dfeaff;
+  --color-primary-lighter: #b3d4ff;
+  --color-primary-dark: #0044cc;
+  --color-accent: #0066e8;
+  --color-accent-hover: #0052b8;
+  --color-accent-light: rgba(0, 102, 232, 0.1);
+
+  /* Neutral palette */
+  --color-black: #000000;
+  --color-white: #ffffff;
+  --color-gray-900: #1a1a1a;
+  --color-gray-700: #333;
+  --color-gray-600: #555;
+  --color-gray-500: #666;
+  --color-gray-400: #888;
+  --color-gray-300: #999;
+  --color-gray-200: #ccc;
+  --color-gray-150: #d1d5db;
+  --color-gray-100: #e8e8e8;
+  --color-gray-50: #f0f0f0;
+  --color-gray-25: #f5f5f5;
+
+  /* Semantic colors */
+  --color-success: #17624d;
+  --color-success-bg: #eaf7f1;
+  --color-error: #b42318;
+  --color-error-bg: #fef3f2;
+  --color-warning: #e88d00;
+  --color-warning-bg: #fff3df;
+
+  /* Accent colors */
+  --color-purple: #7c3aed;
+  --color-purple-bg: #ede9fe;
+  --color-green: #059669;
+  --color-green-bg: #d1fae5;
+  --color-orange: #ea580c;
+  --color-orange-bg: #fff7ed;
+  --color-teal: #0a7e9c;
+  --color-teal-bg: #dff5fa;
+
+  /* Surfaces */
+  --color-bg: #f5f5f5;
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+  --color-border: #dfe5ef;
+  --color-text: #18202f;
+  --color-text-secondary: #637184;
+
+  /* Typography */
+  --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: system-ui, "Segoe UI", Roboto, sans-serif;
+
+  /* Font sizes */
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-base: 15px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 26px;
+  --fs-3xl: 32px;
+
+  /* Font weights */
+  --fw-normal: 400;
+  --fw-medium: 500;
+  --fw-semibold: 600;
+  --fw-bold: 700;
+  --fw-extrabold: 800;
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-xl: 32px;
+
+  /* Border radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.15);
+
+  /* Transitions */
+  --transition-fast: 0.15s;
+  --transition-normal: 0.25s;
+  --transition-slow: 0.35s;
+}

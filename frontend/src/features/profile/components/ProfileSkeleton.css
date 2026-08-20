@@ -1,0 +1,38 @@
+@import "../../../shared/styles/tokens.css";
+
+.prof-skeleton {
+  display: flex;
+  gap: var(--space-8);
+  padding-top: 28px;
+}
+.prof-skeleton-avatar {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  background: var(--color-gray-50);
+  flex-shrink: 0;
+}
+.prof-skeleton-lines {
+  flex: 1;
+}
+.prof-skeleton-line {
+  height: 16px;
+  background: var(--color-gray-50);
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-3);
+}
+.prof-skeleton-line--w60 {
+  width: 60%;
+  height: 24px;
+}
+.prof-skeleton-line--w40 {
+  width: 40%;
+}
+.prof-skeleton-line--w30 {
+  width: 30%;
+}
+.prof-error-box {
+  padding-top: 40px;
+  text-align: center;
+  color: var(--color-error);
+}

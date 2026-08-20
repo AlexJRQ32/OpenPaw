@@ -1,0 +1,36 @@
+# Build outputs
+backend/publish-selfcontained/
+backend/publish-deploy/
+backend/*/bin/
+backend/*/obj/
+
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# IDE
+.vs/
+.vscode/
+*.suo
+*.user
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log
+
+# Graphify
+graphify-out/
+
+# Test artifacts
+frontend/e2e/
+frontend/test-results/
+frontend/playwright-report/
+
+# Environment
+.env
+.env.local
+.env.production.local

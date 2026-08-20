@@ -1,0 +1,3 @@
+﻿/* Reuses VeterinaryRegistrationPage.css styles (vetreg-wrapper, vetreg-page, etc.) */
+@import "../../../shared/styles/tokens.css";
+@import "../../veterinary-registration/pages/VeterinaryRegistrationPage.css";

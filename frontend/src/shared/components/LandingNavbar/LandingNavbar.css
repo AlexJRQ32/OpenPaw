@@ -1,0 +1,70 @@
+/* ============================================================================
+   LandingNavbar - navbar glass reutilizable (landing + marketplace)
+   Estilo fintech editorial inspirado en FlowBank.
+   ============================================================================ */
+
+.landing-navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 1100px);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(12, 34, 62, 0.12);
+  border-radius: 999px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+  box-sizing: border-box;
+}
+.landing-navbar-brand { display: flex; align-items: center; gap: 8px; text-decoration: none; }
+.landing-navbar-brand img { width: 30px; height: 30px; border-radius: 6px; }
+.landing-navbar-brand span { font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-size: 17px; font-weight: 700; color: #0b1c2e; letter-spacing: -0.3px; }
+.landing-navbar-links { display: flex; align-items: center; gap: 4px; }
+.landing-navbar-links a { padding: 7px 14px; color: #55708a; text-decoration: none; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 500; border-radius: 8px; transition: color 0.2s, background 0.2s; }
+.landing-navbar-links a:hover { color: #0066e8; background: rgba(0, 102, 232, 0.08); }
+.landing-navbar-links .landing-btn-nav { padding: 8px 20px; background: linear-gradient(135deg, #4d94ff 0%, #0066e8 100%); color: #ffffff; border-radius: 8px; font-weight: 700; }
+.landing-navbar-links .landing-btn-nav:hover { background: linear-gradient(135deg, #4d94ff, #0044cc); color: #fff; }
+.landing-navbar-back { color: #0066e8 !important; font-weight: 600 !important; }
+.landing-navbar-back:hover { background: rgba(0, 102, 232, 0.08) !important; }
+.landing-navbar-user-pill { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; text-decoration: none; border-radius: 999px; background: rgba(0, 0, 0, 0.04); transition: background 0.2s; }
+.landing-navbar-user-pill:hover { background: rgba(0, 0, 0, 0.08); }
+.landing-navbar-user-pill:hover .landing-navbar-user-avatar { box-shadow: 0 0 0 3px rgba(0, 102, 232, 0.25); }
+.landing-navbar-user-avatar { transition: box-shadow 0.2s; width: 28px; height: 28px; border-radius: 50%; background: #0066e8; color: #fff; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; overflow: hidden; box-shadow: 0 0 0 2px rgba(0, 102, 232, 0.15); }
+.landing-navbar-user-img { object-fit: cover; display: block !important; width: 100%; height: 100%; }
+.landing-navbar-user-name { font-size: 12px; font-weight: 600; color: rgba(0, 0, 0, 0.8); max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.landing-navbar-burger { display: none; flex-direction: column; justify-content: center; gap: 5px; width: 40px; height: 40px; padding: 8px; border-radius: 8px; background: transparent; border: none; cursor: pointer; }
+.landing-navbar-burger span { display: block; height: 2px; width: 100%; background: #0b1c2e; border-radius: 999px; transition: transform 0.2s, opacity 0.2s; }
+.landing-navbar-burger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.landing-navbar-burger.open span:nth-child(2) { opacity: 0; }
+.landing-navbar-burger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* Menu movil */
+.landing-mobile-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); backdrop-filter: blur(2px); z-index: 998; animation: menuBackdropIn 0.2s ease; }
+.landing-mobile-menu { position: fixed; top: calc(20px + 64px); right: 20px; transform: translateY(-8px); width: min(85%, 300px); background: #ffffff; border: 1px solid rgba(12, 34, 62, 0.12); border-radius: 12px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.18); z-index: 999; opacity: 0; pointer-events: none; transition: transform 0.25s ease, opacity 0.2s ease; }
+.landing-mobile-menu--open { transform: translateY(0); opacity: 1; pointer-events: auto; }
+.landing-mobile-menu__nav { display: flex; flex-direction: column; padding: 12px; }
+.landing-mobile-menu__nav a { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 8px; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 15px; font-weight: 500; color: #0b1c2e; text-decoration: none; transition: background 0.2s; }
+.landing-mobile-menu__nav a i { color: #0066e8; flex-shrink: 0; width: 18px; text-align: center; }
+.landing-mobile-menu__nav a:hover { background: rgba(0, 102, 232, 0.08); }
+.landing-mobile-menu__divider { height: 1px; margin: 4px 0; background: rgba(12, 34, 62, 0.12); }
+.landing-mobile-menu__cta { justify-content: center; padding: 14px !important; background: linear-gradient(135deg, #4d94ff 0%, #0066e8 100%); color: #fff !important; font-weight: 700; border-radius: 12px !important; }
+.landing-mobile-menu__cta i { color: #fff !important; }
+@keyframes menuBackdropIn { from { opacity: 0; } to { opacity: 1; } }
+
+@media (max-width: 640px) {
+  .landing-navbar { top: 12px; width: calc(100% - 24px); padding: 0 14px; height: 56px; }
+  .landing-navbar-links a:not(.landing-btn-nav):not(.landing-navbar-user-pill) { display: none; }
+  .landing-navbar-brand span { font-size: 15px; }
+  .landing-navbar-burger { display: flex; }
+  .landing-navbar-user-pill { display: none; }
+  .landing-navbar-user-name { display: none; }
+  .landing-navbar-user-avatar { width: 26px; height: 26px; font-size: 11px; }
+  .landing-mobile-menu { top: calc(12px + 58px); }
+}

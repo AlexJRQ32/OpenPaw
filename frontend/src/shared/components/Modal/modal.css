@@ -1,0 +1,82 @@
+@import "../../styles/tokens.css";
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: grid;
+  place-items: center;
+  z-index: 2000;
+  animation: modalFadeIn 0.2s ease;
+}
+
+.modal-content {
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  max-width: 560px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: modalScaleIn 0.2s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.reg-modal {
+  max-width: 720px !important;
+  width: 95% !important;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: var(--space-6) !important;
+}
+@media (max-width: 600px) {
+  .reg-modal {
+    padding: var(--space-4) var(--space-3) !important;
+  }
+  .reg-modal .field-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .reg-modal .vetreg-steps {
+    flex-wrap: nowrap;
+    gap: 4px;
+    padding: 12px 8px;
+    overflow-x: auto;
+  }
+  .reg-modal .step-label {
+    font-size: 11px;
+    white-space: nowrap;
+  }
+  .reg-modal .step-connector {
+    min-width: 12px;
+    margin: 0 4px;
+  }
+  .reg-modal .step-marker {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+  .reg-modal .vetreg-page .form-section {
+    padding: 16px 12px;
+  }
+}
+@keyframes modalScaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

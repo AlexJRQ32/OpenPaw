@@ -1,0 +1,16 @@
+import { defineConfig } from 'vite'
+import react, { reactCompilerPreset } from '@vitejs/plugin-react'
+import babel from '@rolldown/plugin-babel'
+import { realpathSync } from 'node:fs'
+import { resolve } from 'node:path'
+
+const root = resolve(realpathSync('frontend'))
+
+// https://vite.dev/config/
+export default defineConfig({
+  root,
+  plugins: [
+    react(),
+    babel({ presets: [reactCompilerPreset()] })
+  ],
+})

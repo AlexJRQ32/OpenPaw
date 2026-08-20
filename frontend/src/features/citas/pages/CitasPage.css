@@ -1,0 +1,691 @@
+@import "../../../shared/styles/tokens.css";
+
+.citas-page {
+  max-width: 1100px;
+  padding: 24px;
+}
+
+.citas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.citas-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-extrabold);
+  color: var(--color-text);
+}
+
+.citas-subtitle {
+  margin: 4px 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-base);
+}
+
+/* Solicitudes de citas (veterinaria/admin) */
+.citas-requests {
+  margin-bottom: 28px;
+  padding: 18px 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.citas-requests-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.citas-requests-head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-text);
+}
+.citas-requests-count {
+  display: inline-flex;
+  min-width: 24px;
+  height: 24px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-gray-25);
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+.citas-requests-count.has-pending {
+  background: var(--color-warning-bg);
+  color: #92610a;
+}
+.citas-requests-empty {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 20px;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-sm);
+}
+.citas-requests-empty i {
+  color: var(--color-primary);
+  font-size: var(--fs-lg);
+}
+.citas-requests-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+.citas-request-item {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-warning-bg);
+  border: 1px solid #f5deb3;
+  border-radius: var(--radius-md);
+}
+.citas-request-servicio {
+  margin: 0 0 6px;
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+}
+.citas-request-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+.citas-request-meta i {
+  width: 14px;
+  color: var(--color-primary);
+}
+.citas-request-notes {
+  margin: 6px 0 0;
+  padding: 8px 10px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+.citas-request-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+.citas-request-btn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.citas-request-btn--ok {
+  background: var(--color-success);
+  color: #fff;
+}
+.citas-request-btn--ok:hover {
+  background: #0e6b52;
+}
+.citas-request-btn--no {
+  background: var(--color-surface);
+  border-color: var(--color-error);
+  color: var(--color-error);
+}
+.citas-request-btn--no:hover {
+  background: var(--color-error-bg);
+}
+
+/* Catalogo de veterinarias (cliente) */
+.citas-vets {
+  margin-bottom: 28px;
+}
+.citas-vets-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.citas-vets-head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-text);
+}
+.citas-vets-head span {
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+}
+.citas-vets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+.citas-vet-card {
+  padding: 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.citas-vet-card:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-lighter);
+}
+.citas-vet-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.citas-vet-avatar {
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  border-radius: var(--radius-lg);
+  font-size: var(--fs-lg);
+}
+.citas-vet-card-top h3 {
+  margin: 0;
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+}
+.citas-vet-dir {
+  margin: 3px 0 0;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+.citas-vet-dir i {
+  margin-right: 4px;
+}
+.citas-vet-desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+.citas-vet-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+.citas-vet-horario {
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+.citas-vet-horario i {
+  margin-right: 5px;
+  color: var(--color-primary);
+}
+
+.citas-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 20px;
+  align-items: start;
+}
+
+/* Calendar card */
+.citas-calendar-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.citas-calendar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.citas-month-btn {
+  display: inline-flex;
+  width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citas-month-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-accent-light);
+}
+
+.citas-month-label {
+  text-align: center;
+}
+
+.citas-month-label h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  color: var(--color-text);
+}
+
+.citas-month-label button {
+  margin-top: 2px;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+}
+
+.citas-grid-head,
+.citas-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+}
+
+.citas-grid-head span {
+  padding: 10px 6px;
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: #f9fafb;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.citas-day {
+  min-height: 108px;
+  padding: 8px;
+  border-right: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-surface);
+}
+
+.citas-day:nth-child(7n) {
+  border-right: none;
+}
+
+.citas-day--empty {
+  background: #fafbfc;
+}
+
+.citas-day--today {
+  background: var(--color-accent-light);
+}
+
+.citas-day-number {
+  display: inline-flex;
+  width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+}
+
+.citas-day--today .citas-day-number {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.citas-day-items {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.citas-chip {
+  display: block;
+  width: 100%;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 11px;
+  font-weight: var(--fw-semibold);
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.citas-chip:hover {
+  filter: brightness(0.96);
+}
+
+.citas-chip--pending { background: var(--color-warning-bg); color: #92610a; }
+.citas-chip--active { background: var(--color-primary-light); color: var(--color-primary-dark); }
+.citas-chip--info { background: var(--color-teal-bg); color: var(--color-teal); }
+.citas-chip--success { background: var(--color-green-bg); color: var(--color-green); }
+.citas-chip--inactive { background: #f3f4f6; color: #6b7280; }
+
+.citas-more {
+  font-size: 11px;
+  color: var(--color-text-secondary);
+  padding: 0 4px;
+}
+
+/* Side panel */
+.citas-side-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 20px;
+}
+
+.citas-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.citas-side-head h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  color: var(--color-text);
+}
+
+.citas-count {
+  display: inline-flex;
+  min-width: 26px;
+  height: 26px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary-light);
+  color: var(--color-primary-dark);
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-bold);
+}
+
+.citas-filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.citas-filtro {
+  padding: 5px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-full);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citas-filtro:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.citas-filtro.active {
+  background: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.citas-filtro-servicio {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  color: var(--color-text-secondary);
+}
+
+.citas-filtro-servicio select {
+  height: 34px;
+  padding: 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--fs-sm);
+}
+
+.citas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 560px;
+  overflow-y: auto;
+}
+
+.citas-item {
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--transition-fast);
+}
+
+.citas-item:hover {
+  box-shadow: var(--shadow-sm);
+}
+
+.citas-item-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.citas-item-hora {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  color: var(--color-text);
+}
+
+.citas-item-servicio {
+  margin: 0 0 6px;
+  font-weight: var(--fw-semibold);
+  color: var(--color-text);
+}
+
+.citas-item-categoria {
+  font-weight: var(--fw-normal);
+  color: var(--color-text-secondary);
+}
+
+.citas-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 3px 0;
+  font-size: var(--fs-xs);
+  color: var(--color-text-secondary);
+}
+
+.citas-item-meta i {
+  width: 14px;
+  color: var(--color-primary);
+}
+
+.citas-item-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.citas-item-actions button {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.citas-item-actions button:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-accent-light);
+}
+
+.citas-item-actions button.danger:hover {
+  border-color: var(--color-error);
+  color: var(--color-error);
+  background: var(--color-error-bg);
+}
+
+/* Modal */
+.citas-modal h2 {
+  margin: 0 0 20px;
+  font-size: var(--fs-lg);
+  font-family: var(--font-heading);
+  color: var(--color-text);
+}
+
+.citas-modal .field-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.citas-modal .field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+
+.citas-modal .field > span {
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  color: var(--color-gray-700);
+}
+
+.citas-modal .field input,
+.citas-modal .field select,
+.citas-modal .field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-gray-150);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--fs-base);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.citas-modal .field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+.citas-modal .field input:focus,
+.citas-modal .field select:focus,
+.citas-modal .field textarea:focus {
+  border-color: var(--color-primary);
+  outline: 3px solid rgba(0, 102, 232, 0.12);
+}
+
+.citas-modal .field small {
+  color: var(--color-error);
+  font-size: var(--fs-xs);
+}
+
+.citas-modal .submit-error {
+  padding: 10px 14px;
+  margin-top: 12px;
+  color: var(--color-error);
+  background: var(--color-error-bg);
+  border: 1px solid #fecdca;
+  border-radius: var(--radius-md);
+  font-size: var(--fs-sm);
+}
+
+.citas-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+@media (max-width: 960px) {
+  .citas-layout {
+    grid-template-columns: 1fr;
+  }
+  .citas-list {
+    max-height: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .citas-page {
+    padding: 16px 14px;
+  }
+  .citas-day {
+    min-height: 72px;
+    padding: 4px;
+  }
+  .citas-chip {
+    font-size: 10px;
+    padding: 3px 5px;
+  }
+  .citas-modal .field-grid {
+    grid-template-columns: 1fr;
+  }
+}

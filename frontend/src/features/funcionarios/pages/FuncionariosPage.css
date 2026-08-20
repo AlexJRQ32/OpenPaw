@@ -1,0 +1,305 @@
+.func-page {
+  max-width: 960px;
+  padding: 24px;
+}
+
+/* Stats - unique classes */
+.func-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.func-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 20px 24px;
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.func-stat-number {
+  font-size: 28px;
+  font-weight: 800;
+  color: #000;
+}
+.func-stat-label {
+  font-size: 13px;
+  color: #555;
+}
+
+/* Table card - unique */
+.func-card {
+  background: #fff;
+  border: 1px solid #dfe5ef;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+.func-card-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #dfe5ef;
+}
+.func-card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  color: #000;
+}
+
+/* Table - unique */
+.func-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.func-table th {
+  padding: 12px 16px;
+  text-align: left;
+  color: #888;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: #f9fafb;
+  border-bottom: 1px solid #dfe5ef;
+}
+.func-table td {
+  padding: 14px 16px;
+  border-bottom: 1px solid #dfe5ef;
+  vertical-align: middle;
+}
+.func-table tr:last-child td {
+  border-bottom: none;
+}
+.func-table tr:hover td {
+  background: #f9fafb;
+}
+
+/* Select - unique */
+.func-table select {
+  padding: 6px 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  background: #fff;
+  cursor: pointer;
+  outline: none;
+  min-width: 140px;
+  transition: border-color 0.2s;
+}
+.func-table select:hover {
+  border-color: #bbb;
+}
+.func-table select:focus {
+  border-color: #0066e8;
+  box-shadow: 0 0 0 2px rgba(0, 102, 232, 0.1);
+}
+.func-table select option {
+  padding: 6px 10px;
+  line-height: 1.8;
+}
+
+/* Name + avatar - unique */
+.func-name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.func-avatar {
+  display: inline-flex;
+  width: 32px;
+  height: 32px;
+  align-items: center;
+  justify-content: center;
+  background: #0066e8;
+  color: #fff;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Actions - unique */
+.func-actions {
+  display: flex;
+  gap: 8px;
+}
+.func-actions button {
+  padding: 6px 14px;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid #d1d5db;
+  background: transparent;
+  color: #333;
+  transition: all 0.2s;
+}
+.func-actions button:hover {
+  border-color: #0066e8;
+  color: #0066e8;
+  background: rgba(0, 102, 232, 0.05);
+}
+
+/* Panel */
+.func-panel {
+  display: grid;
+  gap: 20px;
+}
+
+/* Modal styles */
+.funcionarios-modal h2 {
+  margin: 0 0 20px;
+  font-size: 20px;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  color: #000;
+}
+.funcionarios-modal .field-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+.funcionarios-modal .field {
+  display: grid;
+  gap: 6px;
+  text-align: left;
+}
+.funcionarios-modal .field > span {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+.funcionarios-modal .field input,
+.funcionarios-modal .field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  transition:
+    border-color 0.2s,
+    box-shadow 0.2s;
+}
+.funcionarios-modal .field select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+.funcionarios-modal .field input:focus,
+.funcionarios-modal .field select:focus {
+  border-color: #0066e8;
+  outline: 3px solid rgba(0, 102, 232, 0.12);
+}
+.funcionarios-modal .field small {
+  color: #b42318;
+  font-size: 12px;
+}
+.funcionarios-modal .submit-error {
+  padding: 10px 14px;
+  margin-top: 12px;
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  font-size: 13px;
+}
+.func-group-row td { padding: 10px 16px !important; background: #f0f4ff; border-bottom: 1px solid #d6e4ff; font-size: 13px; color: #0044cc; }
+.func-group-row:not(:first-child) td { border-top: 2px solid #d6e4ff; }
+.func-group-row strong { font-size: 14px; }
+.funcionarios-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+}
+
+.owner-badge { font-size: 10px; font-weight: 600; color: #065f46; background: #d1fae5; padding: 2px 8px; border-radius: 10px; margin-left: 8px; vertical-align: middle; white-space: nowrap; }
+.func-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 2px solid #e5e7eb; }
+.func-tab { padding: 10px 20px; font: inherit; font-size: 13px; font-weight: 600; color: #6b7280; background: none; border: none; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
+.func-tab.active { color: #0066e8; border-bottom-color: #0066e8; }
+.func-tab:hover { color: #0066e8; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #e0e0e0; border-top-color: #0066e8; border-radius: 50%; animation: spin 0.7s linear infinite; }
+.spinner-wrap { display: flex; justify-content: center; padding: 40px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+  .func-page {
+    padding: 16px 14px;
+  }
+  .func-stats {
+    display: flex;
+    gap: 8px;
+  }
+  .func-stat {
+    flex: 1;
+    min-width: 0;
+  }
+  .func-stat-number {
+    font-size: 18px;
+  }
+  .func-stat-label {
+    font-size: 11px;
+  }
+  .func-table-wrap {
+    overflow-x: auto;
+  }
+  .func-table {
+    font-size: 13px;
+    min-width: 420px;
+  }
+  .func-table th, .func-table td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+  .func-name {
+    gap: 6px;
+  }
+  .func-avatar {
+    width: 24px;
+    height: 24px;
+    font-size: 10px;
+  }
+  .func-table select {
+    font-size: 11px;
+    padding: 2px 4px;
+    max-width: 80px;
+  }
+  .func-actions button {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+  .func-tabs {
+    gap: 0;
+    overflow-x: auto;
+  }
+  .func-tab {
+    font-size: 12px;
+    padding: 8px 14px;
+    white-space: nowrap;
+  }
+  .func-card-header h3 {
+    font-size: 15px;
+  }
+  .badge {
+    font-size: 10px;
+    padding: 2px 6px;
+  }
+  .approvals-header .btn {
+    min-height: 36px;
+    padding: 0 14px;
+    font-size: 12px;
+  }
+  .approvals-header .btn svg {
+    width: 14px;
+    height: 14px;
+  }
+}
