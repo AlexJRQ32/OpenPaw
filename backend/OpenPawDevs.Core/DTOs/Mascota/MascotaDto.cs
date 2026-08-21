@@ -12,7 +12,14 @@ public class MascotaDto
     public string? Color { get; set; }
     public string? Identificacion { get; set; }
     public string? FotoUrl { get; set; }
-    public int DueñoId { get; set; }
-    public string DueñoNombre { get; set; } = string.Empty;
+    public string EstadoSalud { get; set; } = "Saludable";
+    public string? ProximaVacuna { get; set; }
+    public DateTime? ProximaVacunaFecha { get; set; }
+    public string? MedicacionActual { get; set; }
+    public DateTime? ProximaMedicacionFecha { get; set; }
+    public int DueÃ±oId { get; set; }
+    public string DueÃ±oNombre { get; set; } = string.Empty;
+    public DateTime FechaRegistro { get; set; }
+    public int? VeterinariaId { get; set; }
     public bool Activo { get; set; }
 }
