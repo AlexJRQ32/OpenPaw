@@ -101,4 +101,59 @@ public class UsuariosControllerTests
         dto.Mascotas.Should().ContainSingle(m => m.Id == 2 && m.Nombre == "Misi");
         _mascotas.Verify(r => r.GetByVeterinariaIdAsync(It.IsAny<int>()), Times.Never);
     }
+
+    [Fact]
+    public async Task UpdateMe_PutParcial_NoBorraCamposNuevosCuandoElDtoNoLosTrae()
+    {
+        var usuario = new Usuario
+        {
+            Id = 7,
+            Nombre = "Ana",
+            TelefonoEmergencia = "5551112222",
+            LicenciaMedica = "LM-999",
+            FechaIncorporacion = new DateTime(2024, 5, 1)
+        };
+        _usuarios.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(usuario);
+
+        // PUT parcial: el DTO solo trae Nombre; los campos nuevos van null.
+        var dto = new ActualizarUsuarioDto { Nombre = "Ana Actualizada" };
+
+        var result = await CreateSut(7).UpdateMeAsync(dto);
+
+        result.Should().BeOfType<OkObjectResult>();
+        usuario.Nombre.Should().Be("Ana Actualizada");
+        usuario.TelefonoEmergencia.Should().Be("5551112222");
+        usuario.LicenciaMedica.Should().Be("LM-999");
+        usuario.FechaIncorporacion.Should().Be(new DateTime(2024, 5, 1));
+        _usuarios.Verify(r => r.UpdateAsync(usuario), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetAll_NoDebeExponerPiiSensible()
+    {
+        var usuarios = new List<Usuario>
+        {
+            new()
+            {
+                Id = 1,
+                Nombre = "Ana",
+                Email = "ana@test.com",
+                TelefonoEmergencia = "555-SENSIBLE",
+                LicenciaMedica = "LM-SENSIBLE"
+            }
+        };
+        _usuarios.Setup(r => r.GetAllAsync()).ReturnsAsync(usuarios);
+
+        var result = await CreateSut().GetAllAsync(null, null);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dtos = ok.Value.Should().BeAssignableTo<IEnumerable<UsuarioListadoDto>>().Subject;
+        var dto = dtos.Should().ContainSingle().Subject;
+        dto.Nombre.Should().Be("Ana");
+
+        // La PII sensible no debe viajar en el listado (ni como propiedades serializadas).
+        var json = System.Text.Json.JsonSerializer.Serialize(dto);
+        json.Should().NotContain("TelefonoEmergencia");
+        json.Should().NotContain("LicenciaMedica");
+    }
 }

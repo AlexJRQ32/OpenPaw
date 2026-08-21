@@ -27,8 +27,17 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.Telefono)
             .HasMaxLength(20);
 
+        builder.Property(u => u.TelefonoEmergencia)
+            .HasMaxLength(20);
+
         builder.Property(u => u.Direccion)
             .HasMaxLength(300);
+
+        builder.Property(u => u.LicenciaMedica)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.FechaIncorporacion)
+            .HasColumnType("datetime2");
 
         builder.Property(u => u.FotoUrl)
             .HasMaxLength(500);

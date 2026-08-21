@@ -49,7 +49,7 @@ public class UsuariosController : ControllerBase
         if (almacenId.HasValue)
             usuarios = usuarios.Where(u => u.AlmacenId == almacenId.Value).ToList();
 
-        return Ok(usuarios.Select(ToDto));
+        return Ok(usuarios.Select(ToListadoDto));
     }
 
     [HttpGet("{id}")]
@@ -290,7 +290,7 @@ public class UsuariosController : ControllerBase
     public async Task<IActionResult> GetByRolAsync(int rolId)
     {
         var usuarios = await _usuarioRepository.GetByRolAsync(rolId);
-        return Ok(usuarios.Select(ToDto));
+        return Ok(usuarios.Select(ToListadoDto));
     }
 
     /// <summary>
@@ -456,9 +456,43 @@ public class UsuariosController : ControllerBase
         entity.Telefono = actualizarDto.Telefono;
         entity.Direccion = actualizarDto.Direccion;
         entity.FotoUrl = actualizarDto.FotoUrl;
+
+        // Campos nuevos del perfil extendido: actualizacion parcial para no borrar
+        // valores guardados cuando el cliente no los envia (null en el DTO).
+        if (actualizarDto.TelefonoEmergencia != null)
+            entity.TelefonoEmergencia = actualizarDto.TelefonoEmergencia;
+        if (actualizarDto.LicenciaMedica != null)
+            entity.LicenciaMedica = actualizarDto.LicenciaMedica;
+        if (actualizarDto.FechaIncorporacion.HasValue)
+            entity.FechaIncorporacion = actualizarDto.FechaIncorporacion;
     }
 
     private static UsuarioDto ToDto(Usuario usuario) => new()
+    {
+        Id = usuario.Id,
+        Nombre = usuario.Nombre,
+        Email = usuario.Email,
+        Telefono = usuario.Telefono,
+        TelefonoEmergencia = usuario.TelefonoEmergencia,
+        Direccion = usuario.Direccion,
+        LicenciaMedica = usuario.LicenciaMedica,
+        FechaIncorporacion = usuario.FechaIncorporacion,
+        RolId = usuario.RolId,
+        RolNombre = usuario.Rol?.Nombre ?? string.Empty,
+        Activo = usuario.Activo,
+        FechaRegistro = usuario.FechaRegistro,
+        FotoUrl = usuario.FotoUrl,
+        RedesSociales = usuario.RedesSociales?.Select(r => new RedSocialDto { Id = r.Id, UsuarioId = r.UsuarioId, Plataforma = r.Plataforma, Url = r.Url }).ToList(),
+        VeterinariaId = usuario.VeterinariaId,
+        AlmacenId = usuario.AlmacenId,
+        ComercioNombre = usuario.Veterinaria?.Nombre ?? usuario.Almacen?.Nombre
+    };
+
+    /// <summary>
+    /// Mapeo de listado: excluye PII sensible (LicenciaMedica, TelefonoEmergencia).
+    /// Usado en GET /api/usuarios y GET /api/usuarios/rol/{rolId}.
+    /// </summary>
+    private static UsuarioListadoDto ToListadoDto(Usuario usuario) => new()
     {
         Id = usuario.Id,
         Nombre = usuario.Nombre,
