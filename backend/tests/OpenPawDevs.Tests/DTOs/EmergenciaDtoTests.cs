@@ -1,6 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using FluentAssertions;
 using OpenPawDevs.Core.DTOs.Emergencia;
+using OpenPawDevs.Core.Entities;
 using Xunit;
 
 namespace OpenPawDevs.Tests.DTOs;
@@ -68,5 +69,53 @@ public class EmergenciaDtoTests
         dto.VeterinariaNombreExterna = new string('x', 151);
 
         Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearEmergenciaDto.VeterinariaNombreExterna)));
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Sprint 1 T4 - Emergencias: severidad, signos vitales, tratamiento, medico
+    // ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void ConSeveridadYSignosVitalesValidos_NoDebeTenerErrores()
+    {
+        var dto = DtoValido();
+        dto.NivelSeveridad = "Nivel1_Critico";
+        dto.FrecuenciaCardiaca = 160;
+        dto.SaturacionO2 = 88;
+        dto.Temperatura = 39.2m;
+        dto.EstadoPaciente = "Estable";
+        dto.MedicoACargo = "Dr. Martinez";
+        dto.Diagnostico = "Convulsion generalizada";
+
+        Validate(dto).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ConFrecuenciaCardiacaFueraDeRango_DebeSerInvalido()
+    {
+        var dto = DtoValido();
+        dto.FrecuenciaCardiaca = 500;
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearEmergenciaDto.FrecuenciaCardiaca)));
+    }
+
+    [Fact]
+    public void ConMedicoACargoDemasiadoLargo_DebeSerInvalido()
+    {
+        var dto = DtoValido();
+        dto.MedicoACargo = new string('x', 151);
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearEmergenciaDto.MedicoACargo)));
+    }
+
+    [Fact]
+    public void EmergenciaDto_NoDebeExponerEntidadesDeNavegacion()
+    {
+        // El DTO de respuesta no debe serializar la entidad cruda ni sus navegaciones (evita PII)
+        var properties = typeof(EmergenciaDto).GetProperties().Select(p => p.Name).ToArray();
+
+        properties.Should().NotContain(nameof(Emergencia.Mascota));
+        properties.Should().NotContain(nameof(Emergencia.Propietario));
+        properties.Should().NotContain(nameof(Emergencia.Veterinaria));
     }
 }

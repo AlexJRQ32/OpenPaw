@@ -16,6 +16,15 @@ public class Emergencia
     public string? ArchivoAdjuntoUrl { get; set; }
     public DateTime FechaRegistro { get; set; } = DateTime.UtcNow;
 
+    // Sprint 1 - Emergencias: severidad, signos vitales, tratamiento, medico (T4)
+    public string NivelSeveridad { get; set; } = "Nivel1_Critico";
+    public int? FrecuenciaCardiaca { get; set; }
+    public int? SaturacionO2 { get; set; }
+    public decimal? Temperatura { get; set; }
+    public string? EstadoPaciente { get; set; }
+    public string? MedicoACargo { get; set; }
+    public string? Diagnostico { get; set; }
+
     public virtual Mascota? Mascota { get; set; }
     public virtual Usuario? Propietario { get; set; }
     public virtual Veterinaria? Veterinaria { get; set; }

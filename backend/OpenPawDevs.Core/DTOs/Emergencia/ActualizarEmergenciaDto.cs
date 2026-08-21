@@ -2,23 +2,16 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OpenPawDevs.Core.DTOs.Emergencia;
 
-public class CrearEmergenciaDto
+/// <summary>
+/// DTO de actualizacion parcial de una emergencia: los campos null preservan el
+/// valor existente en la entidad (consistente con el patron de Mascota/EstadoSalud).
+/// </summary>
+public class ActualizarEmergenciaDto
 {
-    [Range(1, int.MaxValue)]
-    public int MascotaId { get; set; }
+    public DateTime? FechaAtencion { get; set; }
 
-    [Required]
-    public bool EsEnPlataforma { get; set; }
-
-    [StringLength(150)]
-    public string? VeterinariaNombreExterna { get; set; }
-
-    [Required]
-    public DateTime FechaAtencion { get; set; }
-
-    [Required]
     [StringLength(1000, MinimumLength = 1)]
-    public string Motivo { get; set; } = string.Empty;
+    public string? Motivo { get; set; }
 
     [StringLength(2000)]
     public string? Sintomas { get; set; }
@@ -29,7 +22,6 @@ public class CrearEmergenciaDto
     [StringLength(500)]
     public string? ArchivoAdjuntoUrl { get; set; }
 
-    // Sprint 1 - Emergencias: severidad, signos vitales, tratamiento, medico (T4)
     [StringLength(30)]
     public string? NivelSeveridad { get; set; }
 

@@ -29,6 +29,22 @@ public class EmergenciaConfiguration : IEntityTypeConfiguration<Emergencia>
         builder.Property(e => e.ArchivoAdjuntoUrl)
             .HasMaxLength(500);
 
+        builder.Property(e => e.NivelSeveridad)
+            .HasMaxLength(30)
+            .IsRequired();
+
+        builder.Property(e => e.EstadoPaciente)
+            .HasMaxLength(100);
+
+        builder.Property(e => e.MedicoACargo)
+            .HasMaxLength(150);
+
+        builder.Property(e => e.Diagnostico)
+            .HasMaxLength(2000);
+
+        builder.Property(e => e.Temperatura)
+            .HasPrecision(5, 2);
+
         builder.HasOne(e => e.Mascota)
             .WithMany()
             .HasForeignKey(e => e.MascotaId)
