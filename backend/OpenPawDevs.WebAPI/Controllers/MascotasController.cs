@@ -26,6 +26,30 @@ public class MascotasController : ControllerBase
     private bool EsFuncionario =>
         User.IsInRole("1") || User.IsInRole("2") || User.IsInRole("3");
 
+    private static MascotaDto MapToDto(Mascota m) => new()
+    {
+        Id = m.Id,
+        Nombre = m.Nombre,
+        Especie = m.Especie,
+        Raza = m.Raza,
+        Sexo = m.Sexo,
+        FechaNacimiento = m.FechaNacimiento,
+        Peso = m.Peso,
+        Color = m.Color,
+        Identificacion = m.Identificacion,
+        FotoUrl = m.FotoUrl,
+        EstadoSalud = m.EstadoSalud,
+        ProximaVacuna = m.ProximaVacuna,
+        ProximaVacunaFecha = m.ProximaVacunaFecha,
+        MedicacionActual = m.MedicacionActual,
+        ProximaMedicacionFecha = m.ProximaMedicacionFecha,
+        DueñoId = m.DuenioId,
+        DueñoNombre = m.Duenio?.Nombre ?? string.Empty,
+        Activo = m.Activo,
+        FechaRegistro = m.FechaRegistro,
+        VeterinariaId = m.VeterinariaId
+    };
+
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
@@ -33,11 +57,11 @@ public class MascotasController : ControllerBase
         if (EsFuncionario)
         {
             var todas = await _mascotaRepository.GetAllAsync();
-            return Ok(todas.Where(m => m.Activo));
+            return Ok(todas.Where(m => m.Activo).Select(MapToDto));
         }
 
         var propias = await _mascotaRepository.GetByDuenioIdAsync(UsuarioAutenticadoId);
-        return Ok(propias);
+        return Ok(propias.Select(MapToDto));
     }
 
     [HttpGet("{id}")]
@@ -50,7 +74,7 @@ public class MascotasController : ControllerBase
         if (!EsFuncionario && mascota.DuenioId != UsuarioAutenticadoId)
             return Forbid();
 
-        return Ok(mascota);
+        return Ok(MapToDto(mascota));
     }
 
     [HttpGet("duenio/{duenioId}")]
@@ -60,12 +84,22 @@ public class MascotasController : ControllerBase
             return Forbid();
 
         var mascotas = await _mascotaRepository.GetByDuenioIdAsync(duenioId);
-        return Ok(mascotas);
+        return Ok(mascotas.Select(MapToDto));
     }
 
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CrearMascotaDto crearDto)
     {
+        var estadoSalud = "Saludable";
+        if (crearDto.EstadoSalud != null)
+        {
+            if (!Enum.TryParse<EstadoSaludMascota>(crearDto.EstadoSalud, true, out var parsed)
+                || !Enum.IsDefined(typeof(EstadoSaludMascota), parsed))
+                return BadRequest(new { mensaje = "Estado de salud no valido (use Saludable o Tratamiento)" });
+
+            estadoSalud = parsed.ToString();
+        }
+
         // El dueno siempre es el usuario autenticado (evita suplantacion de DuenioId)
         var entity = new Mascota
         {
@@ -78,13 +112,18 @@ public class MascotasController : ControllerBase
             Color = crearDto.Color,
             Identificacion = crearDto.Identificacion,
             FotoUrl = crearDto.FotoUrl,
+            EstadoSalud = estadoSalud,
+            ProximaVacuna = crearDto.ProximaVacuna,
+            ProximaVacunaFecha = crearDto.ProximaVacunaFecha,
+            MedicacionActual = crearDto.MedicacionActual,
+            ProximaMedicacionFecha = crearDto.ProximaMedicacionFecha,
             DuenioId = UsuarioAutenticadoId,
             Activo = true,
             FechaRegistro = DateTime.UtcNow
         };
 
         var created = await _mascotaRepository.AddAsync(entity);
-        return Ok(created);
+        return Ok(MapToDto(created));
     }
 
     [HttpPut("{id}")]
@@ -97,6 +136,15 @@ public class MascotasController : ControllerBase
         if (!EsFuncionario && entity.DuenioId != UsuarioAutenticadoId)
             return Forbid();
 
+        if (actualizarDto.EstadoSalud != null)
+        {
+            if (!Enum.TryParse<EstadoSaludMascota>(actualizarDto.EstadoSalud, true, out var estadoSalud)
+                || !Enum.IsDefined(typeof(EstadoSaludMascota), estadoSalud))
+                return BadRequest(new { mensaje = "Estado de salud no valido (use Saludable o Tratamiento)" });
+
+            entity.EstadoSalud = estadoSalud.ToString();
+        }
+
         entity.Nombre = actualizarDto.Nombre;
         entity.Especie = actualizarDto.Especie;
         entity.Raza = actualizarDto.Raza;
@@ -106,6 +154,20 @@ public class MascotasController : ControllerBase
         entity.Color = actualizarDto.Color;
         entity.Identificacion = actualizarDto.Identificacion;
         entity.FotoUrl = actualizarDto.FotoUrl;
+
+        // Update parcial para los campos nuevos de salud: si el DTO trae null, se preserva
+        // el valor existente (consistente con la semantica de EstadoSalud y la tarea #2).
+        if (actualizarDto.ProximaVacuna != null)
+            entity.ProximaVacuna = actualizarDto.ProximaVacuna;
+
+        if (actualizarDto.ProximaVacunaFecha != null)
+            entity.ProximaVacunaFecha = actualizarDto.ProximaVacunaFecha;
+
+        if (actualizarDto.MedicacionActual != null)
+            entity.MedicacionActual = actualizarDto.MedicacionActual;
+
+        if (actualizarDto.ProximaMedicacionFecha != null)
+            entity.ProximaMedicacionFecha = actualizarDto.ProximaMedicacionFecha;
 
         await _mascotaRepository.UpdateAsync(entity);
         return NoContent();

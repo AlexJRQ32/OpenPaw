@@ -33,6 +33,17 @@ public class MascotaConfiguration : IEntityTypeConfiguration<Mascota>
         builder.Property(m => m.FotoUrl)
             .HasMaxLength(500);
 
+        builder.Property(m => m.EstadoSalud)
+            .HasMaxLength(30)
+            .IsRequired()
+            .HasDefaultValue("Saludable");
+
+        builder.Property(m => m.ProximaVacuna)
+            .HasMaxLength(100);
+
+        builder.Property(m => m.MedicacionActual)
+            .HasMaxLength(200);
+
         builder.Property(m => m.Peso)
             .HasPrecision(18, 2);
 
