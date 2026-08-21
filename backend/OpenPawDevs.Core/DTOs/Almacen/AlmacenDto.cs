@@ -13,4 +13,12 @@ public class AlmacenDto
     public bool Rechazada { get; set; }
     public string? MotivoRechazo { get; set; }
     public DateTime FechaRegistro { get; set; }
+
+    // Sprint 1 - Tarea 7: campos del wireframe de Registro de Almacen.
+    public string? TipoAlmacen { get; set; }
+    public string? NombreResponsable { get; set; }
+    public string? CapacidadAlmacenamiento { get; set; }
+    public string? ControlTemperatura { get; set; }
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
 }
