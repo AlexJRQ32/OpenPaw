@@ -21,6 +21,9 @@ public class CrearCitaDto
     [StringLength(500)]
     public string Servicio { get; set; } = string.Empty;
 
+    [StringLength(20)]
+    public string? TipoCita { get; set; }
+
     public CategoriaServicioVeterinario? Categoria { get; set; }
 
     [StringLength(1000)]

@@ -11,7 +11,9 @@ public class CitaDto
     public string UsuarioNombre { get; set; } = string.Empty;
     public DateTime FechaHora { get; set; }
     public string Estado { get; set; } = string.Empty;
+    public string TipoCita { get; set; } = "Rutina";
     public string? Servicio { get; set; }
+    public string? Categoria { get; set; }
     public string? Notas { get; set; }
     public decimal? Costo { get; set; }
 }
