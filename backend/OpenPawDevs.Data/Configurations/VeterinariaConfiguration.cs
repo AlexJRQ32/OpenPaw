@@ -42,5 +42,21 @@ public class VeterinariaConfiguration : IEntityTypeConfiguration<Veterinaria>
 
         builder.Property(v => v.MotivoRechazo)
             .HasMaxLength(500);
+
+        // Sprint 1 - Tarea 6: campos del wireframe de Registro de Veterinaria.
+        builder.Property(v => v.RazonSocial)
+            .HasMaxLength(150);
+
+        builder.Property(v => v.Nit)
+            .HasMaxLength(30);
+
+        builder.Property(v => v.CorreoOficial)
+            .HasMaxLength(100);
+
+        builder.Property(v => v.Latitud)
+            .HasPrecision(10, 7);
+
+        builder.Property(v => v.Longitud)
+            .HasPrecision(10, 7);
     }
 }

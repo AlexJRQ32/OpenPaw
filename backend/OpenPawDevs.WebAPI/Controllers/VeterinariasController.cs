@@ -28,7 +28,7 @@ public class VeterinariasController : ControllerBase
     public async Task<IActionResult> GetAllAsync()
     {
         var veterinarias = await _veterinariaRepository.GetAllAsync();
-        var dto = veterinarias.Select(v => MapToDto(v));
+        var dto = veterinarias.Select(VeterinariaMapeo.ToDto);
         return Ok(dto);
     }
 
@@ -40,7 +40,7 @@ public class VeterinariasController : ControllerBase
         if (veterinaria == null)
             return NotFound(new { mensaje = $"Veterinaria con ID {id} no encontrada" });
 
-        return Ok(MapToDto(veterinaria));
+        return Ok(VeterinariaMapeo.ToDto(veterinaria));
     }
 
     [HttpGet("pendientes")]
@@ -48,7 +48,7 @@ public class VeterinariasController : ControllerBase
     public async Task<IActionResult> GetPendientesAsync()
     {
         var veterinarias = await _veterinariaRepository.GetPendientesAsync();
-        var dto = veterinarias.Select(v => MapToDto(v));
+        var dto = veterinarias.Select(VeterinariaMapeo.ToDto);
         return Ok(dto);
     }
 
@@ -57,7 +57,7 @@ public class VeterinariasController : ControllerBase
     public async Task<IActionResult> GetAprobadasAsync()
     {
         var veterinarias = await _veterinariaRepository.GetAprobadasAsync();
-        var dto = veterinarias.Select(v => MapToDto(v));
+        var dto = veterinarias.Select(VeterinariaMapeo.ToDto);
         return Ok(dto);
     }
 
@@ -74,6 +74,11 @@ public class VeterinariasController : ControllerBase
             Horario = crearDto.Horario,
             Descripcion = crearDto.Descripcion,
             LogoUrl = crearDto.LogoUrl,
+            RazonSocial = crearDto.RazonSocial,
+            Nit = crearDto.Nit,
+            CorreoOficial = crearDto.CorreoOficial,
+            Latitud = crearDto.Latitud,
+            Longitud = crearDto.Longitud,
             UsuarioId = GetAuthenticatedUserId(),
             Activo = true,
             Aprobada = false,
@@ -89,7 +94,34 @@ public class VeterinariasController : ControllerBase
             await _usuarioRepository.UpdateAsync(usuario);
         }
 
-        return Ok(MapToDto(created));
+        return Ok(VeterinariaMapeo.ToDto(created));
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateAsync(int id, [FromBody] ActualizarVeterinariaDto actualizarDto)
+    {
+        // El filtro [ApiController] normalmente hace esto antes del action; el guard es defensivo
+        // y garantiza que un DTO invalido (ej. Direccion > 300 chars) devuelva 400 y nunca llegue
+        // a la BD (evita DbUpdateException -> 500).
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var entity = await _veterinariaRepository.GetByIdAsync(id);
+        if (entity == null)
+            return NotFound(new { mensaje = $"Veterinaria con ID {id} no encontrada" });
+
+        // Control de acceso (previene IDOR): solo el dueno de la veterinaria o un administrador
+        // (rol "1") pueden modificarla. Un cliente autenticado no debe poder editar veterinarias
+        // ajenas iterando IDs. Si la veterinaria no tiene dueno vinculado, solo el admin puede editarla.
+        if (!User.IsInRole("1") && entity.UsuarioId != GetAuthenticatedUserId())
+            return Forbid();
+
+        // Update parcial: null en el DTO preserva el valor actual (no borra campos no enviados);
+        // cadena vacia ("") si sobrescribe el campo.
+        VeterinariaMapeo.AplicarActualizacion(entity, actualizarDto);
+        await _veterinariaRepository.UpdateAsync(entity);
+
+        return Ok(VeterinariaMapeo.ToDto(entity));
     }
 
     [HttpPut("{id}/aprobar")]
@@ -128,29 +160,6 @@ public class VeterinariasController : ControllerBase
         entity.MotivoRechazo = motivoDto?.MotivoRechazo;
         await _veterinariaRepository.UpdateAsync(entity);
         return NoContent();
-    }
-
-    private static VeterinariaDto MapToDto(Veterinaria v)
-    {
-        return new VeterinariaDto
-        {
-            Id = v.Id,
-            Nombre = v.Nombre,
-            CedulaJuridica = v.CedulaJuridica,
-            Direccion = v.Direccion,
-            Telefono = v.Telefono,
-            Email = v.Email,
-            Descripcion = v.Descripcion,
-            Horario = v.Horario,
-            LogoUrl = v.LogoUrl,
-            Activo = v.Activo,
-            Aprobada = v.Aprobada,
-            Rechazada = v.Rechazada,
-            MotivoRechazo = v.MotivoRechazo,
-            DocumentoPersoneriaJuridica = v.DocumentoPersoneriaJuridica,
-            FechaRegistro = v.FechaRegistro,
-            UsuarioId = v.UsuarioId
-        };
     }
 
     private int GetAuthenticatedUserId()
