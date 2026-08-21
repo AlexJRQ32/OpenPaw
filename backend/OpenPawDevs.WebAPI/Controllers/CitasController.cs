@@ -36,6 +36,25 @@ public class CitasController : ControllerBase
     private bool EsFuncionario =>
         User.IsInRole("1") || User.IsInRole("2") || User.IsInRole("3");
 
+    /// <summary> Mapeo seguro a DTO: no se serializa la entidad cruda ni sus navegaciones (evita PII) </summary>
+    private static CitaDto MapToDto(Cita c) => new()
+    {
+        Id = c.Id,
+        MascotaId = c.MascotaId,
+        MascotaNombre = c.Mascota?.Nombre ?? string.Empty,
+        VeterinariaId = c.VeterinariaId,
+        VeterinariaNombre = c.Veterinaria?.Nombre ?? string.Empty,
+        UsuarioId = c.UsuarioId,
+        UsuarioNombre = c.Usuario?.Nombre ?? string.Empty,
+        FechaHora = c.FechaHora,
+        Estado = c.Estado,
+        TipoCita = c.TipoCita,
+        Servicio = c.Servicio,
+        Categoria = c.Categoria?.ToString(),
+        Notas = c.Notas,
+        Costo = c.Costo
+    };
+
     [HttpGet]
     public async Task<IActionResult> GetAllAsync()
     {
@@ -43,7 +62,7 @@ public class CitasController : ControllerBase
             return Forbid();
 
         var citas = await _citaRepository.GetAllAsync();
-        return Ok(citas);
+        return Ok(citas.Select(MapToDto));
     }
 
     [HttpGet("{id}")]
@@ -56,7 +75,7 @@ public class CitasController : ControllerBase
         if (!EsFuncionario && cita.UsuarioId != UsuarioAutenticadoId)
             return Forbid();
 
-        return Ok(cita);
+        return Ok(MapToDto(cita));
     }
 
     [HttpGet("mascota/{mascotaId}")]
@@ -67,7 +86,7 @@ public class CitasController : ControllerBase
             return Forbid();
 
         var citas = await _citaRepository.GetByMascotaIdAsync(mascotaId);
-        return Ok(citas);
+        return Ok(citas.Select(MapToDto));
     }
 
     [HttpGet("veterinaria/{veterinariaId}")]
@@ -77,7 +96,7 @@ public class CitasController : ControllerBase
             return Forbid();
 
         var citas = await _citaRepository.GetByVeterinariaIdAsync(veterinariaId);
-        return Ok(citas);
+        return Ok(citas.Select(MapToDto));
     }
 
     [HttpGet("usuario/{usuarioId}")]
@@ -87,7 +106,7 @@ public class CitasController : ControllerBase
             return Forbid();
 
         var citas = await _citaRepository.GetByUsuarioIdAsync(usuarioId);
-        return Ok(citas);
+        return Ok(citas.Select(MapToDto));
     }
 
     [HttpGet("rango")]
@@ -97,7 +116,7 @@ public class CitasController : ControllerBase
             return Forbid();
 
         var citas = await _citaRepository.GetByFechaRangeAsync(desde, hasta);
-        return Ok(citas);
+        return Ok(citas.Select(MapToDto));
     }
 
     [HttpPost]
@@ -117,6 +136,16 @@ public class CitasController : ControllerBase
         if (crearDto.FechaHora <= DateTime.UtcNow)
             return BadRequest(new { mensaje = "La fecha de la cita debe estar en el futuro" });
 
+        var tipoCita = "Rutina";
+        if (crearDto.TipoCita != null)
+        {
+            if (!Enum.TryParse<TipoCitaEnum>(crearDto.TipoCita, true, out var tipo)
+                || !Enum.IsDefined(typeof(TipoCitaEnum), tipo))
+                return BadRequest(new { mensaje = "Tipo de cita no valido (use Rutina, Especialista o Urgencia)" });
+
+            tipoCita = tipo.ToString();
+        }
+
         var entity = new Cita
         {
             MascotaId = crearDto.MascotaId,
@@ -125,6 +154,7 @@ public class CitasController : ControllerBase
             FechaHora = crearDto.FechaHora,
             Servicio = crearDto.Servicio,
             Categoria = crearDto.Categoria,
+            TipoCita = tipoCita,
             Notas = crearDto.Notas,
             Costo = crearDto.Costo,
             Estado = "Pendiente",
@@ -135,7 +165,7 @@ public class CitasController : ControllerBase
         if (created == null)
             return BadRequest(new { mensaje = "La veterinaria ya tiene una cita programada en ese rango de horario" });
 
-        return Created($"/api/citas/{created.Id}", created);
+        return Created($"/api/citas/{created.Id}", MapToDto(created));
     }
 
     [HttpPut("{id}")]
@@ -164,6 +194,14 @@ public class CitasController : ControllerBase
                 return BadRequest(new { mensaje = "Estado de cita no valido" });
 
             entity.Estado = estado.ToString();
+        }
+        if (actualizarDto.TipoCita != null)
+        {
+            if (!Enum.TryParse<TipoCitaEnum>(actualizarDto.TipoCita, true, out var tipo)
+                || !Enum.IsDefined(typeof(TipoCitaEnum), tipo))
+                return BadRequest(new { mensaje = "Tipo de cita no valido (use Rutina, Especialista o Urgencia)" });
+
+            entity.TipoCita = tipo.ToString();
         }
         if (actualizarDto.Servicio != null) entity.Servicio = actualizarDto.Servicio;
         if (actualizarDto.Categoria.HasValue) entity.Categoria = actualizarDto.Categoria;

@@ -21,6 +21,11 @@ public class CitaConfiguration : IEntityTypeConfiguration<Cita>
             .HasMaxLength(20)
             .IsRequired();
 
+        builder.Property(c => c.TipoCita)
+            .HasMaxLength(20)
+            .IsRequired()
+            .HasDefaultValue("Rutina");
+
         builder.Property(c => c.Notas)
             .HasMaxLength(1000);
 

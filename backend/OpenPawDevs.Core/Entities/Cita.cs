@@ -11,6 +11,7 @@ public class Cita
     public int UsuarioId { get; set; }
     public DateTime FechaHora { get; set; }
     public string Estado { get; set; } = "Pendiente";
+    public string TipoCita { get; set; } = "Rutina";
     public string? Servicio { get; set; }
     public CategoriaServicioVeterinario? Categoria { get; set; }
     public string? Notas { get; set; }
