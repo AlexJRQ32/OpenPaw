@@ -1,15 +1,16 @@
 namespace OpenPawDevs.Core.DTOs.Usuario;
 
-public class UsuarioDto
+/// <summary>
+/// DTO de listado de usuarios. Excluye campos sensibles (LicenciaMedica, TelefonoEmergencia)
+/// que solo deben exponerse en el perfil propio o a administradores.
+/// </summary>
+public class UsuarioListadoDto
 {
     public int Id { get; set; }
     public string Nombre { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Telefono { get; set; }
-    public string? TelefonoEmergencia { get; set; }
     public string? Direccion { get; set; }
-    public string? LicenciaMedica { get; set; }
-    public DateTime? FechaIncorporacion { get; set; }
     public int RolId { get; set; }
     public string RolNombre { get; set; } = string.Empty;
     public bool Activo { get; set; }

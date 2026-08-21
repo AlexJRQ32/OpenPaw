@@ -7,7 +7,10 @@ public class Usuario
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
     public string? Telefono { get; set; }
+    public string? TelefonoEmergencia { get; set; }
     public string? Direccion { get; set; }
+    public string? LicenciaMedica { get; set; }
+    public DateTime? FechaIncorporacion { get; set; }
     public int RolId { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaRegistro { get; set; }
