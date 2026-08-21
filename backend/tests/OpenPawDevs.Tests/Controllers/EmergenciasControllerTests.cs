@@ -95,19 +95,25 @@ public class EmergenciasControllerTests
     }
 
     [Fact]
-    public async Task GetByMascota_ComoAdministrador_DebeRetornarLasEmergencias()
+    public async Task GetByMascota_ComoAdministrador_DebeRetornarDtosDeEmergencia()
     {
         var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
         _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
         var admin = new Usuario { Id = 1, RolId = 1 };
         _usuarios.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
-        var emergencias = new List<Emergencia> { new() { Id = 1, MascotaId = 1 } };
+        var emergencias = new List<Emergencia>
+        {
+            new() { Id = 1, MascotaId = 1, Motivo = "Convulsiones", NivelSeveridad = "Nivel1_Critico" }
+        };
         _emergencias.Setup(r => r.GetByMascotaIdAsync(1)).ReturnsAsync(emergencias);
 
         var result = await CreateSut(1).GetByMascotaAsync(1);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeSameAs(emergencias);
+        var dtos = ok.Value.Should().BeAssignableTo<IEnumerable<EmergenciaDto>>().Subject.ToList();
+        dtos.Should().ContainSingle();
+        dtos[0].Id.Should().Be(1);
+        dtos[0].NivelSeveridad.Should().Be("Nivel1_Critico");
     }
 
     [Fact]
@@ -193,9 +199,16 @@ public class EmergenciasControllerTests
     }
 
     [Fact]
-    public async Task GetById_ConAccesoValido_DebeRetornarLaEmergencia()
+    public async Task GetById_ConAccesoValido_DebeRetornarDtoYNoLaEntidadCruda()
     {
-        var emergencia = new Emergencia { Id = 1, MascotaId = 1 };
+        var emergencia = new Emergencia
+        {
+            Id = 1,
+            MascotaId = 1,
+            Motivo = "Convulsiones",
+            NivelSeveridad = "Nivel2_Urgente",
+            MedicoACargo = "Dr. Martinez"
+        };
         _emergencias.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(emergencia);
         var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
         _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
@@ -205,7 +218,11 @@ public class EmergenciasControllerTests
         var result = await CreateSut(5).GetByIdAsync(1);
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeSameAs(emergencia);
+        var dto = ok.Value.Should().BeOfType<EmergenciaDto>().Subject;
+        dto.Id.Should().Be(1);
+        dto.NivelSeveridad.Should().Be("Nivel2_Urgente");
+        dto.MedicoACargo.Should().Be("Dr. Martinez");
+        ok.Value.Should().NotBeSameAs(emergencia);
     }
 
     [Fact]
@@ -373,5 +390,146 @@ public class EmergenciasControllerTests
 
         result.Should().BeOfType<NotFoundObjectResult>();
         _emergencias.Verify(r => r.AddAsync(It.IsAny<Emergencia>()), Times.Never);
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Sprint 1 T4 - Emergencias: severidad, signos vitales, tratamiento, medico
+    // ─────────────────────────────────────────────────────────────
+
+    private static CrearEmergenciaDto DtoEnPlataformaConSignosVitales(int mascotaId) => new()
+    {
+        MascotaId = mascotaId,
+        EsEnPlataforma = true,
+        FechaAtencion = DateTime.UtcNow,
+        Motivo = "Convulsiones",
+        NivelSeveridad = "Nivel2_Urgente",
+        FrecuenciaCardiaca = 160,
+        SaturacionO2 = 88,
+        Temperatura = 39.2m,
+        EstadoPaciente = "Estable",
+        MedicoACargo = "Dr. Martinez",
+        Diagnostico = "Convulsion generalizada"
+    };
+
+    private static ActualizarEmergenciaDto DtoUpdateConMotivo(string motivo) => new()
+    {
+        Motivo = motivo
+    };
+
+    [Fact]
+    public async Task Create_ConNivelSeveridadInvalido_DebeRetornar400()
+    {
+        var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var veterinario = new Usuario { Id = 3, RolId = 2, VeterinariaId = 10 };
+        _usuarios.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(veterinario);
+
+        var dto = DtoEnPlataforma(1);
+        dto.NivelSeveridad = "999";
+
+        var result = await CreateSut(3).CreateAsync(dto);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _emergencias.Verify(r => r.AddAsync(It.IsAny<Emergencia>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Create_ConSeveridadYSignosVitales_DebeGuardarRoundTripCompleto()
+    {
+        var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var veterinario = new Usuario { Id = 3, RolId = 2, VeterinariaId = 10 };
+        _usuarios.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(veterinario);
+        _emergencias.Setup(r => r.AddAsync(It.IsAny<Emergencia>()))
+            .Callback<Emergencia>(e => e.Id = 77)
+            .ReturnsAsync((Emergencia e) => e);
+
+        var result = await CreateSut(3).CreateAsync(DtoEnPlataformaConSignosVitales(1));
+
+        result.Should().BeOfType<CreatedResult>();
+        _emergencias.Verify(r => r.AddAsync(It.Is<Emergencia>(
+            e => e.NivelSeveridad == "Nivel2_Urgente"
+                 && e.FrecuenciaCardiaca == 160
+                 && e.SaturacionO2 == 88
+                 && e.Temperatura == 39.2m
+                 && e.EstadoPaciente == "Estable"
+                 && e.MedicoACargo == "Dr. Martinez"
+                 && e.Diagnostico == "Convulsion generalizada")), Times.Once);
+    }
+
+    [Fact]
+    public async Task Create_SinNivelSeveridad_DebeUsarNivel1CriticoPorDefecto()
+    {
+        var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var veterinario = new Usuario { Id = 3, RolId = 2, VeterinariaId = 10 };
+        _usuarios.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(veterinario);
+        _emergencias.Setup(r => r.AddAsync(It.IsAny<Emergencia>()))
+            .ReturnsAsync((Emergencia e) => e);
+
+        var result = await CreateSut(3).CreateAsync(DtoEnPlataforma(1));
+
+        result.Should().BeOfType<CreatedResult>();
+        _emergencias.Verify(r => r.AddAsync(It.Is<Emergencia>(
+            e => e.NivelSeveridad == "Nivel1_Critico")), Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_Parcial_ConCamposNull_DebePreservarLosExistentes()
+    {
+        var emergencia = new Emergencia
+        {
+            Id = 1,
+            MascotaId = 1,
+            Motivo = "Convulsiones",
+            NivelSeveridad = "Nivel1_Critico",
+            FrecuenciaCardiaca = 160,
+            MedicoACargo = "Dr. Martinez",
+            FechaAtencion = DateTime.UtcNow
+        };
+        _emergencias.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(emergencia);
+        var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var duenio = new Usuario { Id = 5, RolId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(duenio);
+
+        var result = await CreateSut(5).UpdateAsync(1, DtoUpdateConMotivo("Nuevo motivo"));
+
+        result.Should().BeOfType<NoContentResult>();
+        _emergencias.Verify(r => r.UpdateAsync(It.Is<Emergencia>(
+            e => e.Motivo == "Nuevo motivo"
+                 && e.NivelSeveridad == "Nivel1_Critico"      // preservado (null en DTO)
+                 && e.FrecuenciaCardiaca == 160               // preservado
+                 && e.MedicoACargo == "Dr. Martinez")), Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_ConNivelSeveridadInvalido_DebeRetornar400()
+    {
+        var emergencia = new Emergencia { Id = 1, MascotaId = 1 };
+        _emergencias.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(emergencia);
+        var mascota = MascotaConVeterinaria(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var duenio = new Usuario { Id = 5, RolId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(duenio);
+
+        var dto = DtoUpdateConMotivo("Motivo valido");
+        dto.NivelSeveridad = "999";
+
+        var result = await CreateSut(5).UpdateAsync(1, dto);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _emergencias.Verify(r => r.UpdateAsync(It.IsAny<Emergencia>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Update_ConEmergenciaInexistente_DebeRetornar404()
+    {
+        _emergencias.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Emergencia?)null);
+
+        var result = await CreateSut(5).UpdateAsync(1, DtoUpdateConMotivo("Motivo"));
+
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _emergencias.Verify(r => r.UpdateAsync(It.IsAny<Emergencia>()), Times.Never);
     }
 }
