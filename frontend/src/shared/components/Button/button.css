@@ -27,11 +27,11 @@
 }
 
 .btn--accent {
-  background: #0066e8;
+  background: var(--color-primary);
   color: #ffffff;
 }
 .btn--accent:hover {
-  background: #0044cc;
+  background: var(--color-primary-dark);
 }
 
 .btn--secondary {
@@ -40,8 +40,8 @@
   border: 2px solid #cccccc;
 }
 .btn--secondary:hover {
-  border-color: #0066e8;
-  color: #0066e8;
+  border-color: var(--color-primary);
+  color: var(--color-primary);
 }
 
 .btn--danger {
