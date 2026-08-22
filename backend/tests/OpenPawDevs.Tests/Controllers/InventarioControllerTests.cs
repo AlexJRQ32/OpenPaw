@@ -98,7 +98,10 @@ public class InventarioControllerTests
         };
         _inventario.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(existente);
 
-        var result = await CreateSut().UpdateAsync(7, new ActualizarInventarioDto
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1); // admin: pasa el guard anti-IDOR y llega a la validacion de stock
+
+        var result = await sut.UpdateAsync(7, new ActualizarInventarioDto
         {
             Cantidad = 30
         });
@@ -114,7 +117,10 @@ public class InventarioControllerTests
         var existente = new Inventario { Id = 7, ProductoId = 1, AlmacenId = 2 };
         _inventario.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(existente);
 
-        var result = await CreateSut().DeleteAsync(7);
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1); // admin: pasa el guard anti-IDOR del DELETE (fix A1)
+
+        var result = await sut.DeleteAsync(7);
 
         result.Should().BeOfType<NoContentResult>();
         _inventario.Verify(r => r.DeleteAsync(existente), Times.Once);
@@ -129,10 +135,18 @@ public class InventarioControllerTests
         };
         _inventario.Setup(r => r.GetLowStockAsync()).ReturnsAsync(registros);
 
-        var result = await CreateSut().GetLowStockAsync();
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1); // admin: pasa el guard de propiedad del GET (fix A3)
+
+        var result = await sut.GetLowStockAsync();
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeSameAs(registros);
+        var dto = ok.Value.Should().BeAssignableTo<IEnumerable<InventarioDto>>().Subject.ToList();
+        dto.Should().HaveCount(1);
+        dto[0].Id.Should().Be(7);
+        dto[0].Cantidad.Should().Be(1);
+        dto[0].ProductoId.Should().Be(1);
+        dto[0].AlmacenId.Should().Be(2);
         _inventario.Verify(r => r.GetLowStockAsync(), Times.Once);
     }
 
@@ -155,7 +169,8 @@ public class InventarioControllerTests
         var result = await sut.GetMiosAsync();
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeSameAs(inventario);
+        var dto = ok.Value.Should().BeAssignableTo<IEnumerable<InventarioDto>>().Subject.ToList();
+        dto.Select(d => d.AlmacenId).Should().BeEquivalentTo(new[] { 2, 5 });
         _inventario.Verify(r => r.GetAllAsync(), Times.Never);
     }
 
@@ -173,16 +188,21 @@ public class InventarioControllerTests
         var result = await sut.GetMiosAsync();
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
-        ok.Value.Should().BeSameAs(todo);
+        var dto = ok.Value.Should().BeAssignableTo<IEnumerable<InventarioDto>>().Subject.ToList();
+        dto.Should().HaveCount(1);
+        dto[0].AlmacenId.Should().Be(2);
         _inventario.Verify(r => r.GetAllAsync(), Times.Once);
     }
 
-    private static void SetAuthenticatedUser(InventarioController controller, int userId)
+    private static void SetAuthenticatedUser(InventarioController controller, int userId, int rolId = 1)
     {
-        var identity = new ClaimsIdentity(new[]
+        // "sub" lo lee GetAuthenticatedUserId(); "rol" como tipo de claim para User.IsInRole("1").
+        var claims = new List<Claim>
         {
-            new Claim("sub", userId.ToString())
-        }, "Test");
+            new("sub", userId.ToString()),
+            new("rol", rolId.ToString())
+        };
+        var identity = new ClaimsIdentity(claims, "Test", ClaimTypes.NameIdentifier, "rol");
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
