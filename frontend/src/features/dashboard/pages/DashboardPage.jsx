@@ -12,27 +12,38 @@ import { RegistrationForm } from '../../veterinary-registration/components/Regis
 import { StoreRegistrationForm } from '../../store-registration/components/StoreRegistrationForm'
 import './DashboardPage.css'
 
+// T24 — Stats reales de /usuarios/me/stats por rol (UsuariosController):
+//   admin(1): vets | stores | pending | users
+//   vet(2): veterinarias | citas | mascotas | pendientes
+//   almacén(3): almacenes | pendientes
+//   cliente(4): mascotas | citas | veterinarias
+// El wireframe pide tendencia (+%), cupo diario de citas y traslados "en
+// ruta", pero el backend no expone series históricas, capacidad ni traslados:
+// esas cards se mapean a los stats reales de cada rol y sus adornos se
+// omiten (sin datos inventados). Roles sin cierto stat simplemente muestran
+// menos cards. `alert` marca la card de solicitudes pendientes —única fuente
+// real de alertas— que solo se pinta crítica cuando el valor es > 0.
 const STAT_CONFIG = {
   1: [
-    { key: 'vets', icon: 'fas fa-clinic-medical', color: 'blue', label: 'Veterinarias' },
-    { key: 'stores', icon: 'fas fa-warehouse', color: 'purple', label: 'Almacenes' },
-    { key: 'pending', icon: 'fas fa-hourglass-half', color: 'orange', label: 'Pendientes' },
-    { key: 'users', icon: 'fas fa-users', color: 'green', label: 'Usuarios activos' },
+    { key: 'vets', tone: 'primary', icon: 'local_hospital', label: 'Veterinarias activas' },
+    { key: 'stores', tone: 'tertiary', icon: 'inventory_2', label: 'Almacenes activos' },
+    { key: 'users', tone: 'secondary', icon: 'group', label: 'Usuarios activos' },
+    { key: 'pending', tone: 'error', icon: 'warning', chipIcon: 'emergency', label: 'Solicitudes pendientes', alert: true },
   ],
   2: [
-    { key: 'veterinarias', icon: 'fas fa-clinic-medical', color: 'blue', label: 'Mis veterinarias' },
-    { key: 'citas', icon: 'fas fa-calendar-check', color: 'green', label: 'Citas registradas' },
-    { key: 'mascotas', icon: 'fas fa-paw', color: 'purple', label: 'Mascotas atendidas' },
-    { key: 'pendientes', icon: 'fas fa-hourglass-half', color: 'orange', label: 'Solicitudes pendientes' },
+    { key: 'mascotas', tone: 'primary', icon: 'pets', label: 'Mascotas atendidas' },
+    { key: 'citas', tone: 'tertiary', icon: 'calendar_month', label: 'Citas registradas' },
+    { key: 'veterinarias', tone: 'secondary', icon: 'local_hospital', label: 'Mis veterinarias' },
+    { key: 'pendientes', tone: 'error', icon: 'warning', chipIcon: 'emergency', label: 'Solicitudes pendientes', alert: true },
   ],
   3: [
-    { key: 'almacenes', icon: 'fas fa-warehouse', color: 'purple', label: 'Mis almacenes' },
-    { key: 'pendientes', icon: 'fas fa-hourglass-half', color: 'orange', label: 'Solicitudes pendientes' },
+    { key: 'almacenes', tone: 'tertiary', icon: 'inventory_2', label: 'Mis almacenes' },
+    { key: 'pendientes', tone: 'error', icon: 'warning', chipIcon: 'emergency', label: 'Solicitudes pendientes', alert: true },
   ],
   4: [
-    { key: 'mascotas', icon: 'fas fa-paw', color: 'blue', label: 'Mis mascotas' },
-    { key: 'citas', icon: 'fas fa-calendar-check', color: 'green', label: 'Mis citas' },
-    { key: 'veterinarias', icon: 'fas fa-clinic-medical', color: 'purple', label: 'Veterinarias vinculadas' },
+    { key: 'mascotas', tone: 'primary', icon: 'pets', label: 'Mis mascotas' },
+    { key: 'citas', tone: 'tertiary', icon: 'calendar_month', label: 'Mis citas' },
+    { key: 'veterinarias', tone: 'secondary', icon: 'local_hospital', label: 'Veterinarias vinculadas' },
   ],
 }
 
