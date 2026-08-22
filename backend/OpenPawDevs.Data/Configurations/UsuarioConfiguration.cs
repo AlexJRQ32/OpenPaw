@@ -42,6 +42,25 @@ public class UsuarioConfiguration : IEntityTypeConfiguration<Usuario>
         builder.Property(u => u.FotoUrl)
             .HasMaxLength(500);
 
+        // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios.
+        builder.Property(u => u.IdCorporativo)
+            .HasMaxLength(20);
+
+        // M1 (Code Review): indice unico sobre IdCorporativo para que la generacion
+        // CountByRolAsync + 1 no pueda producir duplicados bajo concurrencia.
+        // (La migracion AddUniqueIndexIdCorporativo limpia duplicados previos antes de crear el indice.)
+        builder.HasIndex(u => u.IdCorporativo)
+            .IsUnique();
+
+        builder.Property(u => u.Especialidad)
+            .HasMaxLength(100);
+
+        builder.Property(u => u.Sede)
+            .HasMaxLength(60);
+
+        builder.Property(u => u.Estado)
+            .HasMaxLength(20);
+
         builder.Property(u => u.RefreshToken)
             .HasMaxLength(500);
 

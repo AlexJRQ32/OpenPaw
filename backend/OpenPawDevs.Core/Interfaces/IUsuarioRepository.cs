@@ -16,4 +16,7 @@ public interface IUsuarioRepository : IGenericRepository<Usuario>
 
     /// <summary> PBI 53 - Gestión de funcionarios: cantidad de usuarios activos con un rol dado </summary>
     Task<int> CountActivosByRolAsync(int rolId);
+
+    /// <summary> Sprint 1 - Tarea 9: cantidad total de usuarios con un rol dado (secuencia del IdCorporativo) </summary>
+    Task<int> CountByRolAsync(int rolId);
 }

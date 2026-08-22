@@ -19,4 +19,10 @@ public class UsuarioDto
     public int? VeterinariaId { get; set; }
     public int? AlmacenId { get; set; }
     public string? ComercioNombre { get; set; }
+
+    // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios.
+    public string? IdCorporativo { get; set; }
+    public string? Especialidad { get; set; }
+    public string? Sede { get; set; }
+    public string? Estado { get; set; }
 }
