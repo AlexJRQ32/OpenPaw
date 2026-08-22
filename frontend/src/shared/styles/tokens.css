@@ -171,6 +171,7 @@
   --tracking-tight: -0.02em;
   --tracking-tighter: -0.01em;
   --tracking-wide: 0.05em;
+  --tracking-widest: 0.1em; /* T28 — labels uppercase del wireframe de Perfil */
 
   /* Font sizes (legacy — compatibilidad, actualizados al sistema) */
   --fs-xs: 11px;
