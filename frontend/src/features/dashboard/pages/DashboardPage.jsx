@@ -7,6 +7,7 @@ import { AppShell } from '../../../shared/components/AppShell/AppShell'
 import { Badge } from '../../../shared/components/Badge/Badge'
 import { Button } from '../../../shared/components/Button/Button'
 import { Modal } from '../../../shared/components/Modal/Modal'
+import { Icon } from '../../../shared/components/Icon/Icon'
 import { StatCards } from '../components/StatCards'
 import { RegistrationForm } from '../../veterinary-registration/components/RegistrationForm'
 import { StoreRegistrationForm } from '../../store-registration/components/StoreRegistrationForm'
@@ -87,11 +88,16 @@ export function DashboardPage() {
       ? ` Hay ${alertasPendientes} ${alertasPendientes === 1 ? 'alerta' : 'alertas'} que requieren tu atención.`
       : ' No hay alertas pendientes por ahora.'
 
+  // T25 — Acciones rápidas (wireframe dashboard_openpaw). Se conservan las
+  // mismas acciones y navegaciones por rol que ya existían (modal vet/store,
+  // link aprobaciones solo admin, funcionarios con openCreate); solo cambia
+  // la presentación: icono Material Symbols en tile tintado por tono,
+  // descripción y CTA "acción →" revelado al hover/focus.
   const actions = [
-    { key: 'vet', icon: 'fas fa-hospital', color: 'blue', title: 'Registrar veterinaria', desc: 'Solicita el registro de una nueva veterinaria.', action: () => setModal('vet') },
-    { key: 'store', icon: 'fas fa-warehouse', color: 'orange', title: 'Registrar almacen', desc: 'Registra un nuevo almacen veterinario.', action: () => setModal('store') },
-    { key: 'aprob', icon: 'fas fa-check-circle', color: 'green', title: 'Aprobar solicitudes', desc: 'Revisa y aprueba solicitudes pendientes.', adminOnly: true, to: '/dashboard/aprobaciones' },
-    { key: 'func', icon: 'fas fa-user-cog', color: 'gray', title: 'Gestionar personal', desc: 'Administra funcionarios y sus roles.', funcionariosOnly: true, action: () => navigate('/dashboard/funcionarios', { state: { openCreate: true } }) },
+    { key: 'vet', icon: 'add_business', tone: 'primary', title: 'Registrar veterinaria', desc: 'Solicita el registro de una nueva veterinaria en la red.', cta: 'Comenzar registro', action: () => setModal('vet') },
+    { key: 'store', icon: 'inventory_2', tone: 'tertiary', title: 'Registrar almacén', desc: 'Registra un nuevo almacén veterinario de insumos.', cta: 'Comenzar registro', action: () => setModal('store') },
+    { key: 'aprob', icon: 'fact_check', tone: 'success', title: 'Aprobar solicitudes', desc: 'Revisa y aprueba las solicitudes pendientes.', cta: 'Revisar solicitudes', adminOnly: true, to: '/dashboard/aprobaciones' },
+    { key: 'func', icon: 'manage_accounts', tone: 'neutral', title: 'Gestionar personal', desc: 'Administra funcionarios y sus roles de acceso.', cta: 'Administrar equipo', funcionariosOnly: true, action: () => navigate('/dashboard/funcionarios', { state: { openCreate: true } }) },
   ].filter(
     (a) => (!a.adminOnly || userIsAdmin) && (!a.funcionariosOnly || userCanManageFuncionarios)
   )
@@ -128,23 +134,33 @@ export function DashboardPage() {
           </div>
         </section>
         {statsLoading ? <div className="spinner-wrap"><span className="spinner" /></div> : <StatCards config={STAT_CONFIG[roleId]} data={stats} />}
-        <h2 className="dashboard-section-title">Acciones rapidas</h2>
-        <div className={'dashboard-actions' + (actions.length >= 4 ? ' dashboard-actions--grid' : '')}>
-          {actions.map((a) =>
-            a.to ? (
-              <Link key={a.key} to={a.to} className="action-card">
-                <div className={`action-icon action-icon--${a.color}`}><i className={a.icon}></i></div>
-                <div className="action-title">{a.title}</div>
-                <div className="action-desc">{a.desc}</div>
-              </Link>
-            ) : (
-              <button key={a.key} className="action-card" onClick={a.action} style={{border:'none',width:'100%',textAlign:'left',font:'inherit',cursor:'pointer'}}>
-                <div className={`action-icon action-icon--${a.color}`}><i className={a.icon}></i></div>
-                <div className="action-title">{a.title}</div>
-                <div className="action-desc">{a.desc}</div>
-              </button>
+        <h2 className="dashboard-section-title">Acciones rápidas</h2>
+        <div className="dashboard-actions">
+          {actions.map((a) => {
+            const cardProps = {
+              className: `action-card action-card--${a.tone}`,
+              'aria-label': `${a.title}. ${a.desc}`,
+            }
+            const content = (
+              <>
+                <span className="action-icon"><Icon name={a.icon} size={24} /></span>
+                <span className="action-body">
+                  <span className="action-title">{a.title}</span>
+                  <span className="action-desc">{a.desc}</span>
+                </span>
+                {/* aria-hidden: el CTA repite la info del aria-label de la card */}
+                <span className="action-cta" aria-hidden="true">
+                  {a.cta}
+                  <Icon name="arrow_forward" size={18} />
+                </span>
+              </>
             )
-          )}
+            return a.to ? (
+              <Link key={a.key} to={a.to} {...cardProps}>{content}</Link>
+            ) : (
+              <button key={a.key} type="button" onClick={a.action} {...cardProps}>{content}</button>
+            )
+          })}
         </div>
       </div>
 
