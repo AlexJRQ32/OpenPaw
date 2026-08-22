@@ -1,8 +1,8 @@
 # Build outputs
 backend/publish-selfcontained/
 backend/publish-deploy/
-backend/*/bin/
-backend/*/obj/
+backend/**/bin/
+backend/**/obj/
 
 # Dependencies
 node_modules/
