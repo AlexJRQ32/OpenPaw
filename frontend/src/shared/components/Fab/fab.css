@@ -1,0 +1,94 @@
+@import "../../styles/tokens.css";
+
+/* ==========================================================================
+   Fab — OpenPaw Design System (Material 3, Task #17)
+   --------------------------------------------------------------------------
+   FAB circular de 56px (wireframe expediente_openpaw: "+" flotante abajo a
+   la derecha, bg primary, glow). Sombra level-2 en reposo, glow + lift al hover.
+   ========================================================================== */
+
+.fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  flex: none;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  isolation: isolate;
+  box-shadow: var(--shadow-level-2);
+  transition:
+    background-color var(--transition-normal),
+    color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    transform var(--transition-fast);
+}
+
+.fab:focus-visible {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+.fab:hover {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: var(--shadow-glow), var(--shadow-level-2);
+}
+
+.fab:active {
+  transform: translateY(0) scale(0.96);
+}
+
+.fab__icon {
+  flex: none;
+  line-height: 1;
+}
+
+/* ------------------------------------------------------------- posiciones */
+.fab--bottom-right {
+  position: fixed;
+  right: var(--space-md); /* 24px */
+  bottom: var(--space-md);
+  z-index: 50;
+}
+.fab--bottom-left {
+  position: fixed;
+  left: var(--space-md);
+  bottom: var(--space-md);
+  z-index: 50;
+}
+.fab--static {
+  position: relative;
+}
+
+/* ---------------------------------------------------------------- colores */
+.fab--primary {
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+}
+.fab--secondary {
+  background-color: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+.fab--secondary:hover {
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--md-secondary) 35%, transparent),
+    var(--shadow-level-2);
+}
+.fab--error {
+  background-color: var(--md-error);
+  color: var(--md-on-error);
+}
+.fab--error:hover {
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--md-error) 35%, transparent),
+    var(--shadow-level-2);
+}
+
+/* --------------------------------------------------------------- disabled */
+.fab:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: var(--shadow-level-1) !important;
+}
