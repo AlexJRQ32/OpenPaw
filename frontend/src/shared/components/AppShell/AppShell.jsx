@@ -1,10 +1,27 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { useAuth } from '../../../features/auth/context/AuthContext'
-import { API_BASE_URL, canManageFuncionarios, isAdmin, ROLE_IDS } from '../../../constants'
+import {
+  API_BASE_URL,
+  canManageFuncionarios,
+  getUserRoleId,
+  isAdmin,
+  ROLE_IDS,
+  ROLE_LABELS,
+} from '../../../constants'
 import { authFetch } from '../../../shared/utils/api'
 import { Icon } from '../Icon/Icon'
+import { Badge } from '../Badge/Badge'
 import './appshell.css'
+
+/* Variante M3 del Badge de rol en el header (tarea #18):
+   Administrador -> primary | Veterinaria -> success | Almacen -> warning | Cliente -> neutral */
+const ROLE_BADGE_VARIANTS = {
+  [ROLE_IDS.ADMINISTRADOR]: 'primary',
+  [ROLE_IDS.VETERINARIA]: 'success',
+  [ROLE_IDS.ALMACEN]: 'warning',
+  [ROLE_IDS.CLIENTE]: 'neutral',
+}
 
 export function AppShell({ children }) {
   const { user, logout } = useAuth()
@@ -13,8 +30,13 @@ export function AppShell({ children }) {
   const userIsAdmin = isAdmin(user)
   const userCanManageFuncionarios = canManageFuncionarios(user)
 
+  /* Rol resuelto una sola vez (misma semantica que el gating existente) */
+  const roleId = getUserRoleId(user)
+  const roleLabel = ROLE_LABELS[roleId]
+
   const [pendingCount, setPendingCount] = useState(0)
   const [pendingLoading, setPendingLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     let cancelled = false
@@ -56,6 +78,13 @@ export function AppShell({ children }) {
     navigate('/login', { replace: true })
   }
 
+  /* Buscador global: navegacion basica a mascotas con query param */
+  const handleSearch = (event) => {
+    event.preventDefault()
+    const query = search.trim()
+    if (query) navigate(`/dashboard/mascotas?q=${encodeURIComponent(query)}`)
+  }
+
   return (
     <div className="app-shell">
       <header className="app-topbar">
@@ -65,15 +94,33 @@ export function AppShell({ children }) {
             <span className="topbar-title">OpenPaw</span>
           </Link>
         </div>
+        <form className="topbar-search" role="search" onSubmit={handleSearch}>
+          <Icon name="search" size={20} className="topbar-search-icon" />
+          <input
+            type="search"
+            className="topbar-search-input"
+            placeholder="Buscar mascota o dueño..."
+            aria-label="Buscar mascota o dueño"
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+          />
+        </form>
         <div className="topbar-right">
-<div className="topbar-user-dropdown">
+          <div className="topbar-user-dropdown">
             <div className="topbar-user">
+              <span className="topbar-user-info">
+                <span className="topbar-name">{user?.nombre || user?.name || "Usuario"}</span>
+                {roleLabel && (
+                  <Badge variant={ROLE_BADGE_VARIANTS[roleId]} className="topbar-role-badge">
+                    {roleLabel}
+                  </Badge>
+                )}
+              </span>
               {user?.fotoUrl ? (
                 <img src={user.fotoUrl} alt="" className="topbar-avatar topbar-avatar-img" referrerPolicy="no-referrer" />
               ) : (
                 <span className="topbar-avatar">{(user?.nombre || user?.name)?.[0]?.toUpperCase() || 'U'}</span>
               )}
-              <span className="topbar-name">{user?.nombre || user?.name || "Usuario"}</span>
               <Icon name="expand_more" className="topbar-chevron" />
             </div>
             <div className="topbar-dropdown">
@@ -110,25 +157,25 @@ export function AppShell({ children }) {
               <Icon name="calendar_today" />
               Citas
             </Link>
-            {Number(user?.rolId ?? user?.rol ?? user?.role) !== ROLE_IDS.ALMACEN && (
+            {roleId !== ROLE_IDS.ALMACEN && (
               <Link to="/dashboard/traslados" className={isActive('/dashboard/traslados')}>
                 <Icon name="local_shipping" />
                 Traslados
               </Link>
             )}
-            {(Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.CLIENTE || Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.VETERINARIA) && (
+            {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA) && (
               <Link to="/dashboard/emergencias" className={isActive('/dashboard/emergencias')}>
                 <Icon name="emergency" />
                 Emergencias
               </Link>
             )}
-            {Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.CLIENTE && (
+            {roleId === ROLE_IDS.CLIENTE && (
               <Link to="/dashboard/aportes" className={isActive('/dashboard/aportes')}>
                 <Icon name="folder_shared" />
                 Expediente
               </Link>
             )}
-            {(userIsAdmin || Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.VETERINARIA) && (
+            {(userIsAdmin || roleId === ROLE_IDS.VETERINARIA) && (
               <Link to="/dashboard/servicios" className={isActive('/dashboard/servicios')}>
                 <Icon name="medical_services" />
                 Servicios
@@ -157,7 +204,7 @@ export function AppShell({ children }) {
           </nav>
           <div className="sidebar-spacer" />
           <Link to="/" className="sidebar-link sidebar-link--home">
-            <Icon name="home" />
+            <Icon name="logout" />
             Volver al inicio
           </Link>
         </aside>
@@ -192,19 +239,19 @@ export function AppShell({ children }) {
           <Icon name="calendar_today" />
           <span>Citas</span>
         </Link>
-        {Number(user?.rolId ?? user?.rol ?? user?.role) !== ROLE_IDS.ALMACEN && (
+        {roleId !== ROLE_IDS.ALMACEN && (
           <Link to="/dashboard/traslados" className={'bottom-nav-link' + (location.pathname === '/dashboard/traslados' ? ' active' : '')}>
             <Icon name="local_shipping" />
             <span>Traslados</span>
           </Link>
         )}
-        {(Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.CLIENTE || Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.VETERINARIA) && (
+        {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA) && (
           <Link to="/dashboard/emergencias" className={'bottom-nav-link' + (location.pathname === '/dashboard/emergencias' ? ' active' : '')}>
             <Icon name="emergency" />
             <span>Emergencias</span>
           </Link>
         )}
-        {Number(user?.rolId ?? user?.rol ?? user?.role) === ROLE_IDS.CLIENTE && (
+        {roleId === ROLE_IDS.CLIENTE && (
           <Link to="/dashboard/aportes" className={'bottom-nav-link' + (location.pathname === '/dashboard/aportes' ? ' active' : '')}>
             <Icon name="folder_shared" />
             <span>Expediente</span>
