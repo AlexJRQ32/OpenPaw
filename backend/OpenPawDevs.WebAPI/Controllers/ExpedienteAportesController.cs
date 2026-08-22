@@ -27,6 +27,9 @@ public class ExpedienteAportesController : ControllerBase
     private int UsuarioAutenticadoId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    private bool EsFuncionario =>
+        User.IsInRole("1") || User.IsInRole("2") || User.IsInRole("3");
+
     [HttpGet]
     public async Task<IActionResult> GetByMascotaAsync([FromQuery] int mascotaId)
     {
@@ -34,8 +37,8 @@ public class ExpedienteAportesController : ControllerBase
         if (mascota == null)
             return NotFound(new { mensaje = $"Mascota con ID {mascotaId} no encontrada" });
 
-        // Solo el propietario de la mascota puede ver sus aportes
-        if (mascota.DuenioId != UsuarioAutenticadoId)
+        // Visible para el dueno de la mascota y para funcionarios (admin/vet/almacen)
+        if (!EsFuncionario && mascota.DuenioId != UsuarioAutenticadoId)
             return Forbid();
 
         var aportes = await _aporteRepository.GetByMascotaIdAsync(mascotaId);

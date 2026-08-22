@@ -169,8 +169,8 @@ export function AppShell({ children }) {
                 Emergencias
               </Link>
             )}
-            {roleId === ROLE_IDS.CLIENTE && (
-              <Link to="/dashboard/aportes" className={isActive('/dashboard/aportes')}>
+            {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA || userIsAdmin) && (
+              <Link to="/dashboard/expediente" className={isActive('/dashboard/expediente')}>
                 <Icon name="folder_shared" />
                 Expediente
               </Link>
@@ -251,8 +251,8 @@ export function AppShell({ children }) {
             <span>Emergencias</span>
           </Link>
         )}
-        {roleId === ROLE_IDS.CLIENTE && (
-          <Link to="/dashboard/aportes" className={'bottom-nav-link' + (location.pathname === '/dashboard/aportes' ? ' active' : '')}>
+        {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA || userIsAdmin) && (
+          <Link to="/dashboard/expediente" className={'bottom-nav-link' + (location.pathname === '/dashboard/expediente' ? ' active' : '')}>
             <Icon name="folder_shared" />
             <span>Expediente</span>
           </Link>
