@@ -22,29 +22,37 @@ public class ExpedienteAportesControllerTests
     private readonly Mock<IAporteExpedienteRepository> _aportes = new();
     private readonly Mock<IMascotaRepository> _mascotas = new();
 
-    private ExpedienteAportesController CreateSut(int? usuarioAutenticadoId = null)
+    private ExpedienteAportesController CreateSut(int? usuarioAutenticadoId = null, params string[] roles)
     {
         var controller = new ExpedienteAportesController(_aportes.Object, _mascotas.Object);
 
         if (usuarioAutenticadoId.HasValue)
-            SetAuthenticatedUser(controller, usuarioAutenticadoId.Value);
+            SetAuthenticatedUser(controller, usuarioAutenticadoId.Value, roles);
 
         return controller;
     }
 
-    private static void SetAuthenticatedUser(ControllerBase controller, int userId)
+    private static void SetAuthenticatedUser(ControllerBase controller, int userId, params string[] roles)
     {
-        var identity = new ClaimsIdentity(new[]
+        var claims = new List<Claim>
         {
-            new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-        }, "Test");
+            new(ClaimTypes.NameIdentifier, userId.ToString())
+        };
+        claims.AddRange(roles.Select(r => new Claim(ClaimTypes.Role, r)));
+
+        var identity = new ClaimsIdentity(claims, "Test");
         controller.ControllerContext = new ControllerContext
         {
             HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(identity) }
         };
     }
 
-    private static Mascota MascotaDe(int mascotaId, int duenioId) => new() { Id = mascotaId, DuenioId = duenioId };
+    private static Mascota MascotaDe(int mascotaId, int duenioId, int? veterinariaId = null) => new()
+    {
+        Id = mascotaId,
+        DuenioId = duenioId,
+        VeterinariaId = veterinariaId
+    };
 
     private static CrearAporteExpedienteDto DtoValido(int mascotaId) => new()
     {
@@ -93,6 +101,48 @@ public class ExpedienteAportesControllerTests
 
         var ok = result.Should().BeOfType<OkObjectResult>().Subject;
         ok.Value.Should().BeSameAs(aportes);
+    }
+
+    [Fact]
+    public async Task GetByMascota_ComoVeterinario_DebeRetornarListaDeAportes()
+    {
+        var mascota = MascotaDe(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var aportes = new List<AporteExpediente> { new() { Id = 1, MascotaId = 1, PropietarioId = 5 } };
+        _aportes.Setup(r => r.GetByMascotaIdAsync(1)).ReturnsAsync(aportes);
+
+        var result = await CreateSut(999, "2").GetByMascotaAsync(1);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.Value.Should().BeSameAs(aportes);
+        _aportes.Verify(r => r.GetByMascotaIdAsync(1), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetByMascota_ComoAdministrador_DebeRetornarListaDeAportes()
+    {
+        var mascota = MascotaDe(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+        var aportes = new List<AporteExpediente> { new() { Id = 1, MascotaId = 1, PropietarioId = 5 } };
+        _aportes.Setup(r => r.GetByMascotaIdAsync(1)).ReturnsAsync(aportes);
+
+        var result = await CreateSut(999, "1").GetByMascotaAsync(1);
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.Value.Should().BeSameAs(aportes);
+        _aportes.Verify(r => r.GetByMascotaIdAsync(1), Times.Once);
+    }
+
+    [Fact]
+    public async Task GetByMascota_ComoClienteSinRelacion_DebeRetornar403()
+    {
+        var mascota = MascotaDe(1, duenioId: 5, veterinariaId: 10);
+        _mascotas.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(mascota);
+
+        var result = await CreateSut(999, "4").GetByMascotaAsync(1);
+
+        result.Should().BeOfType<ForbidResult>();
+        _aportes.Verify(r => r.GetByMascotaIdAsync(It.IsAny<int>()), Times.Never);
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -24,6 +24,10 @@ import { Icon } from '../Icon/Icon'
  *   ubicacion   Lugar (se muestra con icono location_on).
  *   tipo        primary (default) | secondary | tertiary | error — color de nodo y badge.
  *   tipoLabel   Texto del badge pill (opcional). Ej: 'Consulta General'.
+ *   detalles    Array de { label, valor } — mini-rejilla de datos clínicos
+ *               (opcional; tarea #29: vitales de emergencias, diagnóstico y
+ *               medicamentos de aportes). Se renderiza entre descripción y
+ *               adjuntos.
  *   adjuntos    Array de { nombre, icono? } o strings — chips al pie de la card.
  *
  * Semántica: <ol> con <li> por evento. Iconos decorativos con aria-hidden.
@@ -85,6 +89,16 @@ export function Timeline({ items = [], ariaLabel = 'Línea de tiempo', className
                 )}
                 <h3 className="timeline__titulo">{item.titulo}</h3>
                 {item.descripcion && <p className="timeline__descripcion">{item.descripcion}</p>}
+                {item.detalles?.length > 0 && (
+                  <dl className="timeline__detalles" aria-label="Detalles clínicos">
+                    {item.detalles.map((detalle, i) => (
+                      <div key={i} className="timeline__detalle">
+                        <dt className="timeline__detalle-label">{detalle.label}</dt>
+                        <dd className="timeline__detalle-valor">{detalle.valor}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                )}
                 {item.adjuntos?.length > 0 && (
                   <footer className="timeline__adjuntos">
                     <span className="timeline__adjuntos-label">Archivos adjuntos:</span>

@@ -69,4 +69,26 @@ describe('Timeline', () => {
     )
     expect(screen.getByText('Evento custom')).toBeInTheDocument()
   })
+
+  test('renderiza la mini-rejilla de detalles clínicos cuando el item los trae', () => {
+    render(
+      <Timeline
+        items={[{
+          icono: 'emergency',
+          titulo: 'Emergencia',
+          tipo: 'error',
+          tipoLabel: 'Emergencia',
+          detalles: [
+            { label: 'Temp.', valor: '38.6°C' },
+            { label: 'FC', valor: '95 lpm' },
+          ],
+        }]}
+      />
+    )
+    expect(screen.getByLabelText('Detalles clínicos')).toBeInTheDocument()
+    expect(screen.getByText('Temp.')).toBeInTheDocument()
+    expect(screen.getByText('38.6°C')).toBeInTheDocument()
+    expect(screen.getByText('FC')).toBeInTheDocument()
+    expect(screen.getByText('95 lpm')).toBeInTheDocument()
+  })
 })
