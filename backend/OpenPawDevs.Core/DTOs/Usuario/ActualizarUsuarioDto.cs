@@ -39,4 +39,15 @@ public class ActualizarUsuarioDto
     [StringLength(500)]
     public string? FotoUrl { get; set; }
 
+    // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios (update parcial: null preserva).
+    // Estado validado en el controller con Enum.TryParse+IsDefined -> 400 y
+    // normalizado a enum.ToString() (patron tarea 7).
+    [StringLength(100)]
+    public string? Especialidad { get; set; }
+
+    [StringLength(60)]
+    public string? Sede { get; set; }
+
+    [StringLength(20)]
+    public string? Estado { get; set; }
 }

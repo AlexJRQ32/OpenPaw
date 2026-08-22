@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OpenPawDevs.Data.Data;
 
@@ -11,9 +12,11 @@ using OpenPawDevs.Data.Data;
 namespace OpenPawDevs.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260822001351_AddFuncionarioCampos")]
+    partial class AddFuncionarioCampos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -973,10 +976,6 @@ namespace OpenPawDevs.Data.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
-
-                    b.HasIndex("IdCorporativo")
-                        .IsUnique()
-                        .HasFilter("[IdCorporativo] IS NOT NULL");
 
                     b.HasIndex("RolId");
 
