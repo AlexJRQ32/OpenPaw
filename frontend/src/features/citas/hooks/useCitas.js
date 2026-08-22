@@ -44,6 +44,36 @@ const ESTADO_LABEL = {
   Cancelada: 'Cancelada',
 }
 
+/* Tipo de cita (backend TipoCitaEnum, tarea #5): Rutina | Especialista | Urgencia.
+   El CitaDto ya lo expone como string (c.tipoCita); aquí se normaliza y se mapea
+   a un "tono" del design system (dot / barra de color del wireframe de citas). */
+const TIPO_CITA_TONE = {
+  Rutina: 'primary',
+  Especialista: 'secondary',
+  Urgencia: 'error',
+}
+
+const TIPO_CITA_LABEL = {
+  Rutina: 'Rutina',
+  Especialista: 'Especialista',
+  Urgencia: 'Urgencia',
+}
+
+function normalizarTipoCita(tipo) {
+  if (!tipo) return 'Rutina'
+  const t = String(tipo).trim()
+  const capitalizada = t.charAt(0).toUpperCase() + t.slice(1).toLowerCase()
+  return TIPO_CITA_LABEL[capitalizada] ?? t
+}
+
+function tipoCitaDe(cita) {
+  return normalizarTipoCita(cita?.tipoCita ?? cita?.TipoCita)
+}
+
+function toneTipoCita(tipo) {
+  return TIPO_CITA_TONE[normalizarTipoCita(tipo)] ?? 'primary'
+}
+
 export function useCitas() {
   const { user } = useAuth()
   const userId = Number(user?.sub ?? user?.id)
@@ -315,6 +345,20 @@ export function useCitas() {
       })
   }
 
+  /* Citas de una fecha concreta (para el panel "Citas para hoy" / día seleccionado).
+     Ignora Canceladas y fechas inválidas; se ordena por hora en la página. */
+  const citasEnFecha = (fecha) => {
+    if (!fecha) return []
+    const inicio = new Date(fecha.getFullYear(), fecha.getMonth(), fecha.getDate())
+    const fin = new Date(inicio.getFullYear(), inicio.getMonth(), inicio.getDate() + 1)
+    return citas
+      .filter((c) => c.estado !== 'Cancelada')
+      .filter((c) => {
+        const f = new Date(c.fechaHora)
+        return !Number.isNaN(f.getTime()) && f >= inicio && f < fin
+      })
+  }
+
   const categoriasFiltro = Array.from(
     new Set(citas.map((c) => c.categoria).filter((c) => c != null))
   ).sort((a, b) => a.localeCompare(b, 'es'))
@@ -329,6 +373,7 @@ export function useCitas() {
     citas,
     mesFiltradas,
     citasDelDia,
+    citasEnFecha,
     filtradasPorEstado,
     mascotas,
     veterinarias,
@@ -365,5 +410,9 @@ export function useCitas() {
     ejecutarConfirmacion,
     ESTADO_VARIANT,
     ESTADO_LABEL,
+    TIPO_CITA_TONE,
+    TIPO_CITA_LABEL,
+    tipoCitaDe,
+    toneTipoCita,
   }
 }
