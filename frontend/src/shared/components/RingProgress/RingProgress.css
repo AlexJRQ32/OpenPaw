@@ -1,0 +1,54 @@
+@import "../../styles/tokens.css";
+
+/* ==========================================================================
+   RingProgress — OpenPaw Design System (Material 3, Task #16)
+   --------------------------------------------------------------------------
+   Anillo circular SVG: track surface-container-highest, progreso con
+   stroke-linecap round, rotado -90° (inicio a las 12h), transición de
+   stroke-dashoffset 1s ease-out (patrón wireframe "Índice de Salud").
+   ========================================================================== */
+
+.ringprogress {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ringprogress__svg {
+  display: block;
+  transform: rotate(-90deg);
+  overflow: visible; /* no recorta el stroke-linecap round */
+}
+
+.ringprogress__track {
+  stroke: var(--md-surface-container-highest);
+}
+
+.ringprogress__fill {
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.ringprogress__content {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  pointer-events: none;
+  text-align: center;
+}
+
+.ringprogress__label {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: var(--fw-bold);
+  line-height: 1.1;
+}
+
+.ringprogress__sublabel {
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
