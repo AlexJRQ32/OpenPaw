@@ -294,7 +294,7 @@
   width: 12px;
   height: 12px;
   border: 2px solid #d1d5db;
-  border-top-color: #0066e8;
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: sidebar-spin 0.7s linear infinite;
   position: absolute;
@@ -303,7 +303,7 @@
   margin-top: -6px;
 }
 @keyframes sidebar-spin { to { transform: rotate(360deg); } }
-.spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #e0e0e0; border-top-color: #0066e8; border-radius: 50%; animation: sidebar-spin 0.7s linear infinite; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2.5px solid #e0e0e0; border-top-color: var(--color-primary); border-radius: 50%; animation: sidebar-spin 0.7s linear infinite; }
 .spinner-wrap { display: flex; justify-content: center; padding: 40px; }
 .sidebar-divider {
   height: 1px;

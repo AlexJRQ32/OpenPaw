@@ -1,15 +1,98 @@
-:root {
-  /* Primary palette */
-  --color-primary: #0066e8;
-  --color-primary-hover: #0052b8;
-  --color-primary-light: #dfeaff;
-  --color-primary-lighter: #b3d4ff;
-  --color-primary-dark: #0044cc;
-  --color-accent: #0066e8;
-  --color-accent-hover: #0052b8;
-  --color-accent-light: rgba(0, 102, 232, 0.1);
+/* ==========================================================================
+   OpenPaw Design System — Tokens
+   Fuente de verdad: openpaw_spatial_system/DESIGN.md (Material 3, Spatial UI)
+   Estrategia:
+     - Tokens Material 3 completos con prefijo --md-* (paleta de 46 colores).
+     - Tokens legacy --color-* / --fs-* / --space-* / --radius-* / --shadow-*
+       MANTENIDOS para compatibilidad con todas las páginas existentes,
+       con sus valores actualizados al nuevo sistema donde corresponde.
+     - Escala tipográfica completa (headline-xl → caption) con pesos,
+       line-heights y letter-spacing del DESIGN.md.
+     - Glassmorphism, sombras por niveles y glow de botón primario.
+   ========================================================================== */
 
-  /* Neutral palette */
+:root {
+  /* ==========================================================================
+     MATERIAL 3 — PALETA COMPLETA (46 tokens) — DESIGN.md frontmatter
+     ========================================================================== */
+
+  /* Surface */
+  --md-surface: #f9f9f9;
+  --md-surface-dim: #dadada;
+  --md-surface-bright: #f9f9f9;
+  --md-surface-container-lowest: #ffffff;
+  --md-surface-container-low: #f3f3f3;
+  --md-surface-container: #eeeeee;
+  --md-surface-container-high: #e8e8e8;
+  --md-surface-container-highest: #e2e2e2;
+  --md-on-surface: #1a1c1c;
+  --md-on-surface-variant: #424654;
+  --md-surface-variant: #e2e2e2;
+  --md-inverse-surface: #2f3131;
+  --md-inverse-on-surface: #f1f1f1;
+  --md-outline: #727786;
+  --md-outline-variant: #c2c6d7;
+  --md-surface-tint: #0058ca;
+
+  /* Primary */
+  --md-primary: #004fb7;
+  --md-on-primary: #ffffff;
+  --md-primary-container: #0066e8;
+  --md-on-primary-container: #edf0ff;
+  --md-inverse-primary: #b0c6ff;
+  --md-primary-hover: #0052b8;
+
+  /* Secondary */
+  --md-secondary: #226a54;
+  --md-on-secondary: #ffffff;
+  --md-secondary-container: #a7eed3;
+  --md-on-secondary-container: #276e58;
+
+  /* Tertiary */
+  --md-tertiary: #7c4900;
+  --md-on-tertiary: #ffffff;
+  --md-tertiary-container: #9e5e00;
+  --md-on-tertiary-container: #ffeddf;
+
+  /* Error */
+  --md-error: #ba1a1a;
+  --md-on-error: #ffffff;
+  --md-error-container: #ffdad6;
+  --md-on-error-container: #93000a;
+
+  /* Fixed / Dim (tonos) */
+  --md-primary-fixed: #d9e2ff;
+  --md-primary-fixed-dim: #b0c6ff;
+  --md-on-primary-fixed: #001945;
+  --md-on-primary-fixed-variant: #00429b;
+  --md-secondary-fixed: #aaf1d6;
+  --md-secondary-fixed-dim: #8ed5ba;
+  --md-on-secondary-fixed: #002117;
+  --md-on-secondary-fixed-variant: #00513e;
+  --md-tertiary-fixed: #ffdcbc;
+  --md-tertiary-fixed-dim: #ffb86b;
+  --md-on-tertiary-fixed: #2c1700;
+  --md-on-tertiary-fixed-variant: #683d00;
+
+  /* Background */
+  --md-background: #f9f9f9;
+  --md-on-background: #1a1c1c;
+
+  /* ==========================================================================
+     COLORES LEGACY (compatibilidad) — actualizados al nuevo sistema
+     ========================================================================== */
+
+  /* Primary palette */
+  --color-primary: #004fb7;
+  --color-primary-hover: #0052b8;
+  --color-primary-light: #d9e2ff;
+  --color-primary-lighter: #b0c6ff;
+  --color-primary-dark: #00429b;
+  --color-accent: #004fb7;
+  --color-accent-hover: #0052b8;
+  --color-accent-light: rgba(0, 79, 183, 0.1);
+
+  /* Neutral palette (sin cambio) */
   --color-black: #000000;
   --color-white: #ffffff;
   --color-gray-900: #1a1a1a;
@@ -27,8 +110,8 @@
   /* Semantic colors */
   --color-success: #17624d;
   --color-success-bg: #eaf7f1;
-  --color-error: #b42318;
-  --color-error-bg: #fef3f2;
+  --color-error: #ba1a1a;
+  --color-error-bg: #ffdad6;
   --color-warning: #e88d00;
   --color-warning-bg: #fff3df;
 
@@ -42,36 +125,70 @@
   --color-teal: #0a7e9c;
   --color-teal-bg: #dff5fa;
 
-  /* Surfaces */
-  --color-bg: #f5f5f5;
+  /* Surfaces & text */
+  --color-bg: #f9f9f9;
   --color-surface: #ffffff;
   --color-surface-elevated: #ffffff;
   --color-border: #dfe5ef;
-  --color-text: #18202f;
-  --color-text-secondary: #637184;
+  --color-text: #1a1c1c;
+  --color-text-secondary: #424654;
 
-  /* Typography */
+  /* ==========================================================================
+     TIPOGRAFÍA
+     ========================================================================== */
+
+  /* Familias */
   --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-body: system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
 
-  /* Font sizes */
-  --fs-xs: 11px;
-  --fs-sm: 13px;
-  --fs-base: 15px;
-  --fs-md: 16px;
-  --fs-lg: 18px;
-  --fs-xl: 22px;
-  --fs-2xl: 26px;
-  --fs-3xl: 32px;
+  /* Escala tipográfica completa (DESIGN.md typography) */
+  --text-headline-xl: 48px;
+  --text-headline-lg: 32px;
+  --text-headline-lg-mobile: 24px;
+  --text-headline-md: 24px;
+  --text-body-lg: 18px;
+  --text-body-md: 16px;
+  --text-label-md: 14px;
+  --text-caption: 12px;
 
-  /* Font weights */
+  /* Pesos */
   --fw-normal: 400;
   --fw-medium: 500;
   --fw-semibold: 600;
   --fw-bold: 700;
   --fw-extrabold: 800;
 
-  /* Spacing */
+  /* Line-heights */
+  --lh-headline-xl: 1.1;
+  --lh-headline: 1.2;
+  --lh-headline-md: 1.3;
+  --lh-body-lg: 1.6;
+  --lh-body: 1.5;
+  --lh-label: 1.2;
+  --lh-caption: 1.4;
+
+  /* Letter-spacing */
+  --tracking-tight: -0.02em;
+  --tracking-tighter: -0.01em;
+  --tracking-wide: 0.05em;
+
+  /* Font sizes (legacy — compatibilidad, actualizados al sistema) */
+  --fs-xs: 11px;
+  --fs-sm: 13px;
+  --fs-base: 16px;
+  --fs-md: 16px;
+  --fs-lg: 18px;
+  --fs-xl: 22px;
+  --fs-2xl: 26px;
+  --fs-3xl: 32px;
+  --fs-caption: 12px;
+  --fs-label: 14px;
+
+  /* ==========================================================================
+     ESPACIADO
+     ========================================================================== */
+
+  /* Escala numérica (legacy) */
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -81,22 +198,69 @@
   --space-8: 32px;
   --space-10: 40px;
   --space-12: 48px;
-  --space-xl: 32px;
+  --space-xl: 64px;
 
-  /* Border radius */
-  --radius-sm: 6px;
+  /* Escala semántica (DESIGN.md spacing) */
+  --space-base: 8px;
+  --space-xs: 4px;
+  --space-sm: 12px;
+  --space-md: 24px;
+  --space-lg: 40px;
+  --space-xl: 64px;
+
+  /* Layout */
+  --container-max: 1280px;
+  --gutter: 24px;
+
+  /* ==========================================================================
+     RADIOS
+     ========================================================================== */
+
+  /* Legacy (task #12): sm 4, md 8, lg 12, xl 16, 2xl 24 (nuevo), full */
+  --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
+  --radius-2xl: 24px;
   --radius-full: 999px;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.1);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.15);
+  /* Alias DESIGN.md (rounded): sm 4, md 12, lg 16, xl 24, full */
+  --rounded-sm: 4px;
+  --rounded-md: 12px;
+  --rounded-lg: 16px;
+  --rounded-xl: 24px;
+  --rounded-full: 9999px;
 
-  /* Transitions */
+  /* ==========================================================================
+     SOMBRAS Y ELEVACIÓN (DESIGN.md Elevation & Depth)
+     ========================================================================== */
+
+  --shadow-sm: 0 4px 20px rgba(0, 0, 0, 0.04); /* Level 1 — tarjetas */
+  --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.06); /* transición 1→2 */
+  --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08); /* Level 2 — flotantes/modales */
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12); /* extrema */
+  --shadow-glow: 0 4px 20px rgba(0, 79, 183, 0.35); /* glow botón primario */
+  --shadow-focus: 0 0 0 3px rgba(0, 79, 183, 0.2); /* glow focus inputs */
+
+  /* Alias por nivel */
+  --shadow-level-1: 0 4px 20px rgba(0, 0, 0, 0.04);
+  --shadow-level-2: 0 12px 40px rgba(0, 0, 0, 0.08);
+
+  /* ==========================================================================
+     GLASSMORPHISM (DESIGN.md — 20px blur + 160% saturation)
+     ========================================================================== */
+
+  --glass-blur: 20px;
+  --glass-saturate: 160%;
+  --glass-bg: rgba(255, 255, 255, 0.72); /* 70–80% blanco translúcido */
+  --glass-bg-strong: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.4); /* borde interior 1px al 40% */
+  --glass-backdrop: blur(20px) saturate(1.6);
+
+  /* ==========================================================================
+     TRANSICIONES
+     ========================================================================== */
+
   --transition-fast: 0.15s;
   --transition-normal: 0.25s;
   --transition-slow: 0.35s;

@@ -19,8 +19,8 @@
 }
 
 .badge--pending {
-  color: #0066e8;
-  background: #dfeaff;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
 
 .badge--success {
@@ -32,6 +32,6 @@
   background: #fef2f2;
 }
 .badge--info {
-  color: #0066e8;
-  background: #dfeaff;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
 }
