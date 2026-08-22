@@ -19,6 +19,19 @@ public class InventarioConfiguration : IEntityTypeConfiguration<Inventario>
         builder.Property(i => i.Cantidad)
             .IsRequired();
 
+        // Sprint 1 - Tarea 8: campos del wireframe de Inventario.
+        builder.Property(i => i.Categoria)
+            .HasMaxLength(30);
+
+        builder.Property(i => i.Lote)
+            .HasMaxLength(50);
+
+        builder.Property(i => i.Ubicacion)
+            .HasMaxLength(50);
+
+        builder.Property(i => i.UnidadMedida)
+            .HasMaxLength(20);
+
         builder.HasOne(i => i.Producto)
             .WithMany(p => p.Inventarios)
             .HasForeignKey(i => i.ProductoId)
