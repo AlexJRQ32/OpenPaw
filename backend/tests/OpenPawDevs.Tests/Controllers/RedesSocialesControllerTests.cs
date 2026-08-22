@@ -109,4 +109,51 @@ public class RedesSocialesControllerTests
         result.Should().BeOfType<BadRequestObjectResult>();
         _redes.Verify(r => r.AddAsync(It.IsAny<RedSocial>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Delete_PlataformaVinculada_EliminaElRegistroYDevuelveNoContent()
+    {
+        var existente = new RedSocial { Id = 5, UsuarioId = 1, Plataforma = "github", Url = "https://github.com/roble" };
+        _redes.Setup(r => r.GetByUsuarioIdAsync(1)).ReturnsAsync(new List<RedSocial> { existente });
+
+        var result = await CreateSut(1).DeleteAsync("github");
+
+        result.Should().BeOfType<NoContentResult>();
+        _redes.Verify(r => r.DeleteAsync(existente), Times.Once);
+        _redes.Verify(r => r.AddAsync(It.IsAny<RedSocial>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Delete_PlataformaVinculadaConMayusculas_NormalizaYEliminaElRegistro()
+    {
+        var existente = new RedSocial { Id = 6, UsuarioId = 1, Plataforma = "linkedin", Url = "https://linkedin.com/perfil" };
+        _redes.Setup(r => r.GetByUsuarioIdAsync(1)).ReturnsAsync(new List<RedSocial> { existente });
+
+        var result = await CreateSut(1).DeleteAsync("LinkedIn");
+
+        result.Should().BeOfType<NoContentResult>();
+        _redes.Verify(r => r.DeleteAsync(existente), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_PlataformaNoVinculada_DevuelveNotFound()
+    {
+        _redes.Setup(r => r.GetByUsuarioIdAsync(1)).ReturnsAsync(new List<RedSocial>());
+
+        var result = await CreateSut(1).DeleteAsync("youtube");
+
+        result.Should().BeOfType<NotFoundObjectResult>();
+        _redes.Verify(r => r.DeleteAsync(It.IsAny<RedSocial>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Delete_PlataformaNoPermitida_DebeRechazar()
+    {
+        _redes.Setup(r => r.GetByUsuarioIdAsync(1)).ReturnsAsync(new List<RedSocial>());
+
+        var result = await CreateSut(1).DeleteAsync("myspace");
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _redes.Verify(r => r.DeleteAsync(It.IsAny<RedSocial>()), Times.Never);
+    }
 }

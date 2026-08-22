@@ -76,6 +76,28 @@ public class RedesSocialesController : ControllerBase
         return NoContent();
     }
 
+    /// <summary>
+    /// Desvincula una red social del usuario autenticado.
+    /// Tarea 28 - rediseño UI Perfil: el frontend usa este endpoint para "Desvincular" una red.
+    /// </summary>
+    [HttpDelete("{plataforma}")]
+    public async Task<IActionResult> DeleteAsync(string plataforma)
+    {
+        if (string.IsNullOrWhiteSpace(plataforma) || !PlataformasPermitidas.Contains(plataforma, StringComparer.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = $"La plataforma '{plataforma}' no es valida" });
+
+        var plataformaNorm = plataforma.ToLowerInvariant();
+        var userId = GetAuthenticatedUserId();
+        var existing = (await _redSocialRepository.GetByUsuarioIdAsync(userId))
+            .FirstOrDefault(r => r.Plataforma == plataformaNorm);
+
+        if (existing == null)
+            return NotFound(new { mensaje = $"La red social '{plataforma}' no esta vinculada" });
+
+        await _redSocialRepository.DeleteAsync(existing);
+        return NoContent();
+    }
+
     private int GetAuthenticatedUserId()
     {
         var idClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
