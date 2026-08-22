@@ -1,672 +1,1015 @@
 @import "../../../shared/styles/tokens.css";
 
+/* ==========================================================================
+   CitasPage — Tarea #27 (Sprint 2) — Rediseño wireframe "citas_openpaw"
+   Calendario mensual con dots por tipo (Rutina/Especialista/Urgencia),
+   leyenda, día seleccionado y panel "Citas del día" estilo timeline.
+   Solo tokens M3 (--md-*) + color-mix. Cero hex hardcodeados.
+   ========================================================================== */
+
 .citas-page {
-  max-width: 1100px;
-  padding: 24px;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: var(--space-8) var(--space-6);
 }
 
-.citas-header {
+/* --------------------------------------------------------------------------
+   HEADER — eyebrow "Calendario" + título headline-xl + botón "Nueva cita"
+   (wireframe: font-label-md uppercase tracking-widest text-primary)
+   -------------------------------------------------------------------------- */
+.citas-hero {
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--space-4);
+  margin-bottom: var(--space-8);
 }
-
+.citas-eyebrow {
+  display: block;
+  margin-bottom: var(--space-1);
+  font-family: var(--font-body);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--md-primary);
+}
 .citas-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-2xl);
+  font-size: var(--text-headline-xl);
+  line-height: var(--lh-headline-xl);
+  letter-spacing: var(--tracking-tight);
   font-weight: var(--fw-extrabold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
-
 .citas-subtitle {
-  margin: 4px 0 0;
-  color: var(--color-text-secondary);
-  font-size: var(--fs-base);
+  margin: var(--space-2) 0 0;
+  max-width: 560px;
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-body-lg);
+  color: var(--md-on-surface-variant);
 }
 
-/* Solicitudes de citas (veterinaria/admin) */
+/* --------------------------------------------------------------------------
+   SOLICITUDES DE CITAS (vet/admin) — funcionalidad conservada, vidrio M3
+   -------------------------------------------------------------------------- */
 .citas-requests {
-  margin-bottom: 28px;
-  padding: 18px 20px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-8);
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--md-surface-container-lowest) 80%, transparent);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-level-1);
 }
 .citas-requests-head {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
-.citas-requests-head h2 {
+.citas-requests-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-lg);
-  color: var(--color-text);
-}
-.citas-requests-count {
-  display: inline-flex;
-  min-width: 24px;
-  height: 24px;
-  align-items: center;
-  justify-content: center;
-  padding: 0 8px;
-  border-radius: var(--radius-full);
-  background: var(--color-gray-25);
-  color: var(--color-text-secondary);
-  font-size: var(--fs-xs);
+  font-size: var(--text-headline-md);
   font-weight: var(--fw-bold);
-}
-.citas-requests-count.has-pending {
-  background: var(--color-warning-bg);
-  color: #92610a;
+  letter-spacing: var(--tracking-tighter);
+  color: var(--md-on-surface);
 }
 .citas-requests-empty {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 20px;
-  color: var(--color-text-secondary);
-  font-size: var(--fs-sm);
-}
-.citas-requests-empty i {
-  color: var(--color-primary);
-  font-size: var(--fs-lg);
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--md-surface-container-low);
+  color: var(--md-on-surface-variant);
+  font-size: var(--text-label-md);
 }
 .citas-requests-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 12px;
+  gap: var(--space-3);
 }
 .citas-request-item {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding: 14px 16px;
-  background: var(--color-warning-bg);
-  border: 1px solid #f5deb3;
-  border-radius: var(--radius-md);
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-level-1);
+  transition: transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1), box-shadow var(--transition-fast) ease-out;
+}
+.citas-request-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-level-2);
 }
 .citas-request-servicio {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-body-md);
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
 .citas-request-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 3px 0;
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+  gap: var(--space-2);
+  margin: 2px 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
 }
-.citas-request-meta i {
-  width: 14px;
-  color: var(--color-primary);
+.citas-request-meta .icon {
+  flex-shrink: 0;
+  color: var(--md-primary);
 }
 .citas-request-notes {
-  margin: 6px 0 0;
-  padding: 8px 10px;
-  background: rgba(255, 255, 255, 0.6);
-  border-radius: var(--radius-sm);
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-2) 0 0;
+  padding: var(--space-2) var(--space-3);
+  background: var(--md-surface-container-low);
+  border-radius: var(--radius-md);
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
+.citas-request-notes .icon {
+  flex-shrink: 0;
+  margin-top: 1px;
+  color: var(--md-primary);
 }
 .citas-request-actions {
   display: flex;
-  gap: 8px;
+  gap: var(--space-2);
   margin-top: auto;
 }
-.citas-request-btn {
+.citas-request-actions .btn {
   flex: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 9px 12px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-.citas-request-btn--ok {
-  background: var(--color-success);
-  color: #fff;
-}
-.citas-request-btn--ok:hover {
-  background: #0e6b52;
-}
-.citas-request-btn--no {
-  background: var(--color-surface);
-  border-color: var(--color-error);
-  color: var(--color-error);
-}
-.citas-request-btn--no:hover {
-  background: var(--color-error-bg);
 }
 
-/* Catalogo de veterinarias (cliente) */
+/* --------------------------------------------------------------------------
+   CATÁLOGO DE VETERINARIAS (cliente) — funcionalidad conservada, M3
+   -------------------------------------------------------------------------- */
 .citas-vets {
-  margin-bottom: 28px;
+  margin-bottom: var(--space-8);
 }
 .citas-vets-head {
   display: flex;
-  align-items: baseline;
-  gap: 12px;
-  margin-bottom: 16px;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
-.citas-vets-head h2 {
+.citas-vets-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-lg);
-  color: var(--color-text);
-}
-.citas-vets-head span {
-  font-size: var(--fs-sm);
-  color: var(--color-text-secondary);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  color: var(--md-on-surface);
 }
 .citas-vets-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 16px;
+  gap: var(--space-4);
 }
 .citas-vet-card {
-  padding: 18px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid transparent;
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-level-1);
+  transition:
+    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow var(--transition-fast) ease-out,
+    border-color var(--transition-fast) ease-out;
 }
 .citas-vet-card:hover {
-  box-shadow: var(--shadow-md);
+  transform: translateY(-3px);
   border-color: var(--color-primary-lighter);
+  box-shadow: var(--shadow-level-2);
 }
-.citas-vet-card-top {
+.citas-vet-card__top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
 }
-.citas-vet-avatar {
+.citas-vet-card__avatar {
   display: inline-flex;
-  width: 44px;
-  height: 44px;
+  width: 46px;
+  height: 46px;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
   border-radius: var(--radius-lg);
-  font-size: var(--fs-lg);
+  background: var(--color-primary-light);
+  color: var(--md-on-primary-fixed-variant);
 }
-.citas-vet-card-top h3 {
+.citas-vet-card__top h3 {
   margin: 0;
-  font-size: var(--fs-md);
+  font-size: var(--text-body-lg);
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
-.citas-vet-dir {
+.citas-vet-card__dir {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   margin: 3px 0 0;
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
 }
-.citas-vet-dir i {
-  margin-right: 4px;
+.citas-vet-card__dir .icon {
+  flex-shrink: 0;
 }
-.citas-vet-desc {
+.citas-vet-card__desc {
   margin: 0;
-  font-size: var(--fs-sm);
-  color: var(--color-text-secondary);
-  line-height: 1.5;
+  font-size: var(--text-label-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
 }
-.citas-vet-card-foot {
+.citas-vet-card__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: var(--space-2);
   margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-border);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--md-outline-variant);
 }
-.citas-vet-horario {
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+.citas-vet-card__horario {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
   white-space: nowrap;
 }
-.citas-vet-horario i {
-  margin-right: 5px;
-  color: var(--color-primary);
+.citas-vet-card__horario .icon {
+  color: var(--md-primary);
 }
 
+/* --------------------------------------------------------------------------
+   LAYOUT PRINCIPAL — wireframe: calendario (8/12) + citas del día (4/12)
+   -------------------------------------------------------------------------- */
 .citas-layout {
   display: grid;
-  grid-template-columns: 1fr 340px;
-  gap: 20px;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--gutter);
   align-items: start;
 }
 
-/* Calendar card */
-.citas-calendar-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+/* --------------------------------------------------------------------------
+   CALENDARIO MENSUAL — card surface-container-lowest + blob decorativo
+   (wireframe: rounded-[24px] shadow-2 p-lg + blur primary-container/10)
+   -------------------------------------------------------------------------- */
+.citas-calendar {
+  grid-column: span 8;
+  position: relative;
   overflow: hidden;
+  padding: var(--space-6);
+  background: var(--md-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-level-2);
+}
+/* Blob decorativo superior derecho (wireframe: bg-primary-container/10 blur-80px) */
+.citas-calendar::before {
+  content: '';
+  position: absolute;
+  top: -128px;
+  right: -128px;
+  width: 256px;
+  height: 256px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--md-primary-container) 10%, transparent);
+  filter: blur(80px);
+  pointer-events: none;
+}
+.citas-calendar-head,
+.citas-grid-head,
+.citas-grid,
+.citas-legend {
+  position: relative;
+  z-index: 1;
 }
 
+/* Cabecera del mes (wireframe: mes + keyboard_arrow_down, chevrons pill) */
 .citas-calendar-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--color-border);
+  margin-bottom: var(--space-5);
 }
-
-.citas-month-btn {
+.citas-calendar-month {
   display: inline-flex;
-  width: 36px;
-  height: 36px;
   align-items: center;
-  justify-content: center;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.citas-month-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
-  background: var(--color-accent-light);
-}
-
-.citas-month-label {
-  text-align: center;
-}
-
-.citas-month-label h2 {
+  gap: var(--space-1);
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-lg);
-  color: var(--color-text);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  color: var(--md-on-surface);
 }
-
-.citas-month-label button {
-  margin-top: 2px;
-  border: 0;
-  background: none;
-  color: var(--color-primary);
+.citas-calendar-drop {
+  color: var(--md-outline-variant);
+}
+.citas-calendar-nav {
+  display: flex;
+  gap: var(--space-1);
+}
+.citas-month-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container);
+  color: var(--md-on-surface-variant);
   font: inherit;
-  font-size: var(--fs-xs);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
   cursor: pointer;
+  transition:
+    background-color var(--transition-fast) ease-out,
+    color var(--transition-fast) ease-out,
+    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1);
+}
+.citas-month-btn:hover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+.citas-month-btn:active {
+  transform: scale(0.94);
+}
+.citas-month-btn:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+.citas-month-btn--today {
+  width: auto;
+  padding: 0 var(--space-4);
 }
 
+/* Días de la semana (wireframe: font-label-md text-outline) */
 .citas-grid-head,
 .citas-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-3);
 }
-
+.citas-grid-head {
+  margin-bottom: var(--space-2);
+}
 .citas-grid-head span {
-  padding: 10px 6px;
+  padding: var(--space-1) 0 var(--space-2);
   text-align: center;
-  color: var(--color-text-secondary);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  background: #f9fafb;
-  border-bottom: 1px solid var(--color-border);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+  color: var(--md-outline);
 }
 
+/* Celda de día (wireframe: aspect-square rounded-xl flex column center,
+   con cita -> bg-surface-container-high; seleccionado -> bg-primary scale-105) */
 .citas-day {
-  min-height: 108px;
-  padding: 8px;
-  border-right: 1px solid var(--color-border);
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-surface);
-}
-
-.citas-day:nth-child(7n) {
-  border-right: none;
-}
-
-.citas-day--empty {
-  background: #fafbfc;
-}
-
-.citas-day--today {
-  background: var(--color-accent-light);
-}
-
-.citas-day-number {
-  display: inline-flex;
-  width: 26px;
-  height: 26px;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--radius-full);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  color: var(--color-text);
-}
-
-.citas-day--today .citas-day-number {
-  background: var(--color-primary);
-  color: #fff;
-}
-
-.citas-day-items {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-top: 6px;
-}
-
-.citas-chip {
-  display: block;
-  width: 100%;
-  padding: 4px 8px;
-  border: 0;
-  border-radius: 6px;
-  font: inherit;
-  font-size: 11px;
-  font-weight: var(--fw-semibold);
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  cursor: pointer;
-  transition: filter var(--transition-fast);
-}
-
-.citas-chip:hover {
-  filter: brightness(0.96);
-}
-
-.citas-chip--pending { background: var(--color-warning-bg); color: #92610a; }
-.citas-chip--active { background: var(--color-primary-light); color: var(--color-primary-dark); }
-.citas-chip--info { background: var(--color-teal-bg); color: var(--color-teal); }
-.citas-chip--success { background: var(--color-green-bg); color: var(--color-green); }
-.citas-chip--inactive { background: #f3f4f6; color: #6b7280; }
-
-.citas-more {
-  font-size: 11px;
-  color: var(--color-text-secondary);
-  padding: 0 4px;
-}
-
-/* Side panel */
-.citas-side-card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  align-items: center;
+  justify-content: space-between;
+  aspect-ratio: 1;
+  padding: var(--space-2);
+  border: none;
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  padding: 20px;
+  background: var(--md-surface-container-lowest);
+  font: inherit;
+  color: var(--md-on-surface);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast) ease-out,
+    color var(--transition-fast) ease-out,
+    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow var(--transition-fast) ease-out;
+}
+.citas-day:hover {
+  background: var(--md-surface-container);
+}
+.citas-day:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+.citas-day:active {
+  transform: scale(0.96);
+}
+.citas-day__num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: var(--space-1);
+  font-size: var(--text-body-md);
+  font-weight: var(--fw-medium);
+  color: inherit;
+  line-height: 1;
+}
+.citas-day--has {
+  background: var(--md-surface-container-high);
+}
+/* Hoy (no seleccionado): anillo primario sutil + número en primary */
+.citas-day--today:not(.citas-day--selected) {
+  box-shadow: inset 0 0 0 1.5px var(--md-primary);
+}
+.citas-day--today:not(.citas-day--selected) .citas-day__num {
+  color: var(--md-primary);
+  font-weight: var(--fw-bold);
+}
+/* Día seleccionado (wireframe): bg-primary, on-primary, scale-105 + glow */
+.citas-day--selected {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--md-primary) 30%, transparent);
+}
+.citas-day--selected:hover {
+  background: var(--md-primary);
+}
+.citas-day--selected .citas-day__num {
+  font-weight: var(--fw-bold);
+}
+/* Días fuera del mes visible (wireframe: números dim del mes anterior) */
+.citas-day--outside {
+  background: transparent;
+  color: var(--md-outline-variant);
+  cursor: default;
+}
+.citas-day--outside:hover {
+  background: transparent;
 }
 
-.citas-side-head {
+/* Dots por tipo de cita (wireframe: w-1.5 h-1.5 rounded-full gap-1) */
+.citas-day__dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  min-height: 16px;
+  margin-bottom: var(--space-1);
+}
+.citas-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  flex-shrink: 0;
+  border-radius: var(--radius-full);
+}
+.citas-dot--primary { background: var(--md-primary); }
+.citas-dot--secondary { background: var(--md-secondary); }
+.citas-dot--error { background: var(--md-error); }
+/* Dots sobre el día seleccionado: blancos (wireframe bg-white / white/50) */
+.citas-day--selected .citas-dot {
+  background: var(--md-on-primary);
+}
+.citas-day__more {
+  font-size: 10px;
+  font-weight: var(--fw-bold);
+  color: var(--md-on-surface-variant);
+}
+.citas-day--selected .citas-day__more {
+  color: color-mix(in srgb, var(--md-on-primary) 70%, transparent);
+}
+
+/* Leyenda (wireframe: dots 8px + caption on-surface-variant, centrada) */
+.citas-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--space-5);
+  margin: var(--space-5) 0 0;
+  padding: 0;
+  list-style: none;
+}
+.citas-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
+.citas-legend-item .citas-dot {
+  width: 8px;
+  height: 8px;
+}
+
+/* --------------------------------------------------------------------------
+   PANEL "CITAS DEL DÍA" — vidrio (wireframe: lowest/80 backdrop-blur-xl
+   rounded-[24px] border-white/50) con timeline de cards por tipo
+   -------------------------------------------------------------------------- */
+.citas-today {
+  grid-column: span 4;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--md-surface-container-lowest) 80%, transparent);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-level-1);
+}
+.citas-today-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 14px;
+  gap: var(--space-3);
 }
-
-.citas-side-head h3 {
+.citas-today-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-md);
-  color: var(--color-text);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  color: var(--md-on-surface);
+}
+.citas-today-date {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+  text-transform: capitalize;
+}
+.citas-today-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  max-height: 600px;
+  overflow-y: auto;
+  padding-right: var(--space-2);
+  margin-right: calc(-1 * var(--space-2));
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-outline-variant) transparent;
 }
 
-.citas-count {
+/* Card de cita (wireframe: bg-surface rounded-2xl p-md + barra lateral w-1) */
+.cita-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--md-surface);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-level-1);
+  transition: transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1);
+}
+.cita-card:not(.cita-card--muted):hover {
+  transform: translateY(-3px);
+}
+.cita-card__bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+.cita-card--primary .cita-card__bar { background: var(--md-primary); }
+.cita-card--secondary .cita-card__bar { background: var(--md-secondary); }
+.cita-card--error .cita-card__bar { background: var(--md-error); }
+/* Completada/Cancelada: atenuada, hora tachada (wireframe opacity-70 + line-through) */
+.cita-card--muted {
+  opacity: 0.7;
+}
+.cita-card--muted .cita-card__bar {
+  background: var(--md-outline-variant);
+}
+.cita-card--muted .cita-card__time {
+  text-decoration: line-through;
+  background: var(--md-surface-container);
+  color: var(--md-on-surface-variant);
+}
+.cita-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+.cita-card__time {
   display: inline-flex;
-  min-width: 26px;
-  height: 26px;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+}
+.cita-card--primary .cita-card__time {
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+  color: var(--md-on-primary-fixed-variant);
+}
+.cita-card--secondary .cita-card__time {
+  background: color-mix(in srgb, var(--md-secondary) 10%, transparent);
+  color: var(--md-on-secondary-fixed-variant);
+}
+.cita-card--error .cita-card__time {
+  background: color-mix(in srgb, var(--md-error) 10%, transparent);
+  color: var(--md-on-error-container);
+}
+.cita-card__pet {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+.cita-card__avatar {
+  width: 48px;
+  height: 48px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-primary) 10%, transparent);
+}
+.cita-card__avatar--fallback {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 8px;
+  background: var(--md-surface-container);
+  color: var(--md-outline);
+}
+.cita-card__identity {
+  min-width: 0;
+}
+.cita-card__name {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-body-lg);
+  font-weight: var(--fw-semibold);
+  color: var(--md-on-surface);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cita-card__meta {
+  margin: 2px 0 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cita-card__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+.cita-card__actions .btn--sm {
+  flex: 1;
+  padding: 8px 16px;
+}
+/* Botones circulares de icono (editar / cancelar) */
+.cita-card__iconbtn {
+  display: inline-flex;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: none;
   border-radius: var(--radius-full);
-  background: var(--color-primary-light);
-  color: var(--color-primary-dark);
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-bold);
+  background: var(--md-surface-container);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast) ease-out,
+    color var(--transition-fast) ease-out,
+    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1);
+}
+.cita-card__iconbtn:hover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+.cita-card__iconbtn:active {
+  transform: scale(0.92);
+}
+.cita-card__iconbtn:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+.cita-card__cancel {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+}
+.cita-card__cancel:hover {
+  background: var(--md-error);
+  color: var(--md-on-error);
+}
+.cita-card__cancel:focus-visible {
+  outline-color: var(--md-error);
 }
 
+/* Card de disponibilidad (wireframe: gradient from-primary/5 + event_available) */
+.citas-availability {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-5);
+  border-radius: var(--radius-xl);
+  background: var(--md-surface-container-lowest);
+  box-shadow: var(--shadow-level-1);
+  text-align: center;
+}
+.citas-availability::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--md-primary) 5%, transparent), transparent 60%);
+  pointer-events: none;
+}
+.citas-availability > * {
+  position: relative;
+}
+.citas-availability__icon {
+  color: color-mix(in srgb, var(--md-primary) 30%, transparent);
+}
+.citas-availability__text {
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
+}
+.citas-availability__text strong {
+  color: var(--md-primary);
+  font-weight: var(--fw-bold);
+}
+.citas-availability__break {
+  display: block;
+  margin-top: 2px;
+  font-size: var(--text-caption);
+}
+
+/* --------------------------------------------------------------------------
+   MIS CITAS — filtros + listado conservados (estado/categoría), M3
+   -------------------------------------------------------------------------- */
+.citas-mis {
+  margin-top: var(--space-8);
+  padding: var(--space-5);
+  background: color-mix(in srgb, var(--md-surface-container-lowest) 80%, transparent);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-level-1);
+}
+.citas-mis-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.citas-mis-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  color: var(--md-on-surface);
+}
 .citas-filtros {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 14px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
 }
-
 .citas-filtro {
-  padding: 5px 10px;
-  border: 1px solid var(--color-border);
+  padding: 6px 14px;
+  border: 1px solid var(--md-outline-variant);
   border-radius: var(--radius-full);
-  background: var(--color-surface);
-  color: var(--color-text-secondary);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface-variant);
   font: inherit;
-  font-size: var(--fs-xs);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    background-color var(--transition-fast) ease-out,
+    border-color var(--transition-fast) ease-out,
+    color var(--transition-fast) ease-out;
 }
-
 .citas-filtro:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--md-primary);
+  color: var(--md-primary);
 }
-
 .citas-filtro.active {
-  background: var(--color-primary);
-  border-color: var(--color-primary);
-  color: #fff;
+  background: var(--md-primary);
+  border-color: var(--md-primary);
+  color: var(--md-on-primary);
+  box-shadow: var(--shadow-glow);
 }
-
+.citas-filtro:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
 .citas-filtro-servicio {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  margin-bottom: 14px;
-  font-size: var(--fs-xs);
+  gap: var(--space-1);
+  margin-bottom: var(--space-4);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-text-secondary);
+  color: var(--md-on-surface-variant);
 }
-
 .citas-filtro-servicio select {
-  height: 34px;
-  padding: 0 var(--space-2);
-  border: 1px solid var(--color-border);
+  height: 38px;
+  padding: 0 var(--space-3);
+  border: 1px solid var(--md-outline-variant);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
   font: inherit;
-  font-size: var(--fs-sm);
+  font-size: var(--text-label-md);
+  cursor: pointer;
 }
-
+.citas-filtro-servicio select:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 1px;
+}
 .citas-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
   max-height: 560px;
   overflow-y: auto;
+  padding-right: var(--space-1);
+  scrollbar-width: thin;
+  scrollbar-color: var(--md-outline-variant) transparent;
 }
-
 .citas-item {
-  padding: 14px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  transition: box-shadow var(--transition-fast);
+  padding: var(--space-4);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 50%, transparent);
+  border-radius: var(--radius-xl);
+  transition: box-shadow var(--transition-fast) ease-out;
 }
-
 .citas-item:hover {
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-level-1);
 }
-
 .citas-item-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
 }
-
 .citas-item-hora {
-  font-size: var(--fs-sm);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
-
 .citas-item-servicio {
-  margin: 0 0 6px;
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-body-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
-
 .citas-item-categoria {
   font-weight: var(--fw-normal);
-  color: var(--color-text-secondary);
+  color: var(--md-on-surface-variant);
 }
-
 .citas-item-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: var(--space-2);
   margin: 3px 0;
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
 }
-
-.citas-item-meta i {
-  width: 14px;
-  color: var(--color-primary);
+.citas-item-meta .icon {
+  flex-shrink: 0;
+  color: var(--md-primary);
 }
-
 .citas-item-actions {
   display: flex;
-  gap: 8px;
-  margin-top: 10px;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
 }
-
 .citas-item-actions button {
   flex: 1;
-  padding: 7px 10px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  padding: 8px 12px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
   font: inherit;
-  font-size: var(--fs-xs);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition:
+    border-color var(--transition-fast) ease-out,
+    color var(--transition-fast) ease-out,
+    background-color var(--transition-fast) ease-out;
 }
-
 .citas-item-actions button:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--md-primary);
+  color: var(--md-primary);
   background: var(--color-accent-light);
 }
-
 .citas-item-actions button.danger:hover {
-  border-color: var(--color-error);
-  color: var(--color-error);
-  background: var(--color-error-bg);
+  border-color: var(--md-error);
+  color: var(--md-error);
+  background: var(--md-error-container);
 }
 
-/* Modal */
+/* --------------------------------------------------------------------------
+   MODAL — estilos conservados de la página anterior (tokens M3)
+   -------------------------------------------------------------------------- */
 .citas-modal h2 {
-  margin: 0 0 20px;
-  font-size: var(--fs-lg);
+  margin: 0 0 var(--space-5);
+  font-size: var(--text-headline-md);
   font-family: var(--font-heading);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
-
 .citas-modal .field-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
-
 .citas-modal .field {
   display: grid;
-  gap: 6px;
+  gap: var(--space-1);
   text-align: left;
 }
-
 .citas-modal .field > span {
-  font-size: var(--fs-sm);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-gray-700);
+  color: var(--md-on-surface-variant);
 }
-
 .citas-modal .field input,
 .citas-modal .field select,
 .citas-modal .field textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
-  border: 1.5px solid var(--color-gray-150);
+  border: 1.5px solid var(--md-outline-variant);
   border-radius: var(--radius-md);
   font: inherit;
-  font-size: var(--fs-base);
+  font-size: var(--text-body-md);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
-
 .citas-modal .field select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23727786' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 12px center;
   padding-right: 36px;
   cursor: pointer;
 }
-
 .citas-modal .field input:focus,
 .citas-modal .field select:focus,
 .citas-modal .field textarea:focus {
-  border-color: var(--color-primary);
-  outline: 3px solid rgba(0, 102, 232, 0.12);
+  border-color: var(--md-primary);
+  outline: 3px solid var(--shadow-focus);
 }
-
 .citas-modal .field small {
-  color: var(--color-error);
-  font-size: var(--fs-xs);
+  color: var(--md-error);
+  font-size: var(--text-caption);
 }
-
 .citas-modal .submit-error {
   padding: 10px 14px;
-  margin-top: 12px;
-  color: var(--color-error);
-  background: var(--color-error-bg);
-  border: 1px solid #fecdca;
+  margin-top: var(--space-3);
+  color: var(--md-on-error-container);
+  background: var(--md-error-container);
   border-radius: var(--radius-md);
-  font-size: var(--fs-sm);
+  font-size: var(--text-label-md);
 }
-
 .citas-modal-actions {
   display: flex;
-  gap: 12px;
+  gap: var(--space-3);
   justify-content: flex-end;
-  margin-top: 24px;
+  margin-top: var(--space-6);
+}
+.citas-reprogramar-field {
+  margin-top: var(--space-4);
 }
 
-@media (max-width: 960px) {
-  .citas-layout {
-    grid-template-columns: 1fr;
+/* --------------------------------------------------------------------------
+   RESPONSIVE
+   -------------------------------------------------------------------------- */
+@media (max-width: 1024px) {
+  .citas-calendar,
+  .citas-today {
+    grid-column: span 12;
   }
   .citas-list {
     max-height: none;
@@ -675,17 +1018,68 @@
 
 @media (max-width: 640px) {
   .citas-page {
-    padding: 16px 14px;
+    padding: var(--space-5) 14px;
+  }
+  .citas-hero {
+    flex-direction: column;
+    align-items: stretch;
+    margin-bottom: var(--space-5);
+  }
+  .citas-title {
+    font-size: var(--text-headline-lg-mobile);
+  }
+  .citas-subtitle {
+    font-size: var(--text-body-md);
+  }
+  .citas-grid-head,
+  .citas-grid {
+    gap: 4px;
+  }
+  .citas-grid-head span {
+    font-size: var(--text-caption);
   }
   .citas-day {
-    min-height: 72px;
-    padding: 4px;
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
   }
-  .citas-chip {
-    font-size: 10px;
-    padding: 3px 5px;
+  .citas-day__num {
+    font-size: var(--text-label-md);
+    margin-top: 0;
+  }
+  .citas-day__dots {
+    gap: 2px;
+    min-height: 12px;
+    margin-bottom: 0;
+  }
+  .citas-dot {
+    width: 4px;
+    height: 4px;
+  }
+  .citas-calendar {
+    padding: var(--space-4);
+  }
+  .citas-calendar-month {
+    font-size: var(--text-body-lg);
+  }
+  .citas-month-btn {
+    width: 34px;
+    height: 34px;
+  }
+  .citas-today {
+    padding: var(--space-4);
   }
   .citas-modal .field-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Accesibilidad: sin movimiento si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+  .citas-page *,
+  .citas-page *::before,
+  .citas-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
