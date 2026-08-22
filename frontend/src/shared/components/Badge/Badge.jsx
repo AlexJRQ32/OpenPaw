@@ -40,14 +40,14 @@ function resolveDotColor(dot, variant) {
   return undefined
 }
 
-export function Badge({ variant = 'pending', icon, dot = false, className = '', children, ...props }) {
+export function Badge({ variant = 'pending', icon, dot = false, filled = false, className = '', children, ...props }) {
   const dotColor = resolveDotColor(dot, variant)
   const classes = ['badge', `badge--${variant}`, className].filter(Boolean).join(' ')
 
   return (
     <span className={classes} {...props}>
       {dotColor && <span className="badge__dot" aria-hidden="true" style={{ backgroundColor: dotColor }} />}
-      {icon && <Icon name={icon} size="14px" className="badge__icon" />}
+      {icon && <Icon name={icon} size="14px" filled={filled} className="badge__icon" />}
       {children}
     </span>
   )
