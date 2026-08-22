@@ -82,7 +82,7 @@ export function RingProgress({
           strokeLinecap="round"
           strokeDasharray={circumference}
           strokeDashoffset={dashoffset}
-          data-dashoffset={targetOffset}
+          {...(import.meta.env.MODE === 'test' ? { 'data-dashoffset': targetOffset } : {})}
         />
       </svg>
       <div className="ringprogress__content">

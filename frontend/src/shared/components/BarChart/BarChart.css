@@ -49,6 +49,7 @@
 
 /* Barra: radio superior, altura vía variable inline --bar-height */
 .barchart__bar {
+  flex-shrink: 0; /* Evita que .barchart__value (flex item oculto) comprima la altura real */
   width: 100%;
   max-width: 48px;
   height: var(--bar-height);

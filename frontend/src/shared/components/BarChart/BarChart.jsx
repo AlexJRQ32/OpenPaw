@@ -45,7 +45,7 @@ export function BarChart({
       <div className="barchart__plot" style={{ height }}>
         {data.map((d, i) => {
           const value = Number(d.value) || 0
-          const pct = Math.round((value / max) * 100)
+          const pct = Math.max(0, Math.round((value / max) * 100))
           const highlighted = highlightIndex === i
           return (
             <div
