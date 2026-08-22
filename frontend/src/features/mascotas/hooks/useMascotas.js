@@ -46,15 +46,62 @@ export function useMascotas() {
     setListStatus('loading')
     setListError('')
     try {
-      const res = await authFetch(`${API_BASE_URL}/usuarios/me/veterinaria-info`)
-      const data = res.ok ? await res.json() : null
-      setMascotas(data?.mascotas ?? [])
+      // T26 — Conectar los campos de salud del Sprint 1 (FotoUrl, EstadoSalud,
+      // ProximaVacuna, ProximaVacunaFecha, MedicacionActual,
+      // ProximaMedicacionFecha, Sexo, Peso, Color, Identificacion).
+      // /usuarios/me/veterinaria-info devuelve un DTO reducido (id, nombre,
+      // especie, raza, veterinaria, ultimaCita) y es la fuente de QUÉ mascotas
+      // ver por rol (cliente → propias; veterinaria → las de su clínica).
+      // /mascotas devuelve el MascotaDto completo con los campos nuevos;
+      // se hace merge por id para enriquecer sin cambiar el filtrado por rol.
+      // QA A1: allSettled convertía fallos totales en "sin mascotas" y
+      // descartaba datos usables cuando solo fallaba veterinaria-info.
+      const [infoRes, fullRes] = await Promise.allSettled([
+        authFetch(`${API_BASE_URL}/usuarios/me/veterinaria-info`),
+        authFetch(`${API_BASE_URL}/mascotas`),
+      ])
+
+      const infoOk = infoRes.status === 'fulfilled' && infoRes.value?.ok
+      const fullOk = fullRes.status === 'fulfilled' && fullRes.value?.ok
+      const info = infoOk ? await infoRes.value.json() : null
+      const full = fullOk ? await fullRes.value.json() : null
+
+      // Ambos endpoints fallaron: error real visible, nunca EmptyState.
+      if (!infoOk && !fullOk) {
+        setListError('No se pudieron cargar tus mascotas.')
+        setListStatus('error')
+        return
+      }
+
+      const completas = Array.isArray(full) ? full : []
+      const porId = new Map(completas.map((m) => [m.id, m]))
+      let lista
+
+      if (infoOk) {
+        // Caso normal: merge por id (info define el filtrado por rol, las
+        // completas enriquecen con los campos nuevos de salud).
+        lista = (info?.mascotas ?? []).map((m) => ({ ...porId.get(m.id), ...m }))
+      } else if (esCliente) {
+        // Fallo solo veterinaria-info y usuario CLIENTE: /mascotas ya filtra
+        // por dueño en MascotasController (GetByDuenioIdAsync) → seguro usarlas
+        // como driver, no se pierden datos disponibles.
+        lista = completas
+      } else {
+        // Fallo solo veterinaria-info y rol funcionario: /mascotas devuelve las
+        // mascotas de TODO el sistema (no filtra por clínica) → NO usar fallback
+        // (expondría mascotas ajenas): error visible.
+        setListError('No se pudieron cargar las mascotas de tu clínica.')
+        setListStatus('error')
+        return
+      }
+
+      setMascotas(lista)
       setListStatus('loaded')
     } catch {
       setListError('No se pudieron cargar tus mascotas.')
       setListStatus('error')
     }
-  }, [])
+  }, [esCliente])
 
   useEffect(() => {
     let cancelled = false

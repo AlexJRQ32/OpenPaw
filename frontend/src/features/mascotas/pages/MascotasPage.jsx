@@ -1,15 +1,174 @@
 import { AppShell } from '../../../shared/components/AppShell/AppShell'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { Button } from '../../../shared/components/Button/Button'
+import { Badge } from '../../../shared/components/Badge/Badge'
+import { Icon } from '../../../shared/components/Icon/Icon'
 import { Modal } from '../../../shared/components/Modal/Modal'
 import { Field } from '../../../shared/components/Field/Field'
 import { useMascotas } from '../hooks/useMascotas'
 import './MascotasPage.css'
 
 const SEXO_MAP = { 1: 'Macho', 2: 'Hembra' }
+const SEXO_ICON = { 1: 'male', 2: 'female' }
+const ESTADO_SALUDABLE = 'Saludable'
+const ESTADO_TRATAMIENTO = 'Tratamiento'
 
 function valorONada(valor) {
   return valor ? valor : '—'
+}
+
+// Fecha corta estilo wireframe ("12 Oct"): es-CR da "12 oct" y se capitaliza.
+const fechaCorta = new Intl.DateTimeFormat('es-CR', { day: 'numeric', month: 'short' })
+
+function formatearFecha(fecha) {
+  if (!fecha) return ''
+  const d = new Date(fecha)
+  if (Number.isNaN(d.getTime())) return ''
+  // es-CR da "12 oct" (el día es numérico): se capitaliza la palabra del mes.
+  const label = fechaCorta
+    .format(d)
+    .split(' ')
+    .map((palabra, i) => (i === 0 ? palabra : palabra.charAt(0).toUpperCase() + palabra.slice(1)))
+    .join(' ')
+  return label
+}
+
+function esMismoDia(fecha, ref = new Date()) {
+  if (!fecha) return false
+  const d = new Date(fecha)
+  if (Number.isNaN(d.getTime())) return false
+  return (
+    d.getFullYear() === ref.getFullYear() &&
+    d.getMonth() === ref.getMonth() &&
+    d.getDate() === ref.getDate()
+  )
+}
+
+// "Alerta" = vacuna o medicación con fecha de HOY o vencida: requiere atención
+// ahora → ring/borde en error (spec T26).
+function fechaPendiente(fecha, ref = new Date()) {
+  if (!fecha) return false
+  const d = new Date(fecha)
+  if (Number.isNaN(d.getTime())) return false
+  const hoy = new Date(ref.getFullYear(), ref.getMonth(), ref.getDate())
+  return d.getTime() <= hoy.getTime()
+}
+
+function tieneAlerta(m) {
+  return fechaPendiente(m.proximaVacunaFecha) || fechaPendiente(m.proximaMedicacionFecha)
+}
+
+function estadoDe(m) {
+  return m.estadoSalud || ESTADO_SALUDABLE
+}
+
+function ringTone(m) {
+  if (tieneAlerta(m)) return 'error'
+  return estadoDe(m) === ESTADO_TRATAMIENTO ? 'tertiary' : 'primary'
+}
+
+function etiquetaFecha(fecha) {
+  if (esMismoDia(fecha)) return 'Hoy'
+  return formatearFecha(fecha) || 'Próx'
+}
+
+function MascotaCard({ mascota: m }) {
+  const tono = ringTone(m)
+  const estado = estadoDe(m)
+  const badgeVariant = estado === ESTADO_TRATAMIENTO ? 'warning' : 'success'
+  // QA M1: urgencia evaluada POR FILA — vacuna vencida no pinta la fila de
+  // medicación y viceversa. El ring error global de la card se mantiene (tono).
+  const urgenteVacuna = fechaPendiente(m.proximaVacunaFecha)
+  const urgenteMedicacion = fechaPendiente(m.proximaMedicacionFecha)
+  const sexo = SEXO_MAP[m.sexo]
+  const sexoIcon = SEXO_ICON[m.sexo]
+  const hayAlertas = Boolean(
+    m.proximaVacuna || m.proximaVacunaFecha || m.medicacionActual || m.proximaMedicacionFecha
+  )
+
+  return (
+    <article className={`mascota-card mascota-card--${tono}`}>
+      <span className="mascota-card__glow" aria-hidden="true" />
+      <div className="mascota-card__head">
+        <div className="mascota-card__avatar">
+          {m.fotoUrl ? (
+            <img
+              className="mascota-card__photo"
+              src={m.fotoUrl}
+              alt={`Foto de ${m.nombre}`}
+              referrerPolicy="no-referrer"
+            />
+          ) : (
+            <span className="mascota-card__fallback" aria-hidden="true">
+              <Icon name="pets" size={34} filled />
+            </span>
+          )}
+          <span className="mascota-card__minibadge" aria-hidden="true">
+            <Icon name="pets" size={13} filled />
+          </span>
+        </div>
+        <div className="mascota-card__identity">
+          <h2 className="mascota-card__name">{m.nombre}</h2>
+          <Badge variant={badgeVariant} dot>{estado}</Badge>
+        </div>
+      </div>
+
+      <div className="mascota-card__details">
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Especie</p>
+          <p className="mascota-detail-value">{valorONada(m.especie)}</p>
+        </div>
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Raza</p>
+          <p className="mascota-detail-value">{valorONada(m.raza)}</p>
+        </div>
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Sexo</p>
+          <p className="mascota-detail-value mascota-detail-value--sexo">
+            {sexoIcon && <Icon name={sexoIcon} size={16} />}
+            {sexo ?? '—'}
+          </p>
+        </div>
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Peso</p>
+          <p className="mascota-detail-value">{m.peso != null ? `${m.peso} kg` : '—'}</p>
+        </div>
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Color</p>
+          <p className="mascota-detail-value">{valorONada(m.color)}</p>
+        </div>
+        <div className="mascota-detail">
+          <p className="mascota-detail-label">Identificación</p>
+          <p className="mascota-detail-value">{valorONada(m.identificacion)}</p>
+        </div>
+        {m.veterinaria && (
+          <div className="mascota-detail mascota-detail--full">
+            <p className="mascota-detail-label">Veterinaria</p>
+            <p className="mascota-detail-value">{m.veterinaria}</p>
+          </div>
+        )}
+      </div>
+
+      {hayAlertas && (
+        <footer className="mascota-card__alerts">
+          {(m.proximaVacuna || m.proximaVacunaFecha) && (
+            <div className={`mascota-alert${urgenteVacuna ? ' mascota-alert--urgent' : ''}`}>
+              <Icon name="vaccines" size={18} />
+              <span className="mascota-alert__text">Próx: {m.proximaVacuna || 'Vacuna'}</span>
+              <span className="mascota-alert__date">{etiquetaFecha(m.proximaVacunaFecha)}</span>
+            </div>
+          )}
+          {(m.medicacionActual || m.proximaMedicacionFecha) && (
+            <div className={`mascota-alert${urgenteMedicacion ? ' mascota-alert--urgent' : ''}`}>
+              <Icon name="medication" size={18} />
+              <span className="mascota-alert__text">{m.medicacionActual || 'Medicación'}</span>
+              <span className="mascota-alert__date">{etiquetaFecha(m.proximaMedicacionFecha)}</span>
+            </div>
+          )}
+        </footer>
+      )}
+    </article>
+  )
 }
 
 export function MascotasPage() {
@@ -32,21 +191,21 @@ export function MascotasPage() {
   return (
     <AppShell>
       <div className="mascotas-page">
-        <div className="mascotas-header">
+        <header className="mascotas-header">
           <div>
             <h1 className="mascotas-title">
-              <i className="fas fa-paw"></i> Mis mascotas
+              <Icon name="pets" size={30} /> Mis Mascotas
             </h1>
             <p className="mascotas-subtitle">
-              Consulta la informacion de las mascotas registradas a tu nombre.
+              Gestiona la información y salud de tus compañeros peludos.
             </p>
           </div>
           {esCliente && (
-            <Button variant="primary" size="md" onClick={abrir}>
-              <i className="fas fa-plus"></i> Agregar mascota
+            <Button variant="primary" size="md" icon="add" onClick={abrir}>
+              Agregar mascota
             </Button>
           )}
-        </div>
+        </header>
 
         {listStatus === 'loading' && <div className="spinner-wrap"><span className="spinner" /></div>}
 
@@ -59,60 +218,7 @@ export function MascotasPage() {
         {listStatus === 'loaded' && mascotas.length > 0 && (
           <div className="mascotas-grid">
             {mascotas.map((m) => (
-              <div key={m.id} className="mascota-card">
-                <div className="mascota-card-top">
-                  <div className="mascota-icon">
-                    <i className="fas fa-paw"></i>
-                  </div>
-                  <div className="mascota-name">{m.nombre}</div>
-                </div>
-                <div className="mascota-card-grid">
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-venus-mars"></i> Especie
-                    </p>
-                    <p className="mascota-detail-value">{valorONada(m.especie)}</p>
-                  </div>
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-dog"></i> Raza
-                    </p>
-                    <p className="mascota-detail-value">{valorONada(m.raza)}</p>
-                  </div>
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-venus-mars"></i> Sexo
-                    </p>
-                    <p className="mascota-detail-value">{SEXO_MAP[m.sexo] ?? '—'}</p>
-                  </div>
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-weight-hanging"></i> Peso
-                    </p>
-                    <p className="mascota-detail-value">{m.peso != null ? `${m.peso} kg` : '—'}</p>
-                  </div>
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-palette"></i> Color
-                    </p>
-                    <p className="mascota-detail-value">{valorONada(m.color)}</p>
-                  </div>
-                  <div className="mascota-detail">
-                    <p className="mascota-detail-label">
-                      <i className="fas fa-id-badge"></i> Identificacion
-                    </p>
-                    <p className="mascota-detail-value">{valorONada(m.identificacion)}</p>
-                  </div>
-                  {m.veterinaria && (
-                    <div className="mascota-detail mascota-detail--full">
-                      <p className="mascota-detail-label">
-                        <i className="fas fa-hospital"></i> Veterinaria
-                      </p>
-                      <p className="mascota-detail-value">{m.veterinaria}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
+              <MascotaCard key={m.id} mascota={m} />
             ))}
           </div>
         )}

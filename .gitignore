@@ -25,6 +25,9 @@ Desktop.ini
 # Graphify
 graphify-out/
 
+# ASP.NET Data Protection
+backend/**/.aspnet-data-protection-keys/
+
 # Test artifacts
 frontend/e2e/
 frontend/test-results/
