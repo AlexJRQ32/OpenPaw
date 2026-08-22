@@ -4,6 +4,8 @@ import { authFetch } from '../../../shared/utils/api'
 import { useAuth } from '../../auth/context/AuthContext'
 import { useToast } from '../../../shared/context/ToastContext'
 
+/* Sprint 1 (T3): severidad + signos vitales + medico + diagnostico.
+   El backend ya los expone en CrearEmergenciaDto / EmergenciaDto / PUT. */
 const emptyForm = {
   mascotaId: '',
   esEnPlataforma: false,
@@ -13,6 +15,19 @@ const emptyForm = {
   sintomas: '',
   tratamientoAplicado: '',
   archivoAdjuntoUrl: '',
+  nivelSeveridad: 'Nivel2_Urgente',
+  frecuenciaCardiaca: '',
+  saturacionO2: '',
+  temperatura: '',
+  estadoPaciente: '',
+  medicoACargo: '',
+  diagnostico: '',
+}
+
+function aNumero(valor) {
+  if (valor === '' || valor === null || valor === undefined) return null
+  const n = Number(valor)
+  return Number.isFinite(n) ? n : null
 }
 
 function validar(form, esCliente) {
@@ -24,6 +39,12 @@ function validar(form, esCliente) {
   if (requiereVetExterna && !form.veterinariaNombreExterna.trim()) {
     errors.veterinariaNombreExterna = 'Indica el nombre de la veterinaria externa'
   }
+  const fc = aNumero(form.frecuenciaCardiaca)
+  if (fc !== null && (fc < 1 || fc > 300)) errors.frecuenciaCardiaca = 'Valor entre 1 y 300 bpm'
+  const o2 = aNumero(form.saturacionO2)
+  if (o2 !== null && (o2 < 1 || o2 > 100)) errors.saturacionO2 = 'Valor entre 1 y 100 %'
+  const temp = aNumero(form.temperatura)
+  if (temp !== null && (temp < 30 || temp > 46)) errors.temperatura = 'Valor entre 30 y 46 °C'
   return errors
 }
 
@@ -33,7 +54,8 @@ export function useEmergencias() {
   const esCliente = userRol === ROLE_IDS.CLIENTE
   const [emergencias, setEmergencias] = useState([])
   const [mascotas, setMascotas] = useState([])
-  const [mascotaFiltro, setMascotaFiltro] = useState('')
+  /* Filtro por mascota; 'all' = todos los pacientes (wireframe emergencias) */
+  const [mascotaFiltro, setMascotaFiltro] = useState('all')
   const [listStatus, setListStatus] = useState('idle')
   const [listError, setListError] = useState('')
   const [modalOpen, setModalOpen] = useState(false)
@@ -41,6 +63,8 @@ export function useEmergencias() {
   const [errors, setErrors] = useState({})
   const [submitStatus, setSubmitStatus] = useState('idle')
   const [submitError, setSubmitError] = useState('')
+  const [updateStatus, setUpdateStatus] = useState('idle')
+  const [updateError, setUpdateError] = useState('')
   const toast = useToast()
 
   useEffect(() => {
@@ -66,6 +90,22 @@ export function useEmergencias() {
     return Array.isArray(data) ? data : []
   }, [])
 
+  /* Modo 'all': consulta el endpoint existente por cada mascota y fusiona.
+     allSettled: una mascota con error no tumba el listado completo. */
+  const cargarTodas = useCallback(async () => {
+    if (mascotas.length === 0) return []
+    const resultados = await Promise.allSettled(mascotas.map((m) => cargarEmergencias(m.id)))
+    return resultados
+      .filter((r) => r.status === 'fulfilled')
+      .flatMap((r) => r.value)
+      .sort((a, b) => new Date(b.fechaAtencion) - new Date(a.fechaAtencion))
+  }, [mascotas, cargarEmergencias])
+
+  const cargarPorFiltro = useCallback(async (filtro) => {
+    if (filtro === 'all') return cargarTodas()
+    return cargarEmergencias(filtro)
+  }, [cargarTodas, cargarEmergencias])
+
   useEffect(() => {
     if (!mascotaFiltro) return
     let cancelled = false
@@ -73,7 +113,7 @@ export function useEmergencias() {
       setListStatus('loading')
       setListError('')
       try {
-        const data = await cargarEmergencias(mascotaFiltro)
+        const data = await cargarPorFiltro(mascotaFiltro)
         if (!cancelled) { setEmergencias(data); setListStatus('loaded') }
       } catch (error) {
         if (!cancelled) { setListError(error.message); setListStatus('error') }
@@ -81,7 +121,7 @@ export function useEmergencias() {
     }
     load()
     return () => { cancelled = true }
-  }, [mascotaFiltro, cargarEmergencias])
+  }, [mascotaFiltro, cargarPorFiltro])
 
   const abrirNueva = (mascotaIdPreseleccionada) => {
     setForm({
@@ -126,6 +166,13 @@ export function useEmergencias() {
       sintomas: form.sintomas.trim() || null,
       tratamientoAplicado: form.tratamientoAplicado.trim() || null,
       archivoAdjuntoUrl: form.archivoAdjuntoUrl.trim() || null,
+      nivelSeveridad: form.nivelSeveridad,
+      frecuenciaCardiaca: aNumero(form.frecuenciaCardiaca),
+      saturacionO2: aNumero(form.saturacionO2),
+      temperatura: aNumero(form.temperatura),
+      estadoPaciente: form.estadoPaciente.trim() || null,
+      medicoACargo: form.medicoACargo.trim() || null,
+      diagnostico: form.diagnostico.trim() || null,
     }
     try {
       const response = await authFetch(`${API_BASE_URL}/emergencias`, {
@@ -143,13 +190,45 @@ export function useEmergencias() {
       cerrar()
       if (mascotaFiltro) {
         try {
-          const data = await cargarEmergencias(mascotaFiltro)
+          const data = await cargarPorFiltro(mascotaFiltro)
           setEmergencias(data)
         } catch { /* se mantiene la lista previa */ }
       }
     } catch (error) {
       setSubmitError(error.message)
       setSubmitStatus('idle')
+    }
+  }
+
+  /* Actualiza severidad/estado reutilizando el PUT existente
+     (ActualizarEmergenciaDto: null preserva el valor previo). */
+  const actualizarEstado = async (id, nivel) => {
+    setUpdateStatus('submitting')
+    setUpdateError('')
+    try {
+      const response = await authFetch(`${API_BASE_URL}/emergencias/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ NivelSeveridad: nivel }),
+      })
+      if (response.status === 400 || response.status === 403) {
+        const errData = await response.json().catch(() => ({}))
+        throw new Error(errData.mensaje ?? 'Revise los datos y permisos.')
+      }
+      if (!response.ok) throw new Error('No se pudo actualizar el estado.')
+      toast.success('Estado de emergencia actualizado.')
+      if (mascotaFiltro) {
+        try {
+          const data = await cargarPorFiltro(mascotaFiltro)
+          setEmergencias(data)
+        } catch { /* se mantiene la lista previa */ }
+      }
+      setUpdateStatus('sent')
+      return true
+    } catch (error) {
+      setUpdateError(error.message)
+      setUpdateStatus('idle')
+      return false
     }
   }
 
@@ -167,9 +246,12 @@ export function useEmergencias() {
     errors,
     submitStatus,
     submitError,
+    updateStatus,
+    updateError,
     abrirNueva,
     cerrar,
     handleChange,
     guardar,
+    actualizarEstado,
   }
 }
