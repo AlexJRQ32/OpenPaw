@@ -17,6 +17,24 @@ public class TrasladoExpedienteConfiguration : IEntityTypeConfiguration<Traslado
             .HasMaxLength(20)
             .IsRequired();
 
+        // Sprint 1 - Tarea 10: campo paralelo de logistica (Programado/EnTransito/Completado).
+        builder.Property(t => t.EstadoLogistica)
+            .HasMaxLength(20)
+            .IsRequired();
+
+        // Sprint 1 - Tarea 10: coordenadas para el mapa punto a punto (patron decimal(10,7) tarea 6).
+        builder.Property(t => t.OrigenLatitud)
+            .HasPrecision(10, 7);
+
+        builder.Property(t => t.OrigenLongitud)
+            .HasPrecision(10, 7);
+
+        builder.Property(t => t.DestinoLatitud)
+            .HasPrecision(10, 7);
+
+        builder.Property(t => t.DestinoLongitud)
+            .HasPrecision(10, 7);
+
         builder.Property(t => t.Comentario)
             .HasMaxLength(1000);
 
