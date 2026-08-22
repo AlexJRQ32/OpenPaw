@@ -3,25 +3,63 @@
 .dashboard-page {
   padding: var(--space-8) var(--space-6);
 }
-.dashboard-greeting {
+/* ==========================================================================
+   Header del Dashboard (T23 — wireframe dashboard_openpaw)
+   Fila meta (badge de rol + fecha) sobre el título, subtítulo de alertas y
+   acciones (Personalizar outline · Nueva Consulta primary) a la derecha.
+   ========================================================================== */
+.dashboard-header {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  justify-content: space-between;
   gap: var(--space-4);
   margin-bottom: var(--space-8);
 }
-.dashboard-greeting h1 {
-  margin: 0;
-  font-size: var(--fs-2xl);
-  font-weight: var(--fw-bold);
-  color: var(--color-black);
+.dashboard-header__meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
 }
+/* Ajuste sobre el Badge DS (variant="active" → secondary-container M3):
+   estilo uppercase/tracking del wireframe */
 .dashboard-role-badge {
-  padding: var(--space-1) 14px;
-  border-radius: var(--radius-full);
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-bold);
-  background: var(--color-primary-light);
-  color: var(--color-primary);
+  padding: 3px var(--space-3);
+  font-size: var(--fs-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+/* --md-on-surface-variant (#424654) ya da ~8.9:1 de contraste; sin opacity
+   para no bajar del mínimo AA 4.5:1. */
+.dashboard-header__date {
+  font-size: var(--fs-label);
+  font-weight: var(--fw-medium);
+  color: var(--md-on-surface-variant);
+}
+.dashboard-header__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-headline);
+  letter-spacing: var(--tracking-tight);
+  font-weight: var(--fw-extrabold);
+  color: var(--md-on-surface);
+}
+.dashboard-header__name {
+  color: var(--md-primary);
+}
+.dashboard-header__subtitle {
+  margin: var(--space-3) 0 0;
+  max-width: 600px;
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-body-lg);
+  color: var(--md-on-surface-variant);
+}
+.dashboard-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
 }
 .dashboard-stats {
   display: grid;
@@ -55,14 +93,20 @@
   .dashboard-page {
     padding: var(--space-5) 14px;
   }
-  .dashboard-greeting {
+  .dashboard-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: var(--space-2);
+    align-items: stretch;
     margin-bottom: var(--space-5);
   }
-  .dashboard-greeting h1 {
-    font-size: var(--fs-lg);
+  .dashboard-header__title {
+    font-size: var(--fs-2xl);
+  }
+  .dashboard-header__subtitle {
+    font-size: var(--fs-base);
+  }
+  .dashboard-header__actions .btn {
+    flex: 1;
+    min-width: 140px;
   }
   .dashboard-stats {
     display: flex;
