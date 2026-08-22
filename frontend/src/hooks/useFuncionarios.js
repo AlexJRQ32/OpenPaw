@@ -132,7 +132,7 @@ export function useFuncionarios() {
     }
   }
 
-  const crearFuncionario = handleSubmit(async (data) => {
+  const ejecutarCreacion = async (data) => {
     setStatus('submitting')
     setUltimoCreado(null)
     setSubmitError('')
@@ -158,14 +158,29 @@ export function useFuncionarios() {
 
       const resData = await response.json()
       setUltimoCreado(resData)
-      reset(initialFuncionarioForm)
+      // M3 (QA): preservar comercioId al resetear. Sin esto, un no-admin (campo
+      // comercio oculto) perdia el vinculo a su comercio en el 2º alta.
+      reset({ ...initialFuncionarioForm, comercioId: data.comercioId || '' })
       setStatus('idle')
       await cargarFuncionarios()
+      return true
     } catch (error) {
       setStatus('idle')
       setSubmitError(error.message)
+      return false
     }
-  })
+  }
+
+  // M1 (QA): crearFuncionario resuelve true SOLO si el alta fue exitosa. Con
+  // error del servidor (400) o validacion cliente devuelve false para que la
+  // pagina no cierre el modal y pueda mostrar errors.submit.
+  const crearFuncionario = (event) => {
+    let exito = false
+    const submit = handleSubmit(async (data) => {
+      exito = await ejecutarCreacion(data)
+    })
+    return submit(event).then(() => exito)
+  }
 
   const cambiarRol = async (id, rolId) => {
     const response = await authFetch(`${API_BASE_URL}/usuarios/${id}/rol`, {

@@ -1,27 +1,70 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Button } from '../../../shared/components/Button/Button'
 import { Modal } from '../../../shared/components/Modal/Modal'
 import { Field } from '../../../shared/components/Field/Field'
-import { FuncionariosPanel } from '../components/FuncionariosPanel'
+import { Badge } from '../../../shared/components/Badge/Badge'
+import { Icon } from '../../../shared/components/Icon/Icon'
+import { Pagination } from '../../../shared/components/Pagination/Pagination'
+import { EmptyState } from '../../../shared/components/EmptyState'
 import { AppShell } from '../../../shared/components/AppShell/AppShell'
+import { FuncionariosPanel } from '../components/FuncionariosPanel'
 import { useFuncionarios } from '../../../hooks/useFuncionarios'
 import { FUNCIONARIO_ROLES, ROLE_IDS, API_BASE_URL } from '../../../constants'
 import { useAuth } from '../../auth/context/AuthContext'
 import { authFetch } from '../../../shared/utils/api'
 import './FuncionariosPage.css'
 
+const PAGE_SIZE = 8
+
+/* ---------------------------------------------------------------------------
+   Stat bento (wireframe funcionarios_openpaw): Personal Activo | Personal
+   Medico | Soporte y Admin con icono en circulo tintado.
+   --------------------------------------------------------------------------- */
+function StatCard({ label, value, icon, tone, filled = false }) {
+  return (
+    <div className={`func-stat func-stat--${tone}`}>
+      <div className="func-stat__text">
+        <p className="func-stat__label">{label}</p>
+        <p className="func-stat__value">{value}</p>
+      </div>
+      <span className="func-stat__icon" aria-hidden="true">
+        <Icon name={icon} size={24} filled={filled} />
+      </span>
+    </div>
+  )
+}
+
+function iniciales(nombre) {
+  const partes = String(nombre ?? '?').trim().split(/\s+/).slice(0, 2)
+  const siglas = partes.map((p) => p[0]?.toUpperCase() ?? '').join('')
+  return siglas || '?'
+}
+
 export function FuncionariosPage() {
   const { user } = useAuth()
   const location = useLocation()
   const userRol = Number(user?.rolId ?? user?.rol ?? user?.role)
   const esAdmin = userRol === ROLE_IDS.ADMINISTRADOR
+  const userId = Number(user?.sub ?? user?.id)
+
   const [tab, setTab] = useState('funcionarios')
   const [showCreate, setShowCreate] = useState(location.state?.openCreate === true)
   const [comercios, setComercios] = useState([])
   const [loadingComercios, setLoadingComercios] = useState(false)
-  const { funcionarios, admins, form, errors, status, ultimoCreado, updateField, setValue, crearFuncionario } = useFuncionarios()
+  const [searchTerm, setSearchTerm] = useState('')
+  const [rolFilter, setRolFilter] = useState(null)
+  const [page, setPage] = useState(1)
+  const [rowError, setRowError] = useState(null)
+  const [togglingId, setTogglingId] = useState(null)
 
+  const {
+    funcionarios, admins, listStatus, listError,
+    form, errors, status, ultimoCreado,
+    updateField, crearFuncionario, cambiarRol, alternarActivo,
+  } = useFuncionarios()
+
+  /* Comercios para el select del modal de creacion (solo admin). */
   useEffect(() => {
     if (!esAdmin) return
     let cancelled = false
@@ -43,87 +86,251 @@ export function FuncionariosPage() {
     return () => { cancelled = true }
   }, [esAdmin])
 
+  /* Reseteo de pagina al cambiar busqueda, filtro o seccion (en handlers,
+     sin setState sincrono en effects — regla react-hooks/set-state-in-effect). */
+  const resetPage = () => setPage(1)
+
+  const buscando = searchTerm.trim() !== ''
+
+  /* Filtro combinado: rol (chips) + texto (nombre, email, ID, rol, especialidad, sede...). */
+  const filtrados = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase()
+    return funcionarios.filter((f) => {
+      if (rolFilter !== null && Number(f.rolId) !== Number(rolFilter)) return false
+      if (!q) return true
+      const hay = (v) => (v ?? '').toString().toLowerCase().includes(q)
+      const rol = FUNCIONARIO_ROLES.find((r) => Number(r.id) === Number(f.rolId))?.nombre ?? ''
+      return (
+        hay(f.nombre) || hay(f.email) || hay(f.id) || hay(f.idCorporativo) ||
+        hay(rol) || hay(f.especialidad) || hay(f.sede) || hay(f.comercioNombre) || hay(f.estado)
+      )
+    })
+  }, [funcionarios, searchTerm, rolFilter])
+
+  /* Pagina derivada: clamp al rango valido [1, totalPages] sin effects. */
+  const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE))
+  const safePage = Math.min(Math.max(1, page), totalPages)
+
+  const pageItems = useMemo(
+    () => filtrados.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE),
+    [filtrados, safePage]
+  )
+
+  const activos = funcionarios.filter((f) => f.activo).length
+  const medicos = funcionarios.filter((f) => Number(f.rolId) === ROLE_IDS.VETERINARIA).length
+  const soporte = funcionarios.filter((f) => Number(f.rolId) === ROLE_IDS.ALMACEN).length
+
+  const rolChips = [{ id: null, nombre: 'Todos' }, ...FUNCIONARIO_ROLES]
+  const sinResultados = listStatus === 'loaded' && filtrados.length === 0
+
   const handleCreate = async (e) => {
     e.preventDefault()
-    await crearFuncionario(e)
-    if (!errors.submit) setShowCreate(false)
+    // M1 (QA): crearFuncionario resuelve true solo si el alta fue exitosa.
+    // Con error (400 / validacion) el modal permanece abierto mostrando errors.submit.
+    const creado = await crearFuncionario(e)
+    if (creado) setShowCreate(false)
+  }
+
+  const handleCambiarRol = async (funcionario, event) => {
+    setRowError(null)
+    try {
+      await cambiarRol(funcionario.id, Number(event.target.value))
+    } catch (error) {
+      setRowError(error.message)
+    }
+  }
+
+  const handleAlternarActivo = async (funcionario) => {
+    setRowError(null)
+    setTogglingId(funcionario.id)
+    try {
+      await alternarActivo(funcionario)
+    } catch (error) {
+      setRowError(error.message)
+    } finally {
+      setTogglingId(null)
+    }
   }
 
   return (
     <AppShell>
       <div className="func-page">
-        <div className="approvals-header" style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+        {/* ------------------------------------------------------------ header */}
+        <header className="func-header">
           <div>
-            <h1 className="approvals-title">Gestion de funcionarios</h1>
-            <p className="approvals-subtitle">Administra el acceso del personal de tu comercio.</p>
+            <div className="func-kicker">
+              <span className="func-kicker__dash" aria-hidden="true" />
+              Gestión Humana
+            </div>
+            <h1 className="func-title">Funcionarios</h1>
+            <p className="func-subtitle">
+              Administre el personal médico y administrativo de la red OpenPaw.
+              Monitoree capacidades y roles de forma unificada.
+            </p>
           </div>
-          <Button variant="primary" size="md" onClick={() => setShowCreate(true)}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nuevo funcionario
+          <Button variant="primary" size="md" icon="add" onClick={() => setShowCreate(true)}>
+            Nuevo Funcionario
           </Button>
+        </header>
+
+        {/* ---------------------------------------------------------- stats */}
+        <div className="func-stats" role="group" aria-label="Resumen de funcionarios">
+          <StatCard label="Personal Activo" value={activos} icon="group" tone="activos" />
+          <StatCard label="Personal Médico" value={medicos} icon="stethoscope" tone="medicos" filled />
+          <StatCard label="Soporte y Admin" value={soporte} icon="admin_panel_settings" tone="soporte" />
         </div>
+
+        {/* --------------------------------------------- tabs (solo admin) */}
         {esAdmin && (
-          <div className="func-tabs">
-            <button className={`func-tab ${tab === 'funcionarios' ? 'active' : ''}`} onClick={() => setTab('funcionarios')}>Funcionarios ({funcionarios.length})</button>
-            <button className={`func-tab ${tab === 'admins' ? 'active' : ''}`} onClick={() => setTab('admins')}>Administradores ({admins.length})</button>
+          <div className="func-tabs" role="tablist" aria-label="Secciones de funcionarios">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'funcionarios'}
+              className={`func-tab ${tab === 'funcionarios' ? 'is-active' : ''}`.trim()}
+              onClick={() => { setTab('funcionarios'); resetPage() }}
+            >
+              Funcionarios <span className="func-tab__count">{funcionarios.length}</span>
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={tab === 'admins'}
+              className={`func-tab ${tab === 'admins' ? 'is-active' : ''}`.trim()}
+              onClick={() => { setTab('admins'); resetPage() }}
+            >
+              Administradores <span className="func-tab__count">{admins.length}</span>
+            </button>
           </div>
-        )}
-        {esAdmin && tab === 'admins' ? (
-          <>
-            <div className="func-stats">
-              <div className="func-stat">
-                <span className="func-stat-number">{admins.length}</span>
-                <span className="func-stat-label">Total</span>
-              </div>
-              <div className="func-stat">
-                <span className="func-stat-number">{admins.filter((a) => a.activo).length}</span>
-                <span className="func-stat-label">Activos</span>
-              </div>
-              <div className="func-stat">
-                <span className="func-stat-number">{admins.filter((a) => !a.activo).length}</span>
-                <span className="func-stat-label">Inactivos</span>
-              </div>
-            </div>
-            <div className="func-card">
-              <div className="func-card-header">
-                <h3>Administradores del sistema</h3>
-              </div>
-              <div className="func-table-wrap">
-                <table className="func-table">
-                  <thead>
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Email</th>
-                      <th>Estado</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {admins.length === 0 && (
-                      <tr><td colSpan="3" style={{textAlign:'center',padding:40,color:'#888'}}>No hay administradores.</td></tr>
-                    )}
-                    {admins.map((a) => (
-                      <tr key={a.id}>
-                        <td>
-                          <div className="func-name">
-                            <span className="func-avatar">{a.nombre?.charAt(0)?.toUpperCase() || '?'}</span>
-                            {a.nombre}
-                          </div>
-                        </td>
-                        <td>{a.email}</td>
-                        <td><span className={`badge badge--${a.activo ? 'active' : 'inactive'}`}>{a.activo ? 'Activo' : 'Inactivo'}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </>
-        ) : (
-          <FuncionariosPanel />
         )}
 
+        {esAdmin && tab === 'admins' ? (
+          /* ------------------------------------------------- tab admins */
+          <section className="func-card" aria-label="Administradores del sistema">
+            <div className="func-card-header">
+              <h3>Administradores del sistema</h3>
+            </div>
+            <div className="func-table-wrap">
+              <table className="func-table" aria-label="Lista de administradores">
+                <thead>
+                  <tr>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {admins.length === 0 && (
+                    <tr>
+                      <td colSpan={3} className="func-empty-row">No hay administradores.</td>
+                    </tr>
+                  )}
+                  {admins.map((a) => (
+                    <tr key={a.id} className="func-row">
+                      <td>
+                        <div className="func-name">
+                          <span className="func-avatar" aria-hidden="true">{iniciales(a.nombre)}</span>
+                          <span className="func-name__nombre">{a.nombre}</span>
+                        </div>
+                      </td>
+                      <td>{a.email}</td>
+                      <td>
+                        <Badge variant={a.activo ? 'active' : 'inactive'} dot>
+                          {a.activo ? 'Activo' : 'Inactivo'}
+                        </Badge>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : (
+          /* --------------------------------------------------- funcionarios */
+          <>
+            <div className="func-filters">
+              <div className="func-chips" role="group" aria-label="Filtrar por rol">
+                {rolChips.map((chip) => (
+                  <button
+                    key={chip.id ?? 'todos'}
+                    type="button"
+                    className={`func-chip ${rolFilter === chip.id ? 'is-active' : ''}`.trim()}
+                    aria-pressed={rolFilter === chip.id}
+                    onClick={() => { setRolFilter(chip.id); resetPage() }}
+                  >
+                    {chip.nombre}
+                  </button>
+                ))}
+              </div>
+              <div className="func-search" role="search">
+                <Icon name="search" size={20} className="func-search__icon" aria-hidden="true" />
+                <input
+                  type="search"
+                  className="func-search__input"
+                  placeholder="Buscar por nombre, ID o rol..."
+                  value={searchTerm}
+                  onChange={(e) => { setSearchTerm(e.target.value); resetPage() }}
+                  aria-label="Buscar funcionario"
+                />
+                {buscando && (
+                  <button
+                    type="button"
+                    className="func-search__clear"
+                    title="Limpiar busqueda"
+                    aria-label="Limpiar busqueda"
+                    onClick={() => { setSearchTerm(''); resetPage() }}
+                  >
+                    <Icon name="close" size={16} aria-hidden="true" />
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {listStatus === 'loading' && (
+              <div className="func-loading" role="status" aria-label="Cargando funcionarios">
+                <span className="spinner" />
+              </div>
+            )}
+            {listStatus === 'error' && <p className="submit-error">{listError}</p>}
+
+            {sinResultados && (
+              <EmptyState
+                icon="group"
+                title={buscando || rolFilter !== null ? 'Sin resultados' : 'Sin funcionarios'}
+                description={
+                  buscando || rolFilter !== null
+                    ? 'No hay funcionarios que coincidan con el filtro actual. Prueba con otros términos o roles.'
+                    : 'No hay funcionarios registrados todavía.'
+                }
+                action={
+                  <Button variant="primary" icon="add" onClick={() => setShowCreate(true)}>
+                    Nuevo Funcionario
+                  </Button>
+                }
+              />
+            )}
+
+            {listStatus === 'loaded' && filtrados.length > 0 && (
+              <section className="func-card">
+                <FuncionariosPanel
+                  items={pageItems}
+                  esAdmin={esAdmin}
+                  userId={userId}
+                  togglingId={togglingId}
+                  onCambiarRol={handleCambiarRol}
+                  onAlternarActivo={handleAlternarActivo}
+                />
+                <div className="func-pagination">
+                  <Pagination page={safePage} pageSize={PAGE_SIZE} total={filtrados.length} onChange={setPage} />
+                </div>
+              </section>
+            )}
+
+            {rowError && <p className="submit-error">{rowError}</p>}
+          </>
+        )}
+
+        {/* --------------------------------------------------- modal crear */}
         <Modal open={showCreate} onClose={() => setShowCreate(false)} className="funcionarios-modal">
           <div>
             <h2>Nuevo funcionario</h2>
@@ -134,7 +341,7 @@ export function FuncionariosPage() {
                 {(esAdmin || comercios.length > 0) && (
                   <label className="field">
                     <span>Comercio</span>
-                    {loadingComercios ? <span className="spinner" style={{marginTop:8}} /> : (
+                    {loadingComercios ? <span className="spinner" /> : (
                       <select name="comercioId" value={form.comercioId || ''} onChange={updateField}>
                         <option value="">Seleccionar comercio...</option>
                         {comercios.map((c) => <option key={c.id} value={c.id}>{c.nombre} ({c.tipo})</option>)}
@@ -154,29 +361,30 @@ export function FuncionariosPage() {
               {errors.submit && <p className="submit-error">{errors.submit}</p>}
               <div className="funcionarios-modal-actions">
                 <Button variant="secondary" type="button" onClick={() => setShowCreate(false)}>Cancelar</Button>
-                <Button variant="primary" type="submit" disabled={status==='submitting'}>
-                  {status==='submitting' ? 'Creando...' : 'Crear funcionario'}
+                <Button variant="primary" type="submit" disabled={status === 'submitting'}>
+                  {status === 'submitting' ? 'Creando...' : 'Crear funcionario'}
                 </Button>
               </div>
             </form>
           </div>
         </Modal>
 
+        {/* ------------------------------------- modal contrasena temporal */}
         {ultimoCreado && (
-          <Modal open={true} onClose={() => window.location.reload()}>
+          <Modal open onClose={() => window.location.reload()} className="funcionarios-modal">
             <div>
-              <h2 style={{margin:'0 0 20px',fontSize:20,color:'#000'}}>Funcionario creado</h2>
-              <p style={{margin:'0 0 12px',color:'#555',lineHeight:1.6}}>
+              <h2>Funcionario creado</h2>
+              <p className="func-created-sub">
                 <strong>{ultimoCreado?.usuario?.nombre}</strong> ({ultimoCreado?.usuario?.email}) registrado.
               </p>
-              <div style={{padding:16,background:'#f5f5f5',borderRadius:12,marginBottom:16}}>
-                <p style={{margin:'0 0 8px',fontSize:13,color:'#888',fontWeight:700}}>CONTRASENA TEMPORAL</p>
-                <p style={{margin:0,fontSize:18,fontWeight:700,color:'#000',fontFamily:'monospace'}}>
-                  {ultimoCreado?.passwordTemporal}
-                </p>
+              <div className="func-created-pass">
+                <p className="func-created-pass__label">CONTRASEÑA TEMPORAL</p>
+                <p className="func-created-pass__value">{ultimoCreado?.passwordTemporal}</p>
               </div>
-              <p style={{margin:'0 0 20px',fontSize:13,color:'#b42318'}}>Compartela solo una vez.</p>
-              <Button variant="primary" onClick={() => window.location.reload()}>Cerrar</Button>
+              <p className="func-created-warn">Compártela solo una vez. No se volverá a mostrar.</p>
+              <div className="funcionarios-modal-actions">
+                <Button variant="primary" onClick={() => window.location.reload()}>Cerrar</Button>
+              </div>
             </div>
           </Modal>
         )}
