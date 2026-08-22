@@ -56,6 +56,8 @@ export function useServiciosVeterinaria() {
   const [submitStatus, setSubmitStatus] = useState('idle')
   const [submitError, setSubmitError] = useState('')
   const [filterCategoria, setFilterCategoria] = useState('Todas')
+  const [searchTerm, setSearchTerm] = useState('')
+  const [togglingId, setTogglingId] = useState(null)
   const [confirmTarget, setConfirmTarget] = useState(null)
   const [deleting, setDeleting] = useState(false)
 
@@ -228,9 +230,49 @@ export function useServiciosVeterinaria() {
     }
   }
 
-  const filtrados = servicios.filter((s) =>
-    filterCategoria === 'Todas' ? true : s.categoria === filterCategoria
-  )
+  /**
+   * Toggle inline de estado (wireframe servicios_openpaw): alterna activo/inactivo
+   * con actualizacion optimista. Reutiliza el PUT existente (payload completo,
+   * contrato ActualizarServicioVeterinarioDto). Sin endpoints nuevos.
+   */
+  const toggleActivo = async (servicio) => {
+    if (!servicio || togglingId === servicio.id) return
+    const nuevoEstado = !servicio.activo
+    setTogglingId(servicio.id)
+    // Optimistic: refleja el cambio al instante en la grilla
+    setServicios((prev) => prev.map((s) => (s.id === servicio.id ? { ...s, activo: nuevoEstado } : s)))
+    try {
+      const response = await authFetch(`${API_BASE_URL}/serviciosveterinarios/${servicio.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: servicio.nombre,
+          descripcion: servicio.descripcion,
+          categoria: servicio.categoria,
+          precio: servicio.precio,
+          duracionMinutos: servicio.duracionMinutos,
+          activo: nuevoEstado,
+        }),
+      })
+      if (!response.ok) throw new Error('No se pudo actualizar el estado del servicio.')
+      toast[nuevoEstado ? 'success' : 'warning'](`Servicio ${nuevoEstado ? 'activado' : 'desactivado'}.`)
+    } catch (error) {
+      // Revertir el cambio optimista
+      setServicios((prev) => prev.map((s) => (s.id === servicio.id ? { ...s, activo: !nuevoEstado } : s)))
+      toast.error(error.message)
+    } finally {
+      setTogglingId(null)
+    }
+  }
+
+  const filtrados = servicios.filter((s) => {
+    const porCategoria = filterCategoria === 'Todas' ? true : s.categoria === filterCategoria
+    const texto = searchTerm.trim().toLowerCase()
+    const porTexto = texto === ''
+      ? true
+      : [s.nombre, s.descripcion, s.categoria].filter(Boolean).some((v) => String(v).toLowerCase().includes(texto))
+    return porCategoria && porTexto
+  })
 
   const activos = servicios.filter((s) => s.activo).length
   const inactivos = servicios.length - activos
@@ -251,6 +293,10 @@ export function useServiciosVeterinaria() {
     submitError,
     filterCategoria,
     setFilterCategoria,
+    searchTerm,
+    setSearchTerm,
+    togglingId,
+    toggleActivo,
     activos,
     inactivos,
     abrirNuevo,

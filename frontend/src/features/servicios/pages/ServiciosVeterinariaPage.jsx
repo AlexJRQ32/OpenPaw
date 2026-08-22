@@ -5,6 +5,8 @@ import { Badge } from '../../../shared/components/Badge/Badge'
 import { AppShell } from '../../../shared/components/AppShell/AppShell'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { ConfirmDialog } from '../../../shared/components/ConfirmDialog/ConfirmDialog'
+import { Icon } from '../../../shared/components/Icon/Icon'
+import { ToggleSwitch } from '../../../shared/components/ToggleSwitch/ToggleSwitch'
 import { useServiciosVeterinaria } from '../hooks/useServiciosVeterinaria'
 import './ServiciosVeterinariaPage.css'
 
@@ -20,110 +22,233 @@ function formatDuracion(min) {
   return rest ? `${horas}h ${rest}m` : `${horas}h`
 }
 
+/* Iconos Material Symbols por categoria (wireframe: stethoscope / content_cut / vaccines) */
+const CATEGORIA_ICON_M3 = {
+  Consulta: 'stethoscope',
+  Grooming: 'content_cut',
+  Procedimiento: 'vaccines',
+}
+const CATEGORIA_ICON_DEFAULT = 'medical_services'
+
+const iconoDe = (categoria) => CATEGORIA_ICON_M3[categoria] || CATEGORIA_ICON_DEFAULT
+
+/* ---------------------------------------------------------------------------
+   Tarjeta de servicio (wireframe servicios_openpaw):
+   icono en caja tintada + badge estado + ToggleSwitch inline + titulo/desc +
+   meta (duracion/veterinaria) + footer Precio Base + acciones editar/eliminar.
+   --------------------------------------------------------------------------- */
+function ServicioCard({ servicio, toggling, onToggle, onEditar, onEliminar }) {
+  const inactivo = !servicio.activo
+  const categoria = servicio.categoria || 'Consulta'
+  return (
+    <article
+      className={`serv-card ${inactivo ? 'serv-card--inactive' : ''}`.trim()}
+      aria-label={`Servicio ${servicio.nombre}`}
+    >
+      <div className="serv-card__top">
+        <span
+          className={`serv-card__icon serv-card__icon--${categoria.toLowerCase()}`}
+          aria-hidden="true"
+        >
+          <Icon name={iconoDe(categoria)} size={28} filled />
+        </span>
+        <div className="serv-card__top-actions">
+          <Badge variant={inactivo ? 'inactive' : 'active'} dot>
+            {inactivo ? 'Inactivo' : 'Activo'}
+          </Badge>
+          <ToggleSwitch
+            checked={servicio.activo}
+            onChange={() => onToggle(servicio)}
+            disabled={toggling}
+            size="sm"
+            aria-label={`${inactivo ? 'Activar' : 'Desactivar'} ${servicio.nombre}`}
+          />
+        </div>
+      </div>
+
+      <div className="serv-card__body">
+        <h3 className="serv-card__title">{servicio.nombre}</h3>
+        {servicio.descripcion && <p className="serv-card__desc">{servicio.descripcion}</p>}
+        <div className="serv-card__meta">
+          <span className="serv-card__meta-item">
+            <Icon name="schedule" size={14} aria-hidden="true" />
+            {formatDuracion(servicio.duracionMinutos)}
+          </span>
+          {servicio.veterinariaNombre && (
+            <span className="serv-card__meta-item">
+              <Icon name="location_on" size={14} aria-hidden="true" />
+              {servicio.veterinariaNombre}
+            </span>
+          )}
+        </div>
+      </div>
+
+      <div className="serv-card__footer">
+        <div className="serv-card__precio">
+          <span className="serv-card__precio-label">Precio Base</span>
+          <span className="serv-card__precio-valor">{formatPrecio(servicio.precio)}</span>
+        </div>
+        <div className="serv-card__acciones">
+          <button
+            type="button"
+            className="serv-card__icon-btn"
+            title="Editar servicio"
+            aria-label={`Editar ${servicio.nombre}`}
+            onClick={() => onEditar(servicio)}
+          >
+            <Icon name="edit" size={18} aria-hidden="true" />
+          </button>
+          <button
+            type="button"
+            className="serv-card__icon-btn serv-card__icon-btn--danger"
+            title="Eliminar servicio"
+            aria-label={`Eliminar ${servicio.nombre}`}
+            onClick={() => onEliminar(servicio)}
+          >
+            <Icon name="delete" size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+/* ---------------------------------------------------------------------------
+   Stats bento (wireframe): Total / Activos / Inactivos con icono en circulo.
+   --------------------------------------------------------------------------- */
+function StatCard({ label, value, icon, tone }) {
+  return (
+    <div className={`serv-stat serv-stat--${tone}`}>
+      <div>
+        <p className="serv-stat__label">{label}</p>
+        <p className="serv-stat__value">{value}</p>
+      </div>
+      <span className="serv-stat__icon" aria-hidden="true">
+        <Icon name={icon} size={24} filled />
+      </span>
+    </div>
+  )
+}
+
 export function ServiciosVeterinariaPage() {
   const {
     servicios, filtrados, veterinarias, esAdmin, listStatus, listError,
     modalOpen, editando, form, errors, submitStatus, submitError,
-    filterCategoria, setFilterCategoria, activos, inactivos,
+    filterCategoria, setFilterCategoria, searchTerm, setSearchTerm,
+    togglingId, toggleActivo, activos, inactivos,
     abrirNuevo, abrirEditar, cerrar, handleChange, guardar,
     confirmTarget, setConfirmTarget, confirmarEliminar, deleting,
-    CATEGORIAS, CATEGORIA_ICON,
+    CATEGORIAS,
   } = useServiciosVeterinaria()
+
+  const buscando = searchTerm.trim() !== ''
+  const sinResultados = listStatus === 'loaded' && filtrados.length === 0
 
   return (
     <AppShell>
       <div className="serv-page">
-        <div className="serv-header">
+        {/* ------------------------------------------------------------ header */}
+        <header className="serv-header">
           <div>
-            <h1 className="serv-title">Servicios veterinarios</h1>
-            <p className="serv-subtitle">Administra el catalogo de servicios de tu veterinaria.</p>
+            <h1 className="serv-title">Catálogo de Servicios</h1>
+            <p className="serv-subtitle">
+              Gestión y configuración de los servicios veterinarios ofrecidos en la clínica.
+              Actualiza precios, descripciones y disponibilidad.
+            </p>
           </div>
-          <Button variant="primary" size="md" onClick={abrirNuevo}>
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nuevo servicio
+          <Button variant="primary" size="md" icon="add" onClick={abrirNuevo}>
+            Nuevo Servicio
           </Button>
+        </header>
+
+        {/* ---------------------------------------------------------- stats */}
+        <div className="serv-stats" role="group" aria-label="Resumen de servicios">
+          <StatCard label="Total Servicios" value={servicios.length} icon="medical_services" tone="total" />
+          <StatCard label="Activos" value={activos} icon="check_circle" tone="activos" />
+          <StatCard label="Inactivos" value={inactivos} icon="cancel" tone="inactivos" />
         </div>
 
-        <div className="serv-stats">
-          <div className="serv-stat">
-            <span className="serv-stat-number">{servicios.length}</span>
-            <span className="serv-stat-label">Total de servicios</span>
+        {/* ------------------------------------------- barra filtros + buscar */}
+        <div className="serv-filters">
+          <div className="serv-chips" role="group" aria-label="Filtrar por categoria">
+            {['Todas', ...CATEGORIAS].map((categoria) => (
+              <button
+                key={categoria}
+                type="button"
+                className={`serv-chip ${filterCategoria === categoria ? 'is-active' : ''}`.trim()}
+                aria-pressed={filterCategoria === categoria}
+                onClick={() => setFilterCategoria(categoria)}
+              >
+                {categoria}
+              </button>
+            ))}
           </div>
-          <div className="serv-stat serv-stat--active">
-            <span className="serv-stat-number">{activos}</span>
-            <span className="serv-stat-label">Activos</span>
-          </div>
-          <div className="serv-stat serv-stat--inactive">
-            <span className="serv-stat-number">{inactivos}</span>
-            <span className="serv-stat-label">Inactivos</span>
+          <div className="serv-search" role="search">
+            <Icon name="search" size={20} className="serv-search__icon" aria-hidden="true" />
+            <input
+              type="search"
+              className="serv-search__input"
+              placeholder="Buscar servicio..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              aria-label="Buscar servicio"
+            />
+            {buscando && (
+              <button
+                type="button"
+                className="serv-search__clear"
+                title="Limpiar busqueda"
+                aria-label="Limpiar busqueda"
+                onClick={() => setSearchTerm('')}
+              >
+                <Icon name="close" size={16} aria-hidden="true" />
+              </button>
+            )}
           </div>
         </div>
 
-        <div className="serv-categorias">
-          {['Todas', ...CATEGORIAS].map((categoria) => (
-            <button
-              key={categoria}
-              className={`serv-categoria ${filterCategoria === categoria ? 'active' : ''}`}
-              onClick={() => setFilterCategoria(categoria)}
-            >
-              {categoria !== 'Todas' && <i className={CATEGORIA_ICON[categoria]} />}
-              {categoria}
-            </button>
-          ))}
-        </div>
-
-        {listStatus === 'loading' && <div className="spinner-wrap"><span className="spinner" /></div>}
+        {/* ----------------------------------------------------------- estados */}
+        {listStatus === 'loading' && (
+          <div className="serv-loading" role="status" aria-label="Cargando servicios">
+            <span className="spinner" />
+          </div>
+        )}
         {listStatus === 'error' && <p className="submit-error">{listError}</p>}
 
-        {listStatus === 'loaded' && (
-          <div className="serv-card">
-            {filtrados.length === 0 ? (
-              <EmptyState
-                title="Sin servicios"
-                description="No hay servicios para esta categoria. Agrega el primero."
-                action={<Button variant="primary" size="md" onClick={abrirNuevo}>Agregar servicio</Button>}
+        {sinResultados && (
+          <EmptyState
+            icon="medical_services"
+            title={buscando ? 'Sin resultados' : 'Sin servicios'}
+            description={
+              buscando
+                ? `No hay servicios que coincidan con "${searchTerm.trim()}". Prueba con otro termino.`
+                : 'No hay servicios para esta categoria. Agrega el primero.'
+            }
+            action={
+              <Button variant="primary" icon="add" onClick={abrirNuevo}>
+                Agregar servicio
+              </Button>
+            }
+          />
+        )}
+
+        {/* -------------------------------------------------------------- grid */}
+        {listStatus === 'loaded' && filtrados.length > 0 && (
+          <div className="serv-grid">
+            {filtrados.map((servicio) => (
+              <ServicioCard
+                key={servicio.id}
+                servicio={servicio}
+                toggling={togglingId === servicio.id}
+                onToggle={toggleActivo}
+                onEditar={abrirEditar}
+                onEliminar={setConfirmTarget}
               />
-            ) : (
-              <div className="serv-list">
-                {filtrados.map((servicio) => (
-                  <article key={servicio.id} className={`serv-item ${servicio.activo ? '' : 'serv-item--inactive'}`}>
-                    <div className={`serv-icon serv-icon--${(servicio.categoria || 'Consulta').toLowerCase()}`}>
-                      <i className={CATEGORIA_ICON[servicio.categoria] || CATEGORIA_ICON.Consulta} />
-                    </div>
-                    <div className="serv-body">
-                      <div className="serv-body-top">
-                        <h3>{servicio.nombre}</h3>
-                        <Badge variant={servicio.activo ? 'active' : 'inactive'}>
-                          {servicio.activo ? 'Activo' : 'Inactivo'}
-                        </Badge>
-                      </div>
-                      {servicio.descripcion && <p className="serv-desc">{servicio.descripcion}</p>}
-                      <div className="serv-meta">
-                        <span className="serv-cat"><i className={CATEGORIA_ICON[servicio.categoria] || CATEGORIA_ICON.Consulta} /> {servicio.categoria}</span>
-                        <span className="serv-dup"><i className="fas fa-clock" /> {formatDuracion(servicio.duracionMinutos)}</span>
-                        {servicio.veterinariaNombre && (
-                          <span className="serv-vet"><i className="fas fa-hospital" /> {servicio.veterinariaNombre}</span>
-                        )}
-                      </div>
-                    </div>
-                    <div className="serv-price">{formatPrecio(servicio.precio)}</div>
-                    <div className="serv-actions">
-                      <button type="button" className="serv-action" title="Editar" onClick={() => abrirEditar(servicio)}>
-                        <i className="fas fa-pen" />
-                      </button>
-                      <button type="button" className="serv-action serv-action--danger" title="Eliminar" onClick={() => setConfirmTarget(servicio)}>
-                        <i className="fas fa-trash" />
-                      </button>
-                    </div>
-                  </article>
-                ))}
-              </div>
-            )}
+            ))}
           </div>
         )}
 
+        {/* --------------------------------------------------- modal crear/editar */}
         <Modal open={modalOpen} onClose={cerrar} className="servicios-modal">
           <div>
             <h2>{editando ? 'Editar servicio' : 'Nuevo servicio'}</h2>
