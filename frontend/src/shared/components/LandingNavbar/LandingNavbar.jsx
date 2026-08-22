@@ -1,6 +1,7 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import { useAuth } from "../../../features/auth/context/AuthContext"
+import { Icon } from "../Icon/Icon"
 import "./LandingNavbar.css"
 
 export function LandingNavbar({ onLanding }) {
@@ -46,10 +47,10 @@ export function LandingNavbar({ onLanding }) {
           type="button"
           className={`landing-navbar-burger ${menuOpen ? "open" : ""}`}
           onClick={() => setMenuOpen(v => !v)}
-          aria-label="Abrir menu"
+          aria-label={menuOpen ? "Cerrar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
         >
-          <span /><span /><span />
+          <Icon name={menuOpen ? "close" : "menu"} size={24} />
         </button>
       </nav>
 
@@ -57,23 +58,23 @@ export function LandingNavbar({ onLanding }) {
       <div className={`landing-mobile-menu${menuOpen ? " landing-mobile-menu--open" : ""}`}>
         <nav className="landing-mobile-menu__nav" aria-label="Menu movil">
           {onLanding ? (
-            <Link to="/" onClick={closeMenu}><i className="fas fa-home" /> Volver al inicio</Link>
+            <Link to="/" onClick={closeMenu}><Icon name="home" size={18} /> Volver al inicio</Link>
           ) : (
             <>
-              <a href="#about" onClick={closeMenu}><i className="fas fa-lightbulb" /> La idea</a>
-              <a href="#features" onClick={closeMenu}><i className="fas fa-th-large" /> Funcionalidades</a>
-              <a href="#how" onClick={closeMenu}><i className="fas fa-circle-info" /> Como funciona</a>
+              <a href="#about" onClick={closeMenu}><Icon name="lightbulb" size={18} /> La idea</a>
+              <a href="#features" onClick={closeMenu}><Icon name="dashboard" size={18} /> Funcionalidades</a>
+              <a href="#how" onClick={closeMenu}><Icon name="info" size={18} /> Como funciona</a>
             </>
           )}
-          <Link to="/marketplace" onClick={closeMenu}><i className="fas fa-store" /> Marketplace</Link>
+          <Link to="/marketplace" onClick={closeMenu}><Icon name="store" size={18} /> Marketplace</Link>
           <div className="landing-mobile-menu__divider" />
           {isAuthenticated ? (
-            <Link to="/dashboard" onClick={closeMenu}><i className="fas fa-gauge" /> Ir al dashboard</Link>
+            <Link to="/dashboard" onClick={closeMenu}><Icon name="speed" size={18} /> Ir al dashboard</Link>
           ) : (
             <>
-              <Link to="/login" onClick={closeMenu}><i className="fas fa-user" /> Iniciar sesion</Link>
+              <Link to="/login" onClick={closeMenu}><Icon name="person" size={18} /> Iniciar sesion</Link>
               <Link to="/auth-method" className="landing-mobile-menu__cta" onClick={closeMenu}>
-                Comenzar <i className="fas fa-arrow-right" />
+                Comenzar <Icon name="arrow_forward" size={18} />
               </Link>
             </>
           )}

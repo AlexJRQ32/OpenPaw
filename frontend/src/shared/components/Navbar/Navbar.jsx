@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react"
 import { Link, useLocation } from "react-router-dom"
 import { useAuth } from "../../../features/auth/context/AuthContext"
+import { Icon } from "../Icon/Icon"
 import "./Navbar.css"
 
 export function Navbar() {
@@ -28,7 +29,7 @@ export function Navbar() {
     <>
       <nav className="navbar" aria-label="Navegacion principal">
         <div className="navbar-left">
-          {isMarketplace && <Link to="/" className="navbar-back" aria-label="Volver al inicio" onClick={closeMenu}>&larr;</Link>}
+          {isMarketplace && <Link to="/" className="navbar-back" aria-label="Volver al inicio" onClick={closeMenu}><Icon name="arrow_back" size={18} /></Link>}
           <Link to="/" className="navbar-brand" onClick={closeMenu}>
             <img src="/logo.png" alt="OpenPaw logo" />
             <span>OpenPaw</span>
@@ -56,7 +57,7 @@ export function Navbar() {
           aria-label={menuOpen ? "Cerrar menu" : "Abrir menu"}
           aria-expanded={menuOpen}
         >
-          <span /><span /><span />
+          <Icon name={menuOpen ? "close" : "menu"} size={24} />
         </button>
       </nav>
 
