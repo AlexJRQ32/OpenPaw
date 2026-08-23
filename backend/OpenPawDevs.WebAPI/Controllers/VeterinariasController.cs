@@ -1,4 +1,5 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -64,17 +65,26 @@ public class VeterinariasController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateAsync([FromBody] CrearVeterinariaDto crearDto)
     {
+        // Deuda #89 (a): unicidad de cédula jurídica -> 409 si ya existe (el frontend ya maneja 409)
+        if (!string.IsNullOrWhiteSpace(crearDto.CedulaJuridica))
+        {
+            var existente = await _veterinariaRepository.GetByCedulaAsync(crearDto.CedulaJuridica.Trim());
+            if (existente != null)
+                return Conflict(new { mensaje = $"Ya existe una veterinaria con la cédula jurídica {crearDto.CedulaJuridica}" });
+        }
+
+        // Deuda #89 (b): sanitización XSS almacenado -> HtmlEncode antes de persistir
         var entity = new Veterinaria
         {
-            Nombre = crearDto.Nombre,
-            CedulaJuridica = crearDto.CedulaJuridica,
-            Direccion = crearDto.Direccion,
+            Nombre = Sanitize(crearDto.Nombre)!,
+            CedulaJuridica = crearDto.CedulaJuridica?.Trim(),
+            Direccion = Sanitize(crearDto.Direccion),
             Telefono = crearDto.Telefono,
             Email = crearDto.Email,
             Horario = crearDto.Horario,
-            Descripcion = crearDto.Descripcion,
+            Descripcion = Sanitize(crearDto.Descripcion),
             LogoUrl = crearDto.LogoUrl,
-            RazonSocial = crearDto.RazonSocial,
+            RazonSocial = Sanitize(crearDto.RazonSocial),
             Nit = crearDto.Nit,
             CorreoOficial = crearDto.CorreoOficial,
             Latitud = crearDto.Latitud,
@@ -115,6 +125,11 @@ public class VeterinariasController : ControllerBase
         // ajenas iterando IDs. Si la veterinaria no tiene dueno vinculado, solo el admin puede editarla.
         if (!User.IsInRole("1") && entity.UsuarioId != GetAuthenticatedUserId())
             return Forbid();
+
+        // Deuda #89 (b): sanitizar campos de texto en actualización (XSS)
+        if (actualizarDto.RazonSocial != null) actualizarDto.RazonSocial = Sanitize(actualizarDto.RazonSocial);
+        if (actualizarDto.Direccion != null) actualizarDto.Direccion = Sanitize(actualizarDto.Direccion);
+        if (actualizarDto.Descripcion != null) actualizarDto.Descripcion = Sanitize(actualizarDto.Descripcion);
 
         // Update parcial: null en el DTO preserva el valor actual (no borra campos no enviados);
         // cadena vacia ("") si sobrescribe el campo.
@@ -161,6 +176,9 @@ public class VeterinariasController : ControllerBase
         await _veterinariaRepository.UpdateAsync(entity);
         return NoContent();
     }
+
+    private static string? Sanitize(string? input) =>
+        input == null ? null : WebUtility.HtmlEncode(input);
 
     private int GetAuthenticatedUserId()
     {

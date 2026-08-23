@@ -10,4 +10,5 @@ public interface IVeterinariaRepository : IGenericRepository<Veterinaria>
     Task<IReadOnlyList<Veterinaria>> GetAprobadasAsync();
     Task<IReadOnlyList<Veterinaria>> GetPendientesAsync();
     Task<IReadOnlyList<Veterinaria>> GetByUsuarioIdAsync(int usuarioId);
+    Task<Veterinaria?> GetByCedulaAsync(string cedulaJuridica);
 }

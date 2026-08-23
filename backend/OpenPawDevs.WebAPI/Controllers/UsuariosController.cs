@@ -432,23 +432,44 @@ public class UsuariosController : ControllerBase
     /// poder cambiarse a través del endpoint de autoedición de perfil.
     /// </summary>
     [HttpPut("{id}/rol")]
-    [Authorize(Roles = "1,2,3")]
+    [Authorize(Roles = "1,2,3,4")]
     public async Task<IActionResult> CambiarRolAsync(int id, [FromBody] CambiarRolDto cambiarRolDto)
     {
         var entity = await _usuarioRepository.GetByIdAsync(id);
         if (entity == null)
             return NotFound(new { mensaje = $"Usuario con ID {id} no encontrado" });
 
-        // A1 (Code Review, ALTO): solo un administrador (rol 1) puede asignar el rol
-        // Administrador. Sin este guard, un rol 2/3 que gestiona su comercio podria
-        // autopromoverse (o promover a un colega) a admin pasando rolId=1.
-        if (cambiarRolDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
-            return Forbid();
+        var authUserId = GetAuthenticatedUserId();
+        var isSelfPromotionClienteToVet = id == authUserId
+            && entity.RolId == (int)RolTipo.Cliente
+            && cambiarRolDto.RolId == (int)RolTipo.Veterinaria;
 
-        // Sprint 1 - Tarea 9: control de acceso (patron tareas 6-8): admin siempre;
-        // rol 2/3 solo puede gestionar funcionarios de su comercio (previene IDOR).
-        if (!await PuedeGestionarFuncionarioAsync(entity))
-            return Forbid();
+        // Deuda #89 (c): Cliente (4) que registra veterinaria recibe 403 en PUT de rol.
+        // Permitir que el dueño de la veterinaria se autopromueva 4->2 sin pasar por PuedeGestionarFuncionarioAsync.
+        if (isSelfPromotionClienteToVet)
+        {
+            var ownsVet = await _veterinariaRepository.GetByUsuarioIdAsync(authUserId);
+            var hasVet = ownsVet.Count > 0 || entity.VeterinariaId.HasValue;
+            if (!hasVet)
+                return Forbid();
+            // bypass PuedeGestionar check, pero mantener guard de Admin
+            if (cambiarRolDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
+                return Forbid();
+        }
+        else
+        {
+            // A1 (Code Review, ALTO): solo un administrador (rol 1) puede asignar el rol
+            // Administrador. Sin este guard, un rol 2/3 que gestiona su comercio podria
+            // autopromoverse (o promover a un colega) a admin pasando rolId=1.
+            if (cambiarRolDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
+                return Forbid();
+
+            // Sprint 1 - Tarea 9: control de acceso (patron tareas 6-8): admin siempre;
+            // rol 2/3 solo puede gestionar funcionarios de su comercio (previene IDOR).
+            // Para rol 4 (Cliente) sin autopromoción, este Forbid bloquea cambios ajenos.
+            if (!await PuedeGestionarFuncionarioAsync(entity))
+                return Forbid();
+        }
 
         if (entity.RolId == (int)RolTipo.Administrador && cambiarRolDto.RolId != (int)RolTipo.Administrador)
         {
