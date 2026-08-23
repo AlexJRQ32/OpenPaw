@@ -78,7 +78,7 @@ export function useApprovals() {
         throw new Error('No se pudo rechazar la solicitud.')
       }
 
-      toast.error('Solicitud rechazada.')
+      toast.warning('Solicitud rechazada.')
       await fetchSolicitudes()
     } catch (error) {
       toast.error(error.message)

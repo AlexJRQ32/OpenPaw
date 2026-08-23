@@ -191,7 +191,7 @@ export function AppShell({ children }) {
               <>
                 <Link to="/dashboard/aprobaciones" className={isActive('/dashboard/aprobaciones')}>
                   <Icon name="fact_check" />
-                  <span className="sidebar-link-text">Aprobaciones</span>{pendingLoading ? <span className="sidebar-spinner" /> : pendingCount > 0 && <span className="sidebar-dot" title={pendingCount + " pendiente(s)"}></span>}
+                  <span className="sidebar-link-text">Aprobaciones</span>{pendingLoading ? <span className="sidebar-spinner" /> : pendingCount > 0 && <span className="sidebar-dot" role="img" aria-label={`${pendingCount} aprobaciones pendientes`} title={pendingCount + " pendiente(s)"}></span>}
                 </Link>
               </>
             )}
