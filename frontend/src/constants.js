@@ -73,9 +73,15 @@ export const initialStoreRegistrationForm = {
   direccion: '',
   telefono: '',
   email: '',
-  veterinariaId: '',
-  veterinariaNombre: '',
-  documentoConstitucion: null,
+  descripcion: '',
+  // Sprint 2 - T38: campos del wireframe de Registro de Almacén que el POST
+  // real acepta (CrearAlmacenDto). Strings con el nombre EXACTO del enum
+  // backend (TipoAlmacen / CapacidadAlmacenamiento / ControlTemperatura);
+  // los selects vacíos se omiten del payload para no recibir 400.
+  tipoAlmacen: '',
+  nombreResponsable: '',
+  capacidadAlmacenamiento: '',
+  controlTemperatura: 'SinControl',
 }
 
 export const initialRegisterForm = {
