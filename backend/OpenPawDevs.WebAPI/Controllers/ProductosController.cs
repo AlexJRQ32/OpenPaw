@@ -71,7 +71,7 @@ public class ProductosController : ControllerBase
         };
 
         var created = await _productoRepository.AddAsync(entity);
-        return CreatedAtAction(nameof(GetByIdAsync), new { id = created.Id }, created);
+        return Created($"/api/productos/{created.Id}", created);
     }
 
     [HttpPut("{id}")]
