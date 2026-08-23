@@ -33,11 +33,27 @@ public class InventarioController : ControllerBase
     }
 
     [HttpGet]
-    [AllowAnonymous]
+    [Authorize]
     public async Task<IActionResult> GetAllAsync()
     {
         var inventario = await _inventarioRepository.GetAllAsync();
         return Ok(inventario.Select(InventarioMapeo.ToDto));
+    }
+
+    /// <summary>
+    /// Deuda #70: endpoint público para marketplace con DTO mínimo (producto+precio+stock).
+    /// [AllowAnonymous] para que el marketplace anónimo consuma sin token, sin exponer DTO interno.
+    /// </summary>
+    [HttpGet("publico")]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetPublicoAsync()
+    {
+        var inventario = await _inventarioRepository.GetAllAsync();
+        // Solo stock disponible + producto activo; mapeo mínimo público
+        var publico = inventario
+            .Where(i => i.Cantidad > 0 && i.Producto != null && i.Producto.Activo)
+            .Select(InventarioMapeo.ToPublicoDto);
+        return Ok(publico);
     }
 
     /// <summary>
