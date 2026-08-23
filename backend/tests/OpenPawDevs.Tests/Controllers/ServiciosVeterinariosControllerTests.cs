@@ -260,6 +260,277 @@ public class ServiciosVeterinariosControllerTests
         _servicios.Verify(r => r.GetAllAsync(), Times.Once);
     }
 
+    // --- IDOR fix #81: veterinaria solo opera sobre su propia VeterinariaId ---
+
+    [Fact]
+    public async Task Create_ComoVeterinaria_ConVeterinariaPropia_DebeRetornar201()
+    {
+        var dto = new CrearServicioVeterinarioDto
+        {
+            VeterinariaId = 4,
+            Nombre = "Vacunación",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 20000,
+            DuracionMinutos = 30
+        };
+        var vetUser = new Usuario { Id = 10, RolId = 2, VeterinariaId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(vetUser);
+        _veterinarias.Setup(r => r.ExistsAsync(4)).ReturnsAsync(true);
+        _servicios.Setup(r => r.AddAsync(It.IsAny<ServicioVeterinario>()))
+            .Callback<ServicioVeterinario>(s => s.Id = 9)
+            .ReturnsAsync((ServicioVeterinario s) => s);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 10);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<CreatedResult>();
+        _servicios.Verify(r => r.AddAsync(It.IsAny<ServicioVeterinario>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Create_ComoVeterinaria_ConVeterinariaAjena_DebeRetornar403()
+    {
+        var dto = new CrearServicioVeterinarioDto
+        {
+            VeterinariaId = 99,
+            Nombre = "Cirugía ajena",
+            Categoria = CategoriaServicioVeterinario.Procedimiento,
+            Precio = 50000,
+            DuracionMinutos = 60
+        };
+        var vetUser = new Usuario { Id = 10, RolId = 2, VeterinariaId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(vetUser);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 10);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<ForbidResult>();
+        _servicios.Verify(r => r.AddAsync(It.IsAny<ServicioVeterinario>()), Times.Never);
+        _veterinarias.Verify(r => r.ExistsAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Create_ComoVeterinaria_SinVeterinariaAsignada_DebeRetornar403()
+    {
+        var dto = new CrearServicioVeterinarioDto
+        {
+            VeterinariaId = 4,
+            Nombre = "Intento sin vinculación",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 15000,
+            DuracionMinutos = 20
+        };
+        var vetSinVinculo = new Usuario { Id = 11, RolId = 2, VeterinariaId = null };
+        _usuarios.Setup(r => r.GetByIdAsync(11)).ReturnsAsync(vetSinVinculo);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 11);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<ForbidResult>();
+        _servicios.Verify(r => r.AddAsync(It.IsAny<ServicioVeterinario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Create_ComoAdministrador_ConVeterinariaAjena_DebeRetornar201()
+    {
+        var dto = new CrearServicioVeterinarioDto
+        {
+            VeterinariaId = 99,
+            Nombre = "Admin crea en cualquier vet",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 25000,
+            DuracionMinutos = 30
+        };
+        var admin = new Usuario { Id = 1, RolId = 1 };
+        _usuarios.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
+        _veterinarias.Setup(r => r.ExistsAsync(99)).ReturnsAsync(true);
+        _servicios.Setup(r => r.AddAsync(It.IsAny<ServicioVeterinario>()))
+            .Callback<ServicioVeterinario>(s => s.Id = 10)
+            .ReturnsAsync((ServicioVeterinario s) => s);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<CreatedResult>();
+        _servicios.Verify(r => r.AddAsync(It.IsAny<ServicioVeterinario>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_ComoVeterinaria_ConServicioPropio_DebeRetornar204()
+    {
+        var servicio = CrearServicio(); // VeterinariaId = 4
+        var dto = new ActualizarServicioVeterinarioDto
+        {
+            Nombre = "Consulta actualizada",
+            Descripcion = "desc",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 30000,
+            DuracionMinutos = 45,
+            Activo = true
+        };
+        var vetUser = new Usuario { Id = 10, RolId = 2, VeterinariaId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(vetUser);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 10);
+
+        var result = await sut.UpdateAsync(8, dto);
+
+        result.Should().BeOfType<NoContentResult>();
+        _servicios.Verify(r => r.UpdateAsync(servicio), Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_ComoVeterinaria_ConServicioAjeno_DebeRetornar403()
+    {
+        var servicio = CrearServicio(); // VeterinariaId = 4
+        var dto = new ActualizarServicioVeterinarioDto
+        {
+            Nombre = "Intento ajeno",
+            Descripcion = "hack",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 30000,
+            DuracionMinutos = 45,
+            Activo = true
+        };
+        var vetAjeno = new Usuario { Id = 11, RolId = 2, VeterinariaId = 99 };
+        _usuarios.Setup(r => r.GetByIdAsync(11)).ReturnsAsync(vetAjeno);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 11);
+
+        var result = await sut.UpdateAsync(8, dto);
+
+        result.Should().BeOfType<ForbidResult>();
+        _servicios.Verify(r => r.UpdateAsync(It.IsAny<ServicioVeterinario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Update_ComoVeterinaria_SinVeterinariaAsignada_DebeRetornar403()
+    {
+        var servicio = CrearServicio();
+        var dto = new ActualizarServicioVeterinarioDto
+        {
+            Nombre = "hack",
+            Descripcion = "hack",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 10000,
+            DuracionMinutos = 30,
+            Activo = true
+        };
+        var vetSinVet = new Usuario { Id = 12, RolId = 2, VeterinariaId = null };
+        _usuarios.Setup(r => r.GetByIdAsync(12)).ReturnsAsync(vetSinVet);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 12);
+
+        var result = await sut.UpdateAsync(8, dto);
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task Update_ComoAdministrador_ConServicioAjeno_DebeRetornar204()
+    {
+        var servicio = CrearServicio();
+        var dto = new ActualizarServicioVeterinarioDto
+        {
+            Nombre = "Admin edita ajeno",
+            Descripcion = "ok",
+            Categoria = CategoriaServicioVeterinario.Consulta,
+            Precio = 10000,
+            DuracionMinutos = 30,
+            Activo = true
+        };
+        var admin = new Usuario { Id = 1, RolId = 1 };
+        _usuarios.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1);
+
+        var result = await sut.UpdateAsync(8, dto);
+
+        result.Should().BeOfType<NoContentResult>();
+    }
+
+    [Fact]
+    public async Task Delete_ComoVeterinaria_ConServicioPropio_DebeRetornar204()
+    {
+        var servicio = CrearServicio();
+        var vetUser = new Usuario { Id = 10, RolId = 2, VeterinariaId = 4 };
+        _usuarios.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(vetUser);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 10);
+
+        var result = await sut.DeleteAsync(8);
+
+        result.Should().BeOfType<NoContentResult>();
+        _servicios.Verify(r => r.DeleteAsync(servicio), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_ComoVeterinaria_ConServicioAjeno_DebeRetornar403()
+    {
+        var servicio = CrearServicio();
+        var vetAjeno = new Usuario { Id = 11, RolId = 2, VeterinariaId = 99 };
+        _usuarios.Setup(r => r.GetByIdAsync(11)).ReturnsAsync(vetAjeno);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 11);
+
+        var result = await sut.DeleteAsync(8);
+
+        result.Should().BeOfType<ForbidResult>();
+        _servicios.Verify(r => r.DeleteAsync(It.IsAny<ServicioVeterinario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Delete_ComoVeterinaria_SinVeterinariaAsignada_DebeRetornar403()
+    {
+        var servicio = CrearServicio();
+        var vetSinVet = new Usuario { Id = 12, RolId = 2, VeterinariaId = null };
+        _usuarios.Setup(r => r.GetByIdAsync(12)).ReturnsAsync(vetSinVet);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 12);
+
+        var result = await sut.DeleteAsync(8);
+
+        result.Should().BeOfType<ForbidResult>();
+    }
+
+    [Fact]
+    public async Task Delete_ComoAdministrador_ConServicioAjeno_DebeRetornar204()
+    {
+        var servicio = CrearServicio();
+        var admin = new Usuario { Id = 1, RolId = 1 };
+        _usuarios.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(admin);
+        _servicios.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(servicio);
+
+        var sut = CreateSut();
+        SetAuthenticatedUser(sut, 1);
+
+        var result = await sut.DeleteAsync(8);
+
+        result.Should().BeOfType<NoContentResult>();
+    }
+
     private static void SetAuthenticatedUser(ServiciosVeterinariosController controller, int userId)
     {
         var identity = new ClaimsIdentity(new[]
