@@ -1,3 +1,5 @@
+import { useMemo, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { AppShell } from '../../../shared/components/AppShell/AppShell'
 import { EmptyState } from '../../../shared/components/EmptyState'
 import { Button } from '../../../shared/components/Button/Button'
@@ -7,6 +9,27 @@ import { Modal } from '../../../shared/components/Modal/Modal'
 import { Field } from '../../../shared/components/Field/Field'
 import { useMascotas } from '../hooks/useMascotas'
 import './MascotasPage.css'
+
+/* Filtro ?q= : normaliza y compara contra nombre / especie / raza / dueño */
+function mascotaCoincideQ(mascota, qNorm) {
+  if (!qNorm) return true
+  const campos = [
+    mascota.nombre,
+    mascota.especie,
+    mascota.raza,
+    mascota['DueñoNombre'],
+    mascota['Due\xf1oNombre'],
+    mascota.duenoNombre,
+    mascota.duenioNombre,
+    mascota.ownerName,
+    mascota.propietario,
+    mascota.veterinaria,
+  ]
+    .filter(Boolean)
+    .join(' ')
+    .toLowerCase()
+  return campos.includes(qNorm)
+}
 
 const SEXO_MAP = { 1: 'Macho', 2: 'Hembra' }
 const SEXO_ICON = { 1: 'male', 2: 'female' }
@@ -188,6 +211,46 @@ export function MascotasPage() {
     guardar,
   } = useMascotas()
 
+  const [searchParams, setSearchParams] = useSearchParams()
+  const qParamRaw = searchParams.get('q') ?? ''
+  const qNorm = qParamRaw.trim().toLowerCase()
+
+  const [inputValue, setInputValue] = useState(qParamRaw)
+  const [prevQ, setPrevQ] = useState(qParamRaw)
+  // Sincroniza URL (?q=) → input sin useEffect (patrón ajuste durante render,
+  // usado en Aportes/Inventario para evitar cascadas de effects). Cubre
+  // navegación desde AppShell, back/forward y cambios externos de q.
+  if (prevQ !== qParamRaw) {
+    setPrevQ(qParamRaw)
+    setInputValue(qParamRaw)
+  }
+
+  const handleInputChange = (event) => {
+    const value = event.target.value
+    setInputValue(value)
+    const next = new URLSearchParams(searchParams)
+    const trimmed = value.trim()
+    if (trimmed) next.set('q', trimmed)
+    else next.delete('q')
+    setSearchParams(next, { replace: true })
+  }
+
+  const handleClear = () => {
+    setInputValue('')
+    const next = new URLSearchParams(searchParams)
+    next.delete('q')
+    setSearchParams(next, { replace: true })
+  }
+
+  const mascotasFiltradas = useMemo(() => {
+    if (!qNorm) return mascotas
+    return mascotas.filter((m) => mascotaCoincideQ(m, qNorm))
+  }, [mascotas, qNorm])
+
+  const hayFiltro = Boolean(qNorm)
+  const total = mascotas.length
+  const visibles = mascotasFiltradas.length
+
   return (
     <AppShell>
       <div className="mascotas-page">
@@ -207,17 +270,71 @@ export function MascotasPage() {
           )}
         </header>
 
+        {listStatus === 'loaded' && total > 0 && (
+          <div className="mascotas-toolbar" role="search" aria-label="Filtrar mascotas">
+            <div className="mascotas-search">
+              <Icon name="search" size={18} className="mascotas-search__icon" aria-hidden="true" />
+              <input
+                className="mascotas-search__input"
+                type="search"
+                placeholder="Buscar por nombre, especie, raza o dueño…"
+                aria-label="Buscar por nombre, especie, raza o dueño"
+                value={inputValue}
+                onChange={handleInputChange}
+              />
+              {inputValue && (
+                <button
+                  type="button"
+                  className="mascotas-search__clear"
+                  onClick={handleClear}
+                  aria-label="Limpiar búsqueda"
+                >
+                  <Icon name="close" size={16} />
+                </button>
+              )}
+            </div>
+            <div className="mascotas-toolbar__meta">
+              {hayFiltro ? (
+                <span className="mascotas-toolbar__count">
+                  <Badge variant={visibles === 0 ? 'warning' : 'neutral'}>{visibles} / {total}</Badge>
+                  <span className="mascotas-toolbar__qtext">para &ldquo;{qParamRaw.trim()}&rdquo;</span>
+                  <button type="button" className="mascotas-toolbar__clear" onClick={handleClear}>
+                    Limpiar filtro
+                  </button>
+                </span>
+              ) : (
+                <span className="mascotas-toolbar__count">
+                  <Badge variant="neutral">{total} {total === 1 ? 'mascota' : 'mascotas'}</Badge>
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {listStatus === 'loading' && <div className="spinner-wrap"><span className="spinner" /></div>}
 
         {listStatus === 'error' && <p className="mascotas-error">{listError}</p>}
 
-        {listStatus === 'loaded' && mascotas.length === 0 && (
+        {listStatus === 'loaded' && total === 0 && (
           <EmptyState title="Aun no tienes mascotas" description="Cuando registres una mascota aparecera aqui." />
         )}
 
-        {listStatus === 'loaded' && mascotas.length > 0 && (
+        {listStatus === 'loaded' && total > 0 && visibles === 0 && (
+          <EmptyState
+            title={`Sin resultados para "${qParamRaw.trim()}"`}
+            description="Prueba con otro nombre, especie, raza o dueño. El filtro no distingue mayúsculas."
+            icon="search_off"
+            action={
+              <Button variant="secondary" size="md" icon="close" onClick={handleClear}>
+                Limpiar búsqueda
+              </Button>
+            }
+          />
+        )}
+
+        {listStatus === 'loaded' && visibles > 0 && (
           <div className="mascotas-grid">
-            {mascotas.map((m) => (
+            {mascotasFiltradas.map((m) => (
               <MascotaCard key={m.id} mascota={m} />
             ))}
           </div>
