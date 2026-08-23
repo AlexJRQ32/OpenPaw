@@ -329,7 +329,8 @@ public class UsuariosController : ControllerBase
         // A1b (QA, ALTO - BLOQUEANTE): control de acceso de comercio (mismo patron que
         // PuedeGestionarFuncionarioAsync): un rol 2/3 solo puede crear funcionarios en SU
         // propio comercio; un ComercioId ajeno -> Forbid (previene IDOR).
-        if (!await PuedeCrearFuncionarioEnComercioAsync(crearDto.ComercioId))
+        // Deuda #82: resuelve ambigüedad vet-{id} vs alm-{id} usando TipoComercio.
+        if (!await PuedeCrearFuncionarioEnComercioAsync(crearDto.ComercioId, crearDto.TipoComercio))
             return Forbid();
 
         var existente = await _usuarioRepository.GetByEmailAsync(crearDto.Email);
@@ -359,17 +360,39 @@ public class UsuariosController : ControllerBase
             IdCorporativo = await GenerarIdCorporativoAsync(crearDto.RolId)
         };
 
-        // Asignar comercio seg�n ComercioId o del usuario autenticado
+        // Asignar comercio según ComercioId + TipoComercio (Deuda #82) o del usuario autenticado.
+        // Con TipoComercio se distingue vet-2 vs alm-2 (colisión ids 1-4 vs 2,3) y se valida existencia.
         if (crearDto.ComercioId.HasValue)
         {
-            var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
-            if (vet != null)
+            var tipoNorm = NormalizarTipoComercio(crearDto.TipoComercio);
+            if (tipoNorm == "veterinaria")
+            {
+                var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                if (vet == null)
+                    return BadRequest(new { mensaje = $"Veterinaria con ID {crearDto.ComercioId.Value} no encontrada." });
                 entity.VeterinariaId = vet.Id;
-            else
+            }
+            else if (tipoNorm == "almacen")
             {
                 var alm = await _almacenRepository.GetByIdAsync(crearDto.ComercioId.Value);
-                if (alm != null)
-                    entity.AlmacenId = alm.Id;
+                if (alm == null)
+                    return BadRequest(new { mensaje = $"Almacén con ID {crearDto.ComercioId.Value} no encontrado." });
+                entity.AlmacenId = alm.Id;
+            }
+            else
+            {
+                // Legacy / sin tipo: fallback vet → alm (compatibilidad), pero valida existencia
+                var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                if (vet != null)
+                    entity.VeterinariaId = vet.Id;
+                else
+                {
+                    var alm = await _almacenRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                    if (alm != null)
+                        entity.AlmacenId = alm.Id;
+                    else
+                        return BadRequest(new { mensaje = $"Comercio con ID {crearDto.ComercioId.Value} no encontrado." });
+                }
             }
         }
         else
@@ -580,8 +603,9 @@ public class UsuariosController : ControllerBase
     /// crear funcionarios en su propio comercio (el ComercioId del DTO debe coincidir con su
     /// VeterinariaId/AlmacenId). Sin ComercioId el funcionario se asigna al comercio del propio
     /// usuario autenticado (nunca ajeno), asi que se permite. Ajeno -> Forbid (previene IDOR).
+    /// Deuda #82: con TipoComercio se valida el comercio exacto (vet-2 vs alm-2) sin colisión.
     /// </summary>
-    private async Task<bool> PuedeCrearFuncionarioEnComercioAsync(int? comercioId)
+    private async Task<bool> PuedeCrearFuncionarioEnComercioAsync(int? comercioId, string? tipoComercio = null)
     {
         if (User.IsInRole("1"))
             return true;
@@ -593,7 +617,23 @@ public class UsuariosController : ControllerBase
         if (!comercioId.HasValue)
             return true;
 
+        var tipoNorm = NormalizarTipoComercio(tipoComercio);
+        if (tipoNorm == "veterinaria")
+            return usuario.VeterinariaId == comercioId;
+        if (tipoNorm == "almacen")
+            return usuario.AlmacenId == comercioId;
+
         return usuario.VeterinariaId == comercioId || usuario.AlmacenId == comercioId;
+    }
+
+    /// <summary>Deuda #82: normaliza TipoComercio (vet/veterinaria, alm/almacen) a forma canónica.</summary>
+    private static string? NormalizarTipoComercio(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo)) return null;
+        var t = tipo.Trim().ToLowerInvariant();
+        if (t is "vet" or "veterinaria" or "veterinarias") return "veterinaria";
+        if (t is "alm" or "almacen" or "almacenes" or "almacén" or "almacénes") return "almacen";
+        return null;
     }
 
     private int GetAuthenticatedUserId()

@@ -64,7 +64,10 @@ export function FuncionariosPage() {
     updateField, crearFuncionario, cambiarRol, alternarActivo,
   } = useFuncionarios()
 
-  /* Comercios para el select del modal de creacion (solo admin). */
+  /* Comercios para el select del modal de creacion (solo admin).
+     Deuda #82: keys/values compuestos vet-{id} / alm-{id} para evitar colision
+     entre veterinarias (ids 1-4) y almacenes (ids 2,3). El backend distingue
+     por tipoComercio + comercioId (ver useFuncionarios + CrearFuncionarioDto). */
   useEffect(() => {
     if (!esAdmin) return
     let cancelled = false
@@ -76,8 +79,8 @@ export function FuncionariosPage() {
       ])
       if (cancelled) return
       const items = [
-        ...(Array.isArray(vets) ? vets.map((v) => ({ id: v.id, nombre: v.nombre, tipo: 'Veterinaria' })) : []),
-        ...(Array.isArray(stores) ? stores.map((s) => ({ id: s.id, nombre: s.nombre, tipo: 'Almacen' })) : []),
+        ...(Array.isArray(vets) ? vets.map((v) => ({ id: v.id, nombre: v.nombre, tipo: 'Veterinaria', value: `vet-${v.id}` })) : []),
+        ...(Array.isArray(stores) ? stores.map((s) => ({ id: s.id, nombre: s.nombre, tipo: 'Almacen', value: `alm-${s.id}` })) : []),
       ]
       setComercios(items)
       setLoadingComercios(false)
@@ -342,9 +345,22 @@ export function FuncionariosPage() {
                   <label className="field">
                     <span>Comercio</span>
                     {loadingComercios ? <span className="spinner" /> : (
-                      <select name="comercioId" value={form.comercioId || ''} onChange={updateField}>
+                      <select name="comercioId" value={form.comercioId || ''} onChange={updateField} aria-label="Comercio">
                         <option value="">Seleccionar comercio...</option>
-                        {comercios.map((c) => <option key={c.id} value={c.id}>{c.nombre} ({c.tipo})</option>)}
+                        {comercios.filter((c) => c.tipo === 'Veterinaria').length > 0 && (
+                          <optgroup label="Veterinarias">
+                            {comercios.filter((c) => c.tipo === 'Veterinaria').map((c) => (
+                              <option key={c.value} value={c.value}>{c.nombre}</option>
+                            ))}
+                          </optgroup>
+                        )}
+                        {comercios.filter((c) => c.tipo === 'Almacen').length > 0 && (
+                          <optgroup label="Almacenes">
+                            {comercios.filter((c) => c.tipo === 'Almacen').map((c) => (
+                              <option key={c.value} value={c.value}>{c.nombre}</option>
+                            ))}
+                          </optgroup>
+                        )}
                       </select>
                     )}
                     {errors.comercioId && <small>{errors.comercioId}</small>}
