@@ -35,7 +35,12 @@ frontend/e2e/artifacts/
 frontend/test-results/
 frontend/playwright-report/
 
-# Environment
+# Environment (Deuda #72: .env.local ignorado, .env.example versionado)
 .env
 .env.local
 .env.production.local
+# Plantillas - NO ignorar
+!.env.example
+!.env.local.example
+!frontend/.env.example
+!frontend/.env.local.example

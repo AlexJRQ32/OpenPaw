@@ -23,4 +23,9 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
-.env*
+# Env - ignora .env locales pero NO .env.example / .env.local.example (ver Deuda #72)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
