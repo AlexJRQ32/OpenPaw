@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useGoogleLogin } from "@react-oauth/google"
 import { useAuth } from "../context/AuthContext"
 import { loginGoogleApi, loginFacebookApi } from "../../../shared/utils/api"
@@ -33,6 +33,8 @@ export function AuthMethodPage() {
   const { loginWithSocial } = useAuth()
   const { showLoader, hideLoader } = useLoading()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || location.state?.from || "/dashboard"
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
 
@@ -50,7 +52,7 @@ export function AuthMethodPage() {
         if (data.requiereTelefono) {
           navigate("/perfil", { replace: true, state: { completarTelefono: true } })
         } else {
-          navigate("/dashboard", { replace: true })
+          navigate(from, { replace: true })
         }
       }).catch(err => {
         setError(err.message)
@@ -83,7 +85,7 @@ export function AuthMethodPage() {
           if (data.requiereTelefono) {
             navigate("/perfil", { replace: true, state: { completarTelefono: true } })
           } else {
-            navigate("/dashboard", { replace: true })
+            navigate(from, { replace: true })
           }
         }).catch(err => {
           setError(err.message)

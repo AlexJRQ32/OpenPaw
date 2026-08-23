@@ -1,5 +1,5 @@
 ﻿import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useGoogleLogin } from "@react-oauth/google"
 import { useAuth } from "../context/AuthContext"
 import { loginGoogleApi, loginFacebookApi } from "../../../shared/utils/api"
@@ -34,6 +34,8 @@ export function LoginPage() {
   const { login, loginWithSocial } = useAuth()
   const { showLoader, hideLoader } = useLoading()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || location.state?.from || "/dashboard"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -53,7 +55,7 @@ export function LoginPage() {
         if (data.requiereTelefono) {
           navigate("/perfil", { replace: true, state: { completarTelefono: true } })
         } else {
-          navigate("/dashboard", { replace: true })
+          navigate(from, { replace: true })
         }
       }).catch(err => {
         setError(err.message)
@@ -86,7 +88,7 @@ export function LoginPage() {
           if (data.requiereTelefono) {
             navigate("/perfil", { replace: true, state: { completarTelefono: true } })
           } else {
-            navigate("/dashboard", { replace: true })
+            navigate(from, { replace: true })
           }
         }).catch(err => {
           setError(err.message)
@@ -108,7 +110,7 @@ export function LoginPage() {
     showLoader()
     try {
       await login(email, password)
-      navigate("/", { replace: true })
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
