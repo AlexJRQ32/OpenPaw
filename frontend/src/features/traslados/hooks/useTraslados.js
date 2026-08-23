@@ -13,7 +13,7 @@ const emptyForm = {
 const ESTADO_VARIANT = {
   Solicitado: 'pending',
   Aceptado: 'success',
-  Rechazado: 'inactive',
+  Rechazado: 'error',
 }
 
 const ESTADO_LABEL = {

@@ -33,7 +33,7 @@ const ESTADO_VARIANT = {
   Confirmada: 'active',
   EnProgreso: 'info',
   Completada: 'success',
-  Cancelada: 'inactive',
+  Cancelada: 'error',
 }
 
 const ESTADO_LABEL = {

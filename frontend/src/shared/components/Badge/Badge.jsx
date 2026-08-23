@@ -40,9 +40,23 @@ function resolveDotColor(dot, variant) {
   return undefined
 }
 
-export function Badge({ variant = 'pending', icon, dot = false, filled = false, className = '', children, ...props }) {
-  const dotColor = resolveDotColor(dot, variant)
-  const classes = ['badge', `badge--${variant}`, className].filter(Boolean).join(' ')
+function extractText(value) {
+  if (typeof value === 'string' || typeof value === 'number') return String(value)
+  if (Array.isArray(value)) return value.filter((v) => typeof v === 'string' || typeof v === 'number').join(' ')
+  return ''
+}
+
+function resolveVariant({ variant, status, children }) {
+  const raw = variant ?? status ?? 'pending'
+  const bag = `${extractText(status)} ${extractText(children)} ${String(raw)}`.toLowerCase()
+  if (bag.includes('rechaz') || bag.includes('cancel')) return 'error'
+  return raw
+}
+
+export function Badge({ variant, status, icon, dot = false, filled = false, className = '', children, ...props }) {
+  const effectiveVariant = resolveVariant({ variant, status, children })
+  const dotColor = resolveDotColor(dot, effectiveVariant)
+  const classes = ['badge', `badge--${effectiveVariant}`, className].filter(Boolean).join(' ')
 
   return (
     <span className={classes} {...props}>
