@@ -1,4 +1,3 @@
-/* global describe, test, expect */
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { EmptyState } from '../shared/components/EmptyState'

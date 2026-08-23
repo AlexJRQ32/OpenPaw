@@ -1,4 +1,3 @@
-/* global describe, test, expect, vi, beforeEach */
 import { render, screen, fireEvent, within, waitFor, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { ApprovalsListPage } from '../features/aprobaciones/pages/ApprovalsListPage'

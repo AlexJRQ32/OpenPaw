@@ -1,4 +1,3 @@
-/* global describe, test, expect, vi */
 import { render, screen, fireEvent } from '@testing-library/react'
 import { VetCarousel } from '../features/marketplace/components/VetCarousel'
 

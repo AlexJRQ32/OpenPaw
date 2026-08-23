@@ -204,13 +204,12 @@
   --space-12: 48px;
   --space-xl: 64px;
 
-  /* Escala semántica (DESIGN.md spacing) */
+  /* Escala semántica (DESIGN.md spacing) — --space-xl (64px) ya definido en escala numérica */
   --space-base: 8px;
   --space-xs: 4px;
   --space-sm: 12px;
   --space-md: 24px;
   --space-lg: 40px;
-  --space-xl: 64px;
 
   /* Layout */
   --container-max: 1280px;

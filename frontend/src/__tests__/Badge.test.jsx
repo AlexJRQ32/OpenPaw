@@ -1,4 +1,3 @@
-/* global describe, test, expect */
 import { render, screen } from '@testing-library/react'
 import { Badge } from '../shared/components/Badge/Badge'
 

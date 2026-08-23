@@ -18,4 +18,19 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
   },
+  // Deuda #74: globals vitest para tests (describe/it/test/expect/vi/beforeEach/afterEach/beforeAll/afterAll)
+  // sin necesidad de import; evita ~68 errores no-undef en npx eslint.
+  {
+    files: [
+      '**/__tests__/**/*.{js,jsx}',
+      '**/*.test.{js,jsx}',
+      '**/*.spec.{js,jsx}',
+    ],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.vitest,
+      },
+    },
+  },
 ])
