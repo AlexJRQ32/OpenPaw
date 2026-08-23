@@ -457,6 +457,12 @@
     font-size: var(--fs-caption);
   }
 
+  /* Bottom-nav — Opción A: carril horizontal scrollable (T67, DS M3)
+     Decide carril scrollable frente a "Más" drawer para mantener acceso
+     completo sin ocultar funcionalidades ni añadir drawer JS. 8–9 links de
+     admin caben sin wrap ni desborde del viewport (375px) mediante scroll
+     nativo con snap suave. Tokens var(--md-*) exclusivos, área táctil
+     >=44px, scrollbar invisible pero gestual, respeta reduced-motion. */
   .bottom-nav {
     display: flex;
     position: fixed;
@@ -464,11 +470,13 @@
     left: 50%;
     transform: translateX(-50%);
     width: min(94%, 500px);
-    height: 54px;
+    max-width: calc(100vw - var(--space-4) * 2);
+    height: 62px;
     box-sizing: border-box;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 var(--space-1);
+    justify-content: flex-start;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: 4px var(--space-2);
     z-index: 1000;
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -476,21 +484,39 @@
     border: 1px solid var(--glass-border);
     border-radius: var(--radius-full);
     box-shadow: var(--shadow-level-2);
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x proximity;
+    scroll-behavior: smooth;
+    scroll-padding-inline: var(--space-2);
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    touch-action: pan-x;
+  }
+  .bottom-nav::-webkit-scrollbar {
+    display: none;
   }
   .bottom-nav-link {
     display: flex;
+    flex: 0 0 auto;
+    scroll-snap-align: center;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     gap: 2px;
-    padding: 5px var(--space-2);
+    min-width: 64px;
+    min-height: 44px;
+    padding: 6px var(--space-2);
+    box-sizing: border-box;
     text-decoration: none;
     color: var(--md-outline);
-    font-size: 9px;
+    font-size: 10px;
     font-weight: var(--fw-medium);
     line-height: 1;
     white-space: nowrap;
-    height: 100%;
     border-radius: var(--radius-md);
     -webkit-tap-highlight-color: transparent;
     transition: color var(--transition-fast) ease-out, background-color var(--transition-fast) ease-out;
@@ -499,8 +525,9 @@
     transform: scale(0.96);
   }
   .bottom-nav-link .material-symbols-outlined {
-    font-size: 20px;
+    font-size: 22px;
     color: inherit;
+    flex-shrink: 0;
     transition: color var(--transition-fast) ease-out;
   }
   /* Item activo: indicador pill primary-container (coherente con sidebar) */
@@ -543,5 +570,9 @@
     animation-duration: 0.01ms !important;
     animation-delay: 0ms !important;
     transition-duration: 0.01ms !important;
+  }
+  .bottom-nav {
+    scroll-behavior: auto !important;
+    scroll-snap-type: none !important;
   }
 }
