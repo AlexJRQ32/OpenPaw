@@ -140,6 +140,9 @@
   /* Familias */
   --font-heading: "Plus Jakarta Sans", system-ui, sans-serif;
   --font-body: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  /* T40 — Display del landing: personalidad tipográfica propia (Bricolage
+     Grotesque). Cae a Plus Jakarta Sans si la fuente no carga. */
+  --font-display: "Bricolage Grotesque", "Plus Jakarta Sans", system-ui, sans-serif;
 
   /* Escala tipográfica completa (DESIGN.md typography) */
   --text-headline-xl: 48px;

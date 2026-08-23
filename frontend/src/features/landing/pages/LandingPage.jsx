@@ -2,310 +2,454 @@ import { Link } from "react-router-dom"
 import { useAuth } from "../../auth/context/AuthContext"
 import { LandingNavbar } from "../../../shared/components/LandingNavbar/LandingNavbar"
 import { Reveal } from "../../../shared/components/Reveal/Reveal"
+import { Icon } from "../../../shared/components/Icon/Icon"
+import { Badge } from "../../../shared/components/Badge/Badge"
+/* HIGH-1 (QA T40): los CTAs del hero son <Link> con las clases del DS (.btn--*),
+   cuyo CSS vive en Button/button.css y solo lo importa Button.jsx (que no se
+   monta en "/"). Se importa directo para que las píldoras tengan estilo. */
+import "../../../shared/components/Button/button.css"
 import "./LandingPage.css"
 
-const SERVICIOS = [
-  "Vacunas", "Consultas", "Grooming", "Cirugias", "Desparasitacion", "Expedientes", "Citas", "Laboratorio",
+/* ---------------------------------------------------------------------------
+   T40 · Landing nueva OpenPaw ("Una sola pantalla").
+   Dirección de diseño: editorial-luminosa sobre tokens M3, azul primario
+   comprometido, display Bricolage Grotesque y bento asimétrico con previews
+   reales del producto.
+
+   Todos los datos mostrados son REALES del producto (nada de lorem):
+   - Estados de cita Pendiente / Confirmada / Completada  → CitasPage
+   - Severidad "Nivel 1 · Crítico" / "Nivel 2 · Urgente"   → EmergenciasPage
+   - Precios en colones (₡) y stock mínimo/máximo          → Inventario / Marketplace
+   --------------------------------------------------------------------------- */
+
+const AUDIENCIAS = [
+  {
+    id: "aud-veterinarias",
+    icon: "medical_services",
+    titulo: "Veterinarias",
+    texto:
+      "Agenda con calendario mensual, expediente clínico por paciente y emergencias clasificadas por severidad.",
+  },
+  {
+    id: "aud-duenos",
+    icon: "pets",
+    titulo: "Dueños de mascotas",
+    texto:
+      "El historial completo siempre a mano, citas en dos clics y recordatorios antes de cada vacuna.",
+  },
+  {
+    id: "aud-almacenes",
+    icon: "warehouse",
+    titulo: "Almacenes",
+    texto:
+      "Inventario con stock mínimo y máximo, publicado en el marketplace con precios en colones.",
+  },
 ]
 
-const FEATURES = [
-  { id: "01", icon: "fas fa-paw", title: "Expediente unico", text: "Historial medico centralizado por mascota: vacunas, consultas, cirugias y recetas en un solo lugar." },
-  { id: "02", icon: "fas fa-share-alt", title: "Comparte al instante", text: "Comparte el expediente con cualquier veterinario o clinica con un solo clic." },
-  { id: "03", icon: "fas fa-calendar-check", title: "Citas sin friccion", text: "Agenda veterinaria con reservas, recordatorios y seguimiento de cada paciente." },
-  { id: "04", icon: "fas fa-store", title: "Marketplace de confianza", text: "Explora productos y servicios de veterinarias y almacenes con stock real." },
+const PASOS = [
+  {
+    icon: "how_to_reg",
+    titulo: "Registrá tu cuenta",
+    texto:
+      "Las veterinarias y los almacenes pasan por una aprobación del administrador. Los dueños entran al instante.",
+  },
+  {
+    icon: "edit_note",
+    titulo: "Cargá pacientes e inventario",
+    texto:
+      "Mascotas con su historial, servicios con duración y precio, productos con stock y mínimos definidos.",
+  },
+  {
+    icon: "event_available",
+    titulo: "Operá el día a día",
+    texto:
+      "Agendá desde el calendario, atendé emergencias por severidad y vendé en el marketplace con stock real.",
+  },
 ]
 
-const STEPS = [
-  { numero: "01", titulo: "Crea tu cuenta", detalle: "Registrate como dueno o veterinaria en menos de un minuto." },
-  { numero: "02", titulo: "Agrega tus mascotas", detalle: "Registra el historial, vacunas y datos de cada paciente." },
-  { numero: "03", titulo: "Vive tranquilo", detalle: "Comparte expedientes, agenda citas y recibe alertas." },
+const CONFIANZA = [
+  { icon: "verified_user", texto: "Veterinarias verificadas antes de publicar" },
+  { icon: "lock", texto: "El expediente se comparte solo con quien autorizás" },
+  { icon: "cloud_done", texto: "Historial centralizado, respaldado y buscable" },
 ]
+
+const DIAS = ["L", "M", "X", "J", "V", "S", "D"]
 
 export function LandingPage() {
   const { isAuthenticated } = useAuth()
 
   return (
-    <>
+    <div className="lp">
+      <a className="lp-skip" href="#contenido">Saltar al contenido</a>
       <LandingNavbar />
-      <main className="landing">
-        {/* HERO */}
-        <section className="hero">
-          <div className="hero-glow hero-glow--a" aria-hidden="true" />
-          <div className="hero-glow hero-glow--b" aria-hidden="true" />
-          <div className="hero-grid" aria-hidden="true" />
 
-          <div className="hero-copy">
-            <p className="hero-eyebrow">Historial clinico compartible</p>
-            <h1 className="hero-title">
-              El historial de tu mascota,
-              <br />
-              <em>siempre contigo.</em>
-            </h1>
-            <p className="hero-sub">
-              OpenPaw junta vacunas, consultas, citas y expedientes de tus mascotas
-              en un solo lugar. Compartilo con tu veterinaria de confianza cuando quieras.
-            </p>
-            <div className="hero-actions">
-              {isAuthenticated ? (
-                <Link to="/dashboard" className="btn-primary">
-                  Ir al dashboard <i className="fas fa-arrow-right" />
-                </Link>
-              ) : (
-                <>
-                  <Link to="/auth-method" className="btn-primary">
-                    Crear cuenta gratis <i className="fas fa-arrow-right" />
+      <main id="contenido">
+        {/* ================================================== HERO (split 7/5) */}
+        <section className="lp-hero" aria-labelledby="lp-hero-title">
+          <div className="lp-shell lp-hero__grid">
+            <div className="lp-hero__copy">
+              <p className="lp-chip">
+                <Icon name="pets" size={16} />
+                Gestión veterinaria · Costa Rica
+              </p>
+              <h1 className="lp-display lp-hero__title" id="lp-hero-title">
+                Toda la clínica,
+                <br />
+                <span className="lp-accent-word">en una sola pantalla.</span>
+              </h1>
+              <p className="lp-hero__sub">
+                Citas, expedientes médicos, emergencias e inventario conectados
+                para veterinarias, dueños de mascotas y almacenes.
+              </p>
+              <div className="lp-hero__actions">
+                {isAuthenticated ? (
+                  <Link to="/dashboard" className="btn btn--primary">
+                    Ir al dashboard <Icon name="arrow_forward" size={18} />
                   </Link>
-                  <Link to="/login" className="btn-ghost">Ya tengo cuenta</Link>
-                </>
-              )}
+                ) : (
+                  <>
+                    <Link to="/auth-method" className="btn btn--primary">
+                      Crear cuenta gratis <Icon name="arrow_forward" size={18} />
+                    </Link>
+                    <Link to="/marketplace" className="btn btn--secondary">
+                      Explorar el marketplace
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
 
-            <dl className="hero-stats">
-              <div className="hero-stat">
-                <dt>Un solo</dt><dd>expediente</dd>
-              </div>
-              <div className="hero-stat">
-                <dt>Solo</dt><dd>un clic</dd>
-              </div>
-              <div className="hero-stat">
-                <dt>Cero</dt><dd>papeles</dd>
-              </div>
-            </dl>
-          </div>
-
-          {/* Ficha de mascota construida en CSS */}
-          <div className="hero-visual" aria-hidden="true">
-            <div className="pet-panel">
-              <div className="pet-panel__glow" aria-hidden="true" />
-
-              <header className="pet-profile">
-                <div className="pet-avatar">
-                  <i className="fas fa-dog" />
-                </div>
-                <div className="pet-profile__info">
-                  <span className="pet-badge"><i className="fas fa-shield-heart" />Vacunas al dia</span>
-                  <strong className="pet-name">Rex</strong>
-                  <span className="pet-meta">Labrador · 4 anios</span>
-                </div>
-              </header>
-
-              <div className="pet-vaccines">
-                <div className="pet-vaccines__head">
-                  <span>Cobertura de vacunas</span>
-                  <strong>80%</strong>
-                </div>
-                <div className="pet-progress">
-                  <span className="pet-progress__bar" />
-                </div>
-                <small className="pet-vaccines__note">4 de 5 vacunas al corriente</small>
+            {/* Collage de previews reales del producto (ilustrativo) */}
+            <div className="lp-collage" aria-hidden="true">
+              <div className="lp-card lp-collage__cita">
+                <header className="lp-collage__head">
+                  <span className="lp-collage__hora">Hoy · 10:30</span>
+                  <Badge variant="success" icon="check_circle">Confirmada</Badge>
+                </header>
+                <strong className="lp-collage__titulo">Rex: vacunación antirrábica</strong>
+                <small className="lp-collage__meta">Dr. Mora · Clínica Veterinaria Central</small>
               </div>
 
-              <div className="pet-cards">
-                <div className="pet-mini">
-                  <span className="pet-mini__icon pet-mini__icon--cal"><i className="fas fa-calendar-check" /></span>
-                  <div>
-                    <small>Proxima cita</small>
-                    <strong>12 ago · Veterinaria Central</strong>
-                  </div>
-                </div>
-                <div className="pet-mini">
-                  <span className="pet-mini__icon pet-mini__icon--ok"><i className="fas fa-user-shield" /></span>
-                  <div>
-                    <small>Expediente</small>
-                    <strong>Compartido con 2 veterinarias</strong>
-                  </div>
-                </div>
+              <div className="lp-card lp-collage__emergencia">
+                <Badge variant="danger" icon="warning" filled>Nivel 1 · Crítico</Badge>
+                <ul className="lp-vitales">
+                  <li className="lp-vital lp-vital--alerta">
+                    <Icon name="monitor_heart" size={16} /> FC 132 bpm
+                  </li>
+                  <li className="lp-vital lp-vital--alerta">
+                    <Icon name="device_thermostat" size={16} /> Temp 39.8 °C
+                  </li>
+                </ul>
+                <small className="lp-collage__meta">Luna · reporte desde la app del dueño</small>
               </div>
 
-              <ul className="pet-tags">
-                <li><i className="fas fa-syringe" />Vacunas</li>
-                <li><i className="fas fa-calendar-check" />Citas</li>
-                <li><i className="fas fa-folder-open" />Expediente</li>
-              </ul>
+              <div className="lp-card lp-collage__mkt">
+                <Icon name="inventory_2" size={20} />
+                <div className="lp-collage__mkt-txt">
+                  <strong>Alimento Perro Premium 5 kg</strong>
+                  <small>₡10 000 · 12 en stock</small>
+                </div>
+                <span className="lp-collage__add"><Icon name="add_shopping_cart" size={18} /></span>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* TICKER */}
-        <div className="ticker" aria-hidden="true">
-          <div className="ticker-track">
-            {[...SERVICIOS, ...SERVICIOS].map((s, i) => (
-              <span key={i} className="ticker-item">{s}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* ABOUT */}
-        <section className="about" id="about">
-          <Reveal>
-            <div className="about-head">
-              <p className="section-kicker">La idea</p>
-              <h2 className="section-title">
-                Dejar de perseguir historiales
-                <br />
-                <em>entre veterinarias.</em>
-              </h2>
-            </div>
-          </Reveal>
-          <div className="about-body">
-            <Reveal delay={0.1}>
-              <p className="about-lead">
-                Cada mascota tiene su historia, sus vacunas y sus citas. Entre un
-                veterinario y otro, es facil perder el rastro. OpenPaw centraliza
-                todo para que solo te preocupes por una pantalla.
+        {/* ===================================== AUDIENCIAS (#about, hairline) */}
+        <section className="lp-audiencias" id="about" aria-labelledby="lp-aud-title">
+          <div className="lp-shell">
+            <Reveal>
+              <h2 className="lp-h2" id="lp-aud-title">Un sistema, tres formas de usarlo.</h2>
+              <p className="lp-lead">
+                OpenPaw adapta la misma información al rol de cada persona:
+                nada se digita dos veces.
               </p>
             </Reveal>
-            <div className="about-highlights">
-              <Reveal delay={0.15}>
-                <div className="highlight-item">
-                  <i className="fas fa-user-group" aria-hidden="true" />
-                  <div>
-                    <strong>Multi-usuario</strong>
-                    <small>Duenos y veterinarias comparten el mismo expediente</small>
-                  </div>
-                </div>
-              </Reveal>
-              <Reveal delay={0.25}>
-                <div className="highlight-item">
-                  <i className="fas fa-bell" aria-hidden="true" />
-                  <div>
-                    <strong>Alertas a tiempo</strong>
-                    <small>Avisos de citas y recordatorios de vacunas, sin sorpresas</small>
-                  </div>
-                </div>
-              </Reveal>
-              <Reveal delay={0.35}>
-                <div className="highlight-item">
-                  <i className="fas fa-lock" aria-hidden="true" />
-                  <div>
-                    <strong>Privacidad real</strong>
-                    <small>Vos decis quien accede al historial de tu mascota</small>
-                  </div>
-                </div>
-              </Reveal>
-            </div>
+            <Reveal delay={0.1}>
+              <ul className="lp-aud">
+                {AUDIENCIAS.map((a) => (
+                  <li className="lp-aud__item" key={a.id}>
+                    <span className="lp-aud__icon"><Icon name={a.icon} size={22} /></span>
+                    <h3>{a.titulo}</h3>
+                    <p>{a.texto}</p>
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
           </div>
         </section>
 
-        {/* FEATURES */}
-        <section className="features" id="features">
-          <Reveal>
-            <div className="features-head">
-              <p className="section-kicker">Funcionalidades</p>
-              <h2 className="section-title">
-                Simple de usar,
-                <br />
-                <em>serio por dentro.</em>
-              </h2>
-            </div>
-          </Reveal>
-          <div className="features-grid">
-            {FEATURES.map((f, i) => (
-              <Reveal key={f.id} delay={i * 0.1}>
-                <article className="feature-card">
-                  <span className="feature-card__num">{f.id}</span>
-                  <i className={`${f.icon} feature-icon`} aria-hidden="true" />
-                  <h3>{f.title}</h3>
-                  <p>{f.text}</p>
+        {/* ============================== PRODUCTO (#features, bento asimétrico) */}
+        <section className="lp-producto" id="features" aria-labelledby="lp-prod-title">
+          <div className="lp-shell">
+            <Reveal>
+              <h2 className="lp-h2" id="lp-prod-title">Lo que OpenPaw hace todos los días.</h2>
+              <p className="lp-lead">
+                Cinco módulos que comparten la misma base de datos: lo que se
+                agenda, se trata, se vende y se despacha vive en un solo lugar.
+              </p>
+            </Reveal>
+
+            <div className="lp-bento">
+              {/* A · Citas — celda grande */}
+              <Reveal className="lp-cell-wrap lp-bento__citas" delay={0}>
+                <article className="lp-cell lp-cell--citas">
+                  <h3>Citas con calendario real</h3>
+                  <p>
+                    Calendario mensual con las citas del día, estados
+                    Pendiente, Confirmada o Completada y filtros para la recepción.
+                  </p>
+                  <div className="lp-cal" aria-hidden="true">
+                    <div className="lp-cal__week">
+                      {DIAS.map((d, i) => (
+                        <span key={d} className={`lp-cal__day${i === 2 ? " lp-cal__day--hoy" : ""}`}>
+                          <small>{d}</small>
+                          <strong>{10 + i}</strong>
+                        </span>
+                      ))}
+                    </div>
+                    <ul className="lp-cal__citas">
+                      <li>
+                        <span className="lp-cal__hora">10:30</span>
+                        <div className="lp-cal__txt">
+                          <strong>Rex: consulta general</strong>
+                          <small>Dr. Mora · Consultorio 2</small>
+                        </div>
+                        <Badge variant="success" icon="check_circle">Confirmada</Badge>
+                      </li>
+                      <li>
+                        <span className="lp-cal__hora">15:00</span>
+                        <div className="lp-cal__txt">
+                          <strong>Luna: control postoperatorio</strong>
+                          <small>Dra. Solís · Consultorio 1</small>
+                        </div>
+                        <Badge variant="warning" icon="schedule">Pendiente</Badge>
+                      </li>
+                    </ul>
+                  </div>
                 </article>
               </Reveal>
-            ))}
+
+              {/* B · Expediente — timeline clínico */}
+              <Reveal className="lp-cell-wrap lp-bento__expediente" delay={0.05}>
+                <article className="lp-cell lp-cell--expediente">
+                  <h3>Expediente clínico en línea de tiempo</h3>
+                  <p>
+                    Consultas, vacunas, aportes y emergencias de cada mascota,
+                    ordenados por fecha en un solo historial.
+                  </p>
+                  <ol className="lp-tline" aria-hidden="true">
+                    <li>
+                      <span className="lp-tline__node lp-tline__node--ok"><Icon name="vaccines" size={14} /></span>
+                      <div><strong>Vacunación antirrábica</strong><small>12 jul</small></div>
+                    </li>
+                    <li>
+                      <span className="lp-tline__node lp-tline__node--ok"><Icon name="medication" size={14} /></span>
+                      <div><strong>Desparasitación interna</strong><small>28 jun</small></div>
+                    </li>
+                    <li>
+                      <span className="lp-tline__node lp-tline__node--alerta"><Icon name="emergency" size={14} /></span>
+                      <div><strong>Emergencia Nivel 2 · Urgente</strong><small>14 jun</small></div>
+                    </li>
+                  </ol>
+                </article>
+              </Reveal>
+
+              {/* C · Emergencias — severidad + vitales */}
+              <Reveal className="lp-cell-wrap lp-bento__emergencias" delay={0.1}>
+                <article className="lp-cell lp-cell--emergencias">
+                  <h3>Emergencias con severidad</h3>
+                  <p>
+                    Cada reporte llega clasificado como crítico o urgente, con
+                    signos vitales al frente.
+                  </p>
+                  <div className="lp-emerg" aria-hidden="true">
+                    <Badge variant="danger" icon="priority_high">Nivel 1 · Crítico</Badge>
+                    <div className="lp-vitales">
+                      <span className="lp-vital lp-vital--alerta">
+                        <Icon name="monitor_heart" size={15} /> FC 132 bpm
+                      </span>
+                      <span className="lp-vital">
+                        <Icon name="water_drop" size={15} /> SpO₂ 96 %
+                      </span>
+                    </div>
+                  </div>
+                </article>
+              </Reveal>
+
+              {/* D · Inventario — stock mínimo/máximo */}
+              <Reveal className="lp-cell-wrap lp-bento__inventario" delay={0.15}>
+                <article className="lp-cell lp-cell--inventario">
+                  <h3>Inventario que avisa</h3>
+                  <p>
+                    Stock mínimo y máximo por producto; el marketplace muestra
+                    solo lo que hay disponible.
+                  </p>
+                  <div className="lp-stock" aria-hidden="true">
+                    <div className="lp-stock__head">
+                      <span>Alimento Perro Premium</span>
+                      <strong>12 / 30</strong>
+                    </div>
+                    <div className="lp-stock__track">
+                      <span className="lp-stock__fill" />
+                      <i className="lp-stock__min" title="Stock mínimo" />
+                    </div>
+                    <small>Mínimo: 6 unidades · aviso antes de quedarte sin bolsas</small>
+                  </div>
+                </article>
+              </Reveal>
+
+              {/* E · Marketplace — banda ancha oscura */}
+              <Reveal className="lp-cell-wrap lp-bento__marketplace" delay={0.2}>
+                <article className="lp-cell lp-cell--marketplace">
+                  <div className="lp-mkt__copy">
+                    <h3>Marketplace con stock real</h3>
+                    <p>
+                      Productos y servicios de veterinarias y almacenes aprobados,
+                      carrito compartido y checkout sin llamadas.
+                    </p>
+                    <Link to="/marketplace" className="lp-link-light">
+                      Ver el marketplace <Icon name="arrow_forward" size={16} />
+                    </Link>
+                  </div>
+                  <div className="lp-mkt" aria-hidden="true">
+                    <span className="lp-mkt-chip">
+                      <Icon name="inventory_2" size={16} />
+                      Alimento Perro Premium 5 kg <strong>₡10 000</strong>
+                    </span>
+                    <span className="lp-mkt-chip">
+                      <Icon name="spa" size={16} />
+                      Grooming completo <strong>₡15 000</strong>
+                    </span>
+                    <span className="lp-mkt-chip lp-mkt-chip--btn">
+                      <Icon name="add_shopping_cart" size={16} /> Agregar al carrito
+                    </span>
+                  </div>
+                </article>
+              </Reveal>
+            </div>
           </div>
         </section>
 
-        {/* COMO */}
-        <section className="how" id="how">
-          <Reveal>
-            <div className="how-head">
-              <p className="section-kicker">Como funciona</p>
-              <h2 className="section-title">
-                En tres pasos,
-                <br />
-                <em>estas dentro.</em>
-              </h2>
-            </div>
-          </Reveal>
-          <ol className="steps">
-            {STEPS.map((s, i) => (
-              <Reveal key={s.numero} delay={i * 0.15}>
-                <li className="step">
-                  <span className="step__num">{s.numero}</span>
-                  <h3>{s.titulo}</h3>
-                  <p>{s.detalle}</p>
-                </li>
-              </Reveal>
-            ))}
-          </ol>
+        {/* ============================ CÓMO FUNCIONA (#how, secuencia real) */}
+        <section className="lp-como" id="how" aria-labelledby="lp-como-title">
+          <div className="lp-shell lp-como__grid">
+            <Reveal className="lp-como__intro">
+              <h2 className="lp-h2" id="lp-como-title">De cero a operar en una tarde.</h2>
+              <p className="lp-lead">
+                Sin migraciones dolorosas: la clínica empieza a funcionar el
+                mismo día que se registra.
+              </p>
+            </Reveal>
+            <Reveal delay={0.1} className="lp-como__pasos-wrap">
+              <ol className="lp-pasos" aria-label="Pasos para empezar a usar OpenPaw">
+                {PASOS.map((paso, i) => (
+                  <li className="lp-paso" key={paso.titulo}>
+                    <span className="lp-paso__num" aria-hidden="true">{i + 1}</span>
+                    <div className="lp-paso__body">
+                      <h3>
+                        <Icon name={paso.icon} size={20} />
+                        {paso.titulo}
+                      </h3>
+                      <p>{paso.texto}</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
+          </div>
         </section>
 
-        {/* CTA */}
-        <section className="cta">
-          <div className="cta-glow" aria-hidden="true" />
-          <Reveal>
-            <h2 className="cta-title">
-              El bienestar de tu mascota no deberia estar disperso.
-            </h2>
-            <p className="cta-sub">
-              Crea tu cuenta gratis y ten el historial de tu mascota donde puedas verlo.
-            </p>
-            {isAuthenticated ? (
-              <Link to="/dashboard" className="btn-primary btn-primary--light">
-                Ir al dashboard <i className="fas fa-arrow-right" />
-              </Link>
-            ) : (
-              <Link to="/auth-method" className="btn-primary btn-primary--light">
-                Comenzar gratis <i className="fas fa-arrow-right" />
-              </Link>
-            )}
-          </Reveal>
+        {/* ================================================= CONFIANZA (pull-quote) */}
+        <section className="lp-confianza" aria-labelledby="lp-conf-title">
+          <div className="lp-shell">
+            <Reveal>
+              <Icon name="pets" size={150} className="lp-confianza__marca" />
+              <blockquote className="lp-display" id="lp-conf-title">
+                Ningún expediente debería vivir solo en un cuaderno.
+              </blockquote>
+              <p className="lp-confianza__attr">Esa es la idea detrás de cada módulo de OpenPaw.</p>
+              <ul className="lp-confianza__chips">
+                {CONFIANZA.map((c) => (
+                  <li key={c.icon}>
+                    <Icon name={c.icon} size={17} />
+                    {c.texto}
+                  </li>
+                ))}
+              </ul>
+            </Reveal>
+          </div>
+        </section>
+
+        {/* ==================================================== CTA FINAL (banda oscura) */}
+        <section className="lp-cta-final" aria-labelledby="lp-cta-title">
+          <div className="lp-shell">
+            <Reveal>
+              <h2 className="lp-display" id="lp-cta-title">Empezá hoy. Es gratis.</h2>
+              <p className="lp-cta-final__sub">
+                Creá tu cuenta como dueño de mascota o registrá tu veterinaria
+                o almacén en minutos.
+              </p>
+              <div className="lp-cta-final__actions">
+                {isAuthenticated ? (
+                  <Link to="/dashboard" className="lp-btn-light">
+                    Ir al dashboard <Icon name="arrow_forward" size={18} />
+                  </Link>
+                ) : (
+                  <Link to="/auth-method" className="lp-btn-light">
+                    Crear cuenta gratis <Icon name="arrow_forward" size={18} />
+                  </Link>
+                )}
+                <Link to="/login" className="lp-link-light">Iniciar sesión</Link>
+              </div>
+            </Reveal>
+          </div>
         </section>
       </main>
 
-      <footer className="footer">
-        <div className="footer-container">
-          <div className="footer-grid">
-            <div className="footer-brand">
-              <div className="footer-brand__head">
-                <img src="/logo.png" alt="OpenPaw" className="footer-logo" />
-                <span className="footer-brand__name">OpenPaw</span>
-              </div>
-              <p className="footer-brand__tagline">El historial de tu mascota, siempre contigo.</p>
-              <div className="footer-social">
-                <a href="#" aria-label="OpenPaw en Facebook"><i className="fab fa-facebook-f" /></a>
-                <a href="#" aria-label="OpenPaw en Instagram"><i className="fab fa-instagram" /></a>
-                <a href="#" aria-label="OpenPaw en X"><i className="fab fa-x-twitter" /></a>
-              </div>
+      {/* ============================================================== FOOTER */}
+      <footer className="lp-footer">
+        <div className="lp-shell">
+          <div className="lp-footer__grid">
+            <div className="lp-footer__brand">
+              <img src="/logo.png" alt="OpenPaw" width="34" height="34" />
+              <p className="lp-footer__tagline">
+                La clínica entera, en una sola pantalla.
+              </p>
+              <p className="lp-footer__lugar">
+                <Icon name="location_on" size={15} /> San José, Costa Rica
+              </p>
             </div>
 
-            <nav className="footer-col" aria-label="Producto">
-              <h3 className="footer-col__title">Producto</h3>
+            <nav className="lp-footer__col" aria-label="Producto">
+              <h3>Producto</h3>
               <a href="#about">La idea</a>
               <a href="#features">Funcionalidades</a>
-              <a href="#how">Como funciona</a>
+              <a href="#how">Cómo funciona</a>
               <Link to="/marketplace">Marketplace</Link>
             </nav>
 
-            <nav className="footer-col" aria-label="Cuenta">
-              <h3 className="footer-col__title">Cuenta</h3>
-              <Link to="/login">Iniciar sesion</Link>
+            <nav className="lp-footer__col" aria-label="Cuenta">
+              <h3>Cuenta</h3>
+              <Link to="/login">Iniciar sesión</Link>
               <Link to="/auth-method">Crear cuenta</Link>
               <Link to="/dashboard">Dashboard</Link>
             </nav>
 
-            <nav className="footer-col" aria-label="Legal">
-              <h3 className="footer-col__title">Legal</h3>
+            <nav className="lp-footer__col" aria-label="Legal">
+              <h3>Legal</h3>
               <a href="#">Privacidad</a>
-              <a href="#">Terminos</a>
+              <a href="#">Términos</a>
               <a href="#">Contacto</a>
             </nav>
           </div>
 
-          <div className="footer-bottom">
+          <div className="lp-footer__bottom">
             <p>&copy; 2026 OpenPaw. Todos los derechos reservados.</p>
           </div>
         </div>
       </footer>
-    </>
+    </div>
   )
 }
 
