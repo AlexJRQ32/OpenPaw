@@ -217,12 +217,13 @@
      RADIOS
      ========================================================================== */
 
-  /* Legacy (task #12): sm 4, md 8, lg 12, xl 16, 2xl 24 (nuevo), full */
+  /* Legacy (task #12): sm 4, md 8, lg 12, xl 16, 2xl 24 (nuevo), 3xl 48 (T39 hero), full */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
   --radius-xl: 16px;
   --radius-2xl: 24px;
+  --radius-3xl: 48px; /* T39 — borde inferior del hero del marketplace (wireframe rounded-b-[48px]) */
   --radius-full: 999px;
 
   /* Alias DESIGN.md (rounded): sm 4, md 12, lg 16, xl 24, full */
@@ -230,6 +231,7 @@
   --rounded-md: 12px;
   --rounded-lg: 16px;
   --rounded-xl: 24px;
+  --rounded-3xl: 48px; /* T39 — alias del radio hero marketplace */
   --rounded-full: 9999px;
 
   /* ==========================================================================
