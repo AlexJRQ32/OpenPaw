@@ -29,7 +29,9 @@ graphify-out/
 backend/**/.aspnet-data-protection-keys/
 
 # Test artifacts
-frontend/e2e/
+# Suite Playwright (Sprint 2 T41) — versionar config, specs y helpers.
+# Solo se ignoran los artifacts generados (diffs PNG, html-report, json).
+frontend/e2e/artifacts/
 frontend/test-results/
 frontend/playwright-report/
 
