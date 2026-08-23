@@ -12,6 +12,7 @@ const { mockNavigate, mockLoginWithSocial, mockShowLoader, mockHideLoader } =
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
+  useLocation: () => ({ state: null, pathname: '/auth-method' }),
   // Stub mínimo de Link para verificar el destino sin Router
   Link: ({ to, children, ...rest }) => (
     <a href={to} {...rest}>

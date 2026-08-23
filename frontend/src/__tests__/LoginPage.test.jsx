@@ -3,15 +3,17 @@ import { render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { LoginPage } from '../features/auth/pages/LoginPage'
 
-const { mockNavigate, mockLogin, mockShowLoader, mockHideLoader } = vi.hoisted(() => ({
+const { mockNavigate, mockLogin, mockShowLoader, mockHideLoader, mockLocation } = vi.hoisted(() => ({
   mockNavigate: vi.fn(),
   mockLogin: vi.fn(),
   mockShowLoader: vi.fn(),
   mockHideLoader: vi.fn(),
+  mockLocation: { state: null, pathname: '/login' },
 }))
 
 vi.mock('react-router-dom', () => ({
   useNavigate: () => mockNavigate,
+  useLocation: () => mockLocation,
 }))
 
 vi.mock('../features/auth/context/AuthContext', () => ({
@@ -56,7 +58,7 @@ describe('LoginPage', () => {
     expect(screen.getByText(/O continuar con/)).toBeInTheDocument()
   })
 
-  test('al enviar llama a login con las credenciales y navega a /', async () => {
+  test('al enviar llama a login con las credenciales y navega a /dashboard', async () => {
     const user = userEvent.setup()
     mockLogin.mockResolvedValueOnce({ token: 'fake-token' })
 
@@ -70,10 +72,27 @@ describe('LoginPage', () => {
       expect(mockLogin).toHaveBeenCalledWith('test@openpaw.com', 'secreto123')
     })
     await waitFor(() => {
-      expect(mockNavigate).toHaveBeenCalledWith('/', { replace: true })
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard', { replace: true })
     })
     expect(mockShowLoader).toHaveBeenCalled()
     expect(mockHideLoader).toHaveBeenCalled()
+  })
+
+  test('respeta location.state.from cuando viene de ProtectedRoute', async () => {
+    const user = userEvent.setup()
+    mockLogin.mockResolvedValueOnce({ token: 'fake-token' })
+    mockLocation.state = { from: { pathname: '/dashboard/citas' } }
+
+    render(<LoginPage />)
+
+    await user.type(screen.getByLabelText('Correo electrónico'), 'test@openpaw.com')
+    await user.type(screen.getByLabelText('Contraseña'), 'secreto123')
+    await user.click(screen.getByRole('button', { name: /^ingresar$/i }))
+
+    await waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith('/dashboard/citas', { replace: true })
+    })
+    mockLocation.state = null
   })
 
   test('muestra el banner de error (role=alert) cuando falla el inicio de sesión', async () => {
