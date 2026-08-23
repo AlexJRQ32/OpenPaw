@@ -1,4 +1,3 @@
-/* global describe, test, expect, vi, beforeEach */
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { StoreRegistrationPage } from '../features/store-registration/pages/StoreRegistrationPage'

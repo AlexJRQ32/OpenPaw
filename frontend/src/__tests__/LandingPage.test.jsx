@@ -1,4 +1,3 @@
-/* global describe, test, expect, vi, beforeEach */
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { LandingPage } from '../features/landing/pages/LandingPage'
