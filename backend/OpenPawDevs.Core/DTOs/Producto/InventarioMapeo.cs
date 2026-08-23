@@ -52,6 +52,27 @@ public static class InventarioMapeo
     }
 
     /// <summary>
+    /// Deuda #70: DTO público mínimo para marketplace (solo producto+precio+stock).
+    /// No expone StockMinimo/Maximo, Lote, Ubicacion ni IDs internos sensibles.
+    /// </summary>
+    public static InventarioPublicoDto ToPublicoDto(Inventario i)
+    {
+        return new InventarioPublicoDto
+        {
+            InventarioId = i.Id,
+            ProductoId = i.ProductoId,
+            Nombre = i.Producto?.Nombre ?? string.Empty,
+            Precio = i.Producto?.Precio ?? 0m,
+            Stock = i.Cantidad,
+            ImagenUrl = i.Producto?.ImagenUrl,
+            Categoria = i.Producto?.Categoria,
+            AlmacenNombre = i.Almacen?.Nombre,
+            VeterinariaId = i.Almacen?.VeterinariaId,
+            VeterinariaNombre = i.Almacen?.Veterinaria?.Nombre
+        };
+    }
+
+    /// <summary>
     /// Actualizacion parcial: null en el DTO preserva el valor actual de la entidad;
     /// cadena vacia ("") si sobrescribe el campo.
     /// </summary>

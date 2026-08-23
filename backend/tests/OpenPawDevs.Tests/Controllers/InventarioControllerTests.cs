@@ -1,5 +1,6 @@
 using System.Security.Claims;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -192,6 +193,69 @@ public class InventarioControllerTests
         dto.Should().HaveCount(1);
         dto[0].AlmacenId.Should().Be(2);
         _inventario.Verify(r => r.GetAllAsync(), Times.Once);
+    }
+
+    // Deuda #70: validación de endpoints interno (auth) vs público (AllowAnonymous)
+
+    [Fact]
+    public void GetAll_DebeRequerirAutorizacion_SinAllowAnonymous()
+    {
+        var method = typeof(InventarioController).GetMethod(nameof(InventarioController.GetAllAsync))!;
+        method.GetCustomAttributes(typeof(AllowAnonymousAttribute), false).Should().BeEmpty(
+            "GET /api/inventario interno debe requerir auth (sin AllowAnonymous)");
+        method.GetCustomAttributes(typeof(AuthorizeAttribute), false)
+            .Cast<AuthorizeAttribute>().Should().ContainSingle(
+                "debe tener [Authorize] explícito (cubre 401 sin token)");
+    }
+
+    [Fact]
+    public void GetPublico_DebePermitirAnonimo()
+    {
+        var method = typeof(InventarioController).GetMethod(nameof(InventarioController.GetPublicoAsync))!;
+        method.GetCustomAttributes(typeof(AllowAnonymousAttribute), false).Should().ContainSingle(
+            "GET /api/inventario/publico debe ser [AllowAnonymous] (200 sin token)");
+    }
+
+    [Fact]
+    public async Task GetPublico_DebeRetornarSoloConStockYDtoMinimo()
+    {
+        var registros = new List<Inventario>
+        {
+            new() { Id = 1, ProductoId = 10, Cantidad = 5, Producto = new Producto { Id = 10, Nombre = "Alimento Premium", Precio = 15000, ImagenUrl = "img.jpg", Categoria = "Alimentos", Activo = true }, Almacen = new Almacen { Id = 2, Nombre = "Central", VeterinariaId = 7, Veterinaria = new Veterinaria { Id = 7, Nombre = "Vet San Roque" } } },
+            new() { Id = 2, ProductoId = 11, Cantidad = 0, Producto = new Producto { Id = 11, Nombre = "Agotado", Precio = 5000, Activo = true } },
+            new() { Id = 3, ProductoId = 12, Cantidad = 3, Producto = new Producto { Id = 12, Nombre = "Inactivo", Precio = 8000, Activo = false } },
+        };
+        _inventario.Setup(r => r.GetAllAsync()).ReturnsAsync(registros);
+
+        var result = await CreateSut().GetPublicoAsync();
+
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        var dto = ok.Value.Should().BeAssignableTo<IEnumerable<InventarioPublicoDto>>().Subject.ToList();
+        dto.Should().ContainSingle("solo el registro con stock>0 y activo debe exponerse");
+        dto[0].InventarioId.Should().Be(1);
+        dto[0].ProductoId.Should().Be(10);
+        dto[0].Nombre.Should().Be("Alimento Premium");
+        dto[0].Precio.Should().Be(15000);
+        dto[0].Stock.Should().Be(5);
+        dto[0].ImagenUrl.Should().Be("img.jpg");
+        dto[0].Categoria.Should().Be("Alimentos");
+        dto[0].AlmacenNombre.Should().Be("Central");
+        dto[0].VeterinariaId.Should().Be(7);
+        // DTO mínimo no debe exponer campos internos sensibles (validación estructural)
+        typeof(InventarioPublicoDto).GetProperty("StockMinimo").Should().BeNull();
+        typeof(InventarioPublicoDto).GetProperty("StockMaximo").Should().BeNull();
+        typeof(InventarioPublicoDto).GetProperty("Lote").Should().BeNull();
+        typeof(InventarioPublicoDto).GetProperty("Ubicacion").Should().BeNull();
+        typeof(InventarioPublicoDto).GetProperty("Cantidad").Should().BeNull("se expone como Stock, no Cantidad interna");
+    }
+
+    [Fact]
+    public async Task GetPublico_ConInventarioVacio_DebeRetornarListaVacia200()
+    {
+        _inventario.Setup(r => r.GetAllAsync()).ReturnsAsync(new List<Inventario>());
+        var result = await CreateSut().GetPublicoAsync();
+        var ok = result.Should().BeOfType<OkObjectResult>().Subject;
+        ok.Value.Should().BeAssignableTo<IEnumerable<InventarioPublicoDto>>().Which.Should().BeEmpty();
     }
 
     private static void SetAuthenticatedUser(InventarioController controller, int userId, int rolId = 1)
