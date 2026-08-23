@@ -1,223 +1,122 @@
 @import "../../../shared/styles/tokens.css";
 
-.vetreg-wrapper {
-  background: linear-gradient(160deg, #dfeaff 0%, #f5f5f5 45%, #f5f5f5 100%);
-  margin: -24px;
-  padding: 24px;
-  min-height: calc(100svh - 60px);
-  box-sizing: border-box;
-}
+/* ==========================================================================
+   VeterinaryRegistrationPage — rediseño Sprint 2 (T37). Wireframe
+   registro_de_veterinaria_openpaw: fondo con degradado sutil, header con
+   eyebrow/badges y formulario único. Tokens Material 3 (--md-*).
+   ========================================================================== */
 
 .vetreg-page {
-  max-width: 900px;
+  max-width: var(--container-max);
   margin: 0 auto;
+  padding: var(--space-8) var(--gutter) var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
+/* --------------------------------------------------------------- header */
 .vetreg-header {
-  margin-bottom: 32px;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
 }
 
-.vetreg-header-row {
+.vetreg-header__badges {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.vetreg-eyebrow {
+  padding: 4px var(--space-3);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+  border-radius: var(--rounded-full);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+.vetreg-header__row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
 }
 
 .vetreg-title {
   margin: 0;
-  font-size: 26px;
-  color: #000000;
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-lg);
+  font-weight: var(--fw-extrabold);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-headline);
+  color: var(--md-on-surface);
 }
 
 .vetreg-subtitle {
-  margin: 0;
-  color: #555555;
-  font-size: 15px;
+  margin: var(--space-2) 0 0;
+  max-width: 62ch;
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-body-lg);
+  color: var(--md-on-surface-variant);
 }
 
-/* Step indicator */
-.vetreg-steps {
-  display: flex;
-  align-items: center;
-  margin-bottom: 32px;
-  padding: 20px 24px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.vetreg-step {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.step-marker {
+.vetreg-help {
   display: inline-flex;
-  width: 32px;
-  height: 32px;
   align-items: center;
-  justify-content: center;
-  border-radius: 999px;
-  background: #e8e8e8;
-  color: #888888;
-  font-size: 14px;
-  font-weight: 700;
-  flex-shrink: 0;
-  transition: all 0.2s;
-}
-
-.vetreg-step--active .step-marker {
-  background: #0066e8;
-  color: #ffffff;
-  box-shadow: 0 0 0 4px rgba(0, 102, 232, 0.15);
-}
-
-.vetreg-step--completed .step-marker {
-  background: #17624d;
-  color: #ffffff;
-}
-
-.step-label {
-  font-size: 14px;
-  font-weight: 600;
-  color: #888888;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
   white-space: nowrap;
+  background: color-mix(in srgb, var(--md-primary) 6%, transparent);
+  color: var(--md-primary);
+  border-radius: var(--rounded-full);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  transition: background var(--transition-fast), transform var(--transition-fast);
 }
 
-.vetreg-step--active .step-label {
-  color: #0066e8;
+.vetreg-help:hover {
+  background: color-mix(in srgb, var(--md-primary) 12%, transparent);
+  transform: translateY(-1px);
 }
 
-.vetreg-step--completed .step-label {
-  color: #17624d;
+.vetreg-help:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
 }
 
-.step-connector {
-  flex: 1;
-  height: 2px;
-  background: #e8e8e8;
-  margin: 0 16px;
-  min-width: 24px;
-}
-
-/* Override registration-form inside vetreg page */
-.vetreg-page .registration-form {
-  max-width: none;
-  margin: 0;
-  padding: 0;
-}
-
-.vetreg-page .form-section {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 20px;
-  padding: 24px;
-  margin-bottom: 20px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-}
-
-.vetreg-page .section-heading {
-  display: grid;
-  gap: 4px;
-}
-
-.vetreg-page .section-heading > span {
-  display: none;
-}
-
-.vetreg-page .section-heading h2 {
-  margin: 0;
-  font-size: 18px;
-  color: #000000;
-}
-
-.vetreg-page .section-heading p {
-  margin: 0;
-  font-size: 14px;
-  color: #555555;
-}
-
-.vetreg-page .field-grid {
-  gap: 16px;
-}
-
-.vetreg-page .actions {
-  padding-top: 8px;
-}
-
-.vetreg-page .actions button {
-  min-height: 48px;
-  padding: 0 28px;
-  color: #ffffff;
-  background: #000000;
-  border: 0;
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.25s;
-}
-
-.vetreg-page .actions button:hover {
-  background: #1a1a1a;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
-}
-
-.vetreg-page .actions button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-.vetreg-page .field input,
-.vetreg-page .field textarea,
-.vetreg-page .field select {
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.vetreg-page .upload-field {
-  display: grid;
-  gap: 8px;
-  padding: 22px;
-  background: var(--color-surface);
-  border: 1px dashed var(--color-border);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-}
-
-.vetreg-page .upload-field input {
-  width: 100%;
-  color: #637184;
-}
-
-.vetreg-page .upload-field strong {
-  color: #18202f;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-.vetreg-page .upload-field span {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-@media (max-width: 640px) {
-  .vetreg-steps {
-    flex-wrap: wrap;
-    gap: 8px;
+/* ----------------------------------------------------------- responsive */
+@media (max-width: 768px) {
+  .vetreg-page {
+    padding: var(--space-5) var(--space-4) var(--space-xl);
   }
 
-  .step-connector {
-    display: none;
+  .vetreg-header__row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .vetreg-help {
+    align-self: flex-start;
+  }
+
+  .vetreg-title {
+    font-size: var(--text-headline-lg-mobile);
+  }
+}
+
+/* ------------------------------------------------------ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .vetreg-help {
+    transition: none;
+  }
+
+  .vetreg-help:hover {
+    transform: none;
   }
 }
