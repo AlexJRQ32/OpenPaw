@@ -34,6 +34,11 @@ public class VeterinariaConfiguration : IEntityTypeConfiguration<Veterinaria>
         builder.Property(v => v.CedulaJuridica)
             .HasMaxLength(30);
 
+        // Deuda #89: índice único para evitar cédulas duplicadas (404->409 del frontend es código muerto sin esto).
+        builder.HasIndex(v => v.CedulaJuridica)
+            .IsUnique()
+            .HasFilter("[CedulaJuridica] IS NOT NULL");
+
         builder.Property(v => v.Descripcion)
             .HasMaxLength(1000);
 

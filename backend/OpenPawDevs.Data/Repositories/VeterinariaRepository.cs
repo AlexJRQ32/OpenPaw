@@ -33,4 +33,11 @@ public class VeterinariaRepository : GenericRepository<Veterinaria>, IVeterinari
             .Where(v => v.UsuarioId == usuarioId)
             .ToListAsync();
     }
+
+    public async Task<Veterinaria?> GetByCedulaAsync(string cedulaJuridica)
+    {
+        return await _context.Veterinarias
+            .AsNoTracking()
+            .FirstOrDefaultAsync(v => v.CedulaJuridica == cedulaJuridica);
+    }
 }
