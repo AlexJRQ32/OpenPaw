@@ -39,6 +39,46 @@ pnpm install
 npm run dev    # Frontend en http://localhost:5173
 ```
 
+### Backend — `launchSettings.json` (Deuda #72)
+
+`backend/OpenPawDevs.WebAPI/Properties/launchSettings.json` define el perfil **Development**:
+
+```json
+{
+  "profiles": {
+    "Development": {
+      "commandName": "Project",
+      "applicationUrl": "http://localhost:5000",
+      "environmentVariables": { "ASPNETCORE_ENVIRONMENT": "Development" }
+    }
+  }
+}
+```
+
+- `dotnet run` **sin** variable de entorno ya arranca en `Development` (lee `launchSettings.json`). Usa `appsettings.json` (`Server=localhost;Database=OpenPawDevs;Trusted_Connection=True…`) y **no** `appsettings.Production.json` (Somee `OpenPawDataBase.mssql.somee.com`). No hace falta `dotnet run --no-launch-profile`.
+- En producción Somee/Azure la variable `ASPNETCORE_ENVIRONMENT=Production` la inyecta el hosting; `launchSettings.json` solo afecta a `dotnet run` local.
+
+### Frontend — `.env` local (Deuda #72)
+
+- **Por defecto sin `.env`** el frontend apunta a `https://openpaw.alwaysdata.net/api` (fallback en `src/constants.js`: `import.meta.env.VITE_API_BASE_URL ?? 'https://openpaw.alwaysdata.net/api'`).
+- Para desarrollo contra el backend local (`http://localhost:5000`):
+
+```bash
+cd frontend
+copy .env.example .env.local        # Windows
+# cp .env.example .env.local        # Linux/Mac
+# o: copy .env.local.example .env.local
+```
+
+Contenido de `.env.example` / `.env.local.example`:
+
+```
+VITE_API_BASE_URL=http://localhost:5000/api
+```
+
+- `.env` y `.env.local` están en `.gitignore` (no se versionan); `.env.example` y `.env.local.example` **sí** se versionan como plantilla.
+- En Vercel la URL de producción se inyecta vía variables del hosting, no hace falta `.env` en el repo.
+
 ## Estructura del Proyecto
 
 ```
