@@ -1,6 +1,10 @@
-# Build outputs
+# Build outputs (Deuda #73: todos los publish son artefactos, no versionar)
 backend/publish-selfcontained/
 backend/publish-deploy/
+backend/publish-standalone/
+backend/publish-dll/
+backend/publish-linux/
+backend/**/publish/
 backend/**/bin/
 backend/**/obj/
 
@@ -35,7 +39,7 @@ frontend/e2e/artifacts/
 frontend/test-results/
 frontend/playwright-report/
 
-# Environment (Deuda #72: .env.local ignorado, .env.example versionado)
+# Environment (Deuda #72/#73: .env ignorado, .env.example versionado)
 .env
 .env.local
 .env.production.local
@@ -44,3 +48,5 @@ frontend/playwright-report/
 !.env.local.example
 !frontend/.env.example
 !frontend/.env.local.example
+!backend/.env.example
+!backend/OpenPawDevs.WebAPI/.env.example
