@@ -1,0 +1,108 @@
+@import "../../../shared/styles/tokens.css";
+
+/* ==========================================================================
+   DonutDistribucion — donut SVG de distribución de stock (T34).
+   Tokens Material 3 (--md-*). Sin hex hardcodeados.
+   ========================================================================== */
+
+.donut {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  margin: 0;
+  width: 100%;
+}
+
+.donut__chart {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+}
+
+.donut__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.donut__track {
+  stroke: var(--md-surface-container-highest);
+}
+
+.donut__seg {
+  transition: stroke-dashoffset 0.9s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+/* Texto central */
+.donut__center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  pointer-events: none;
+  text-align: center;
+}
+
+.donut__center-value {
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  line-height: 1;
+  color: var(--md-on-surface);
+}
+
+.donut__center-sub {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-medium);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--md-on-surface-variant);
+}
+
+/* Leyenda textual (a11y: el color no es el único canal) */
+.donut__legend {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+}
+
+.donut__legend-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: var(--text-label-md);
+  color: var(--md-on-surface);
+}
+
+.donut__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: var(--radius-full);
+  flex: none;
+}
+
+.donut__legend-label {
+  flex: 1;
+  min-width: 0;
+}
+
+.donut__legend-pct {
+  font-weight: var(--fw-semibold);
+  color: var(--md-on-surface-variant);
+}
+
+/* -------------------------------------------------------- reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .donut__seg {
+    transition: none;
+  }
+}

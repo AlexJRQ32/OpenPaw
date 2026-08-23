@@ -85,8 +85,10 @@ export function useInventario() {
           authFetch(almUrl),
         ])
         if (!cancelled) {
-          setInventario(invRes.ok ? await invRes.json() : [])
-          setProductos(prodRes.ok ? await prodRes.json() : [])
+          const invData = invRes.ok ? await invRes.json() : []
+          setInventario(Array.isArray(invData) ? invData : [])
+          const prodData = prodRes.ok ? await prodRes.json() : []
+          setProductos(Array.isArray(prodData) ? prodData : [])
           const alms = almRes.ok ? await almRes.json() : []
           setAlmacenes(Array.isArray(alms) ? alms.filter((a) => a.aprobada !== false) : [])
           setListStatus('loaded')
