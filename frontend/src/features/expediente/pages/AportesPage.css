@@ -1,261 +1,661 @@
 @import "../../../shared/styles/tokens.css";
 
-.aportes-page {
-  max-width: 900px;
-  padding: 24px;
+/* ==========================================================================
+   Aportes médicos — rediseño Sprint 2 (T36). Wireframe aportes_m_dicos.
+   Header con eyebrow + CTA, PetSelector en píldoras, aside "Resumen" +
+   card de nota, cards con borde de color por tipo, chips de medicación,
+   columna de adjuntos y Pagination del DS.
+   Tokens Material 3 (--md-*). Cero hex hardcodeados: los tintes derivan
+   de tokens con color-mix().
+   ========================================================================== */
+
+.apr-page {
+  max-width: var(--container-max);
+  padding: var(--space-6) var(--gutter);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 
-.aportes-header {
+/* ---------------------------------------------------------------- header */
+.apr-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 24px;
+  align-items: flex-end;
+  gap: var(--space-6);
+  flex-wrap: wrap;
 }
 
-.aportes-title {
+.apr-eyebrow {
+  display: inline-block;
+  margin-bottom: var(--space-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-bold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--md-primary);
+}
+
+.apr-title {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--fs-2xl);
+  font-size: var(--text-headline-xl);
   font-weight: var(--fw-extrabold);
-  color: var(--color-text);
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-headline-xl);
+  color: var(--md-on-surface);
 }
 
-.aportes-subtitle {
-  margin: 4px 0 0;
-  color: var(--color-text-secondary);
-  font-size: var(--fs-base);
+.apr-subtitle {
+  margin: var(--space-xs) 0 0;
+  max-width: 62ch;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
 }
 
-.aportes-selector {
-  margin-bottom: 20px;
+/* ------------------------------------------------------- layout principal */
+.apr-main {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: var(--gutter);
+  align-items: start;
 }
 
-.aportes-selector-field {
+.apr-side {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  max-width: 320px;
+  gap: var(--space-md);
 }
 
-.aportes-selector-field > span {
-  font-size: var(--fs-sm);
-  font-weight: var(--fw-semibold);
-  color: var(--color-gray-700);
-}
-
-.aportes-selector-field select {
-  height: 40px;
-  padding: 0 var(--space-2);
-  border: 1.5px solid var(--color-gray-150);
-  border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--fs-sm);
-  cursor: pointer;
-}
-
-.aportes-selector-field select:focus {
-  border-color: var(--color-primary);
-  outline: 3px solid rgba(0, 102, 232, 0.12);
-}
-
-.aportes-list {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.aportes-item {
-  padding: 16px 18px;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-fast);
-}
-
-.aportes-item:hover {
-  box-shadow: var(--shadow-md);
-}
-
-.aportes-item-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 10px;
-}
-
-.aportes-item-fecha {
-  font-size: var(--fs-sm);
+/* Etiqueta uppercase compartida (wireframe: "DIAGNÓSTICO / NOTAS", "ADJUNTOS") */
+.apr-side-label {
+  margin: 0 0 var(--space-2);
+  font-family: var(--font-body);
+  font-size: 10px;
   font-weight: var(--fw-bold);
-  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
+  color: var(--md-on-surface-variant);
 }
 
-.aportes-item-vet {
+/* ---------------------------------------------------------- card resumen */
+.apr-resumen {
+  padding: var(--space-md);
+  background: var(--md-surface-container-lowest);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.apr-resumen__head {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin: 0 0 8px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+}
+
+.apr-resumen__icono {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+  color: var(--md-primary);
+}
+
+.apr-resumen__head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-label-md);
   font-weight: var(--fw-semibold);
-  color: var(--color-text);
+  color: var(--md-on-surface);
 }
 
-.aportes-item-vet i {
-  color: var(--color-primary);
+.apr-resumen__quien {
+  overflow: hidden;
+  max-width: 45%;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
-.aportes-item-desc {
-  margin: 0 0 8px;
-  font-size: var(--fs-sm);
-  color: var(--color-text);
-  line-height: 1.5;
+.apr-resumen__filas {
+  margin: 0;
 }
 
-.aportes-item-meta {
+.apr-resumen__fila {
   display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+}
+
+.apr-resumen__fila + .apr-resumen__fila {
+  border-top: 1px solid color-mix(in srgb, var(--md-outline-variant) 50%, transparent);
+}
+
+.apr-resumen__fila dt {
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.apr-resumen__fila dd {
+  margin: 0;
+  font-size: var(--text-body-md);
+  font-weight: var(--fw-semibold);
+  color: var(--md-on-surface);
+  text-align: right;
+}
+
+.apr-resumen__fila dd.is-proxima {
+  color: var(--md-primary);
+}
+
+.apr-resumen__fila dd.is-vacio {
+  font-weight: var(--fw-normal);
+  color: var(--md-outline);
+}
+
+/* --------------------------------------------- card ilustrada ("Mantén…") */
+.apr-nota {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  min-height: 220px;
+  padding: var(--space-md);
+  border-radius: var(--rounded-lg);
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+  box-shadow: var(--shadow-sm);
+}
+
+.apr-nota h4 {
+  margin: auto 0 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  line-height: var(--lh-headline-md);
+}
+
+.apr-nota p {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+
+/* ------------------------------------------------------------------ cards */
+.apr-lista {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.apr-card {
+  --apr-edge: var(--md-primary);
+  position: relative;
+  display: flex;
+  gap: 0;
+  background: var(--md-surface-container-lowest);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+}
+
+.apr-card:hover {
+  box-shadow: var(--shadow-level-2);
+  transform: translateY(-2px);
+}
+
+/* Borde decorativo por tipo (wireframe: barra izquierda redondeada). */
+.apr-card__edge {
+  position: absolute;
+  left: 0;
+  top: var(--space-4);
+  bottom: var(--space-4);
+  width: 4px;
+  border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  background: var(--apr-edge);
+}
+
+.apr-card--consulta    { --apr-edge: var(--md-primary); }
+.apr-card--vacuna      { --apr-edge: var(--md-secondary); }
+.apr-card--tratamiento { --apr-edge: var(--md-tertiary); }
+.apr-card--emergencia  { --apr-edge: var(--md-error); }
+.apr-card--otro        { --apr-edge: var(--md-outline); }
+
+.apr-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-md) var(--space-md) var(--space-md) calc(var(--space-md) + 6px);
+}
+
+.apr-card__top {
+  display: flex;
+  justify-content: space-between;
   align-items: flex-start;
-  gap: 6px;
-  margin: 4px 0;
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
-.aportes-item-meta i {
-  width: 14px;
-  color: var(--color-primary);
-  flex-shrink: 0;
-  margin-top: 2px;
+.apr-card__tags {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
-.aportes-item-meta a {
-  color: var(--color-primary);
-  text-decoration: underline;
+.apr-card__fecha,
+.apr-card__pet {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-medium);
+  color: var(--md-on-surface-variant);
+}
+
+.apr-card__pet {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: color-mix(in srgb, var(--md-primary-fixed) 55%, transparent);
+  color: var(--md-on-primary-fixed-variant);
+}
+
+/* Botón icono redondo (wireframe: acciones editar/eliminar). */
+.apr-iconbtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex: none;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.apr-iconbtn:hover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+}
+
+.apr-iconbtn:focus-visible {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+.apr-iconbtn--danger:hover {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+}
+
+.apr-card__titulo {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: var(--lh-headline-md);
+  color: var(--md-on-surface);
+}
+
+.apr-card__vet {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-label-md);
+  color: var(--md-on-surface-variant);
+}
+
+.apr-card__vet .icon {
+  color: var(--md-primary);
+}
+
+/* Box diagnóstico + medicación (wireframe: grid sobre bg surface). */
+.apr-card__detalles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--md-surface);
+}
+
+.apr-card__diagnostico {
+  margin: 0;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface);
+}
+
+.apr-card__detalle-vacio {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--md-outline);
+}
+
+/* Chips de medicación (wireframe: píldoras secondary-fixed). */
+.apr-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.apr-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px var(--space-2);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--md-secondary-fixed) 60%, transparent);
+  color: var(--md-on-secondary-fixed-variant);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+
+.apr-chip .icon {
+  color: var(--md-secondary);
+}
+
+.apr-card__registro {
+  margin: auto 0 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
+
+/* ------------------------------------------------------- columna adjuntos */
+.apr-card__adjuntos {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 200px;
+  flex: none;
+  padding: var(--space-md);
+  border-left: 1px solid color-mix(in srgb, var(--md-outline-variant) 30%, transparent);
+}
+
+.apr-adjunto {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--md-surface);
+  transition: background-color var(--transition-fast);
+}
+
+.apr-adjunto:hover {
+  background: var(--md-surface-container-high);
+}
+
+.apr-adjunto:focus-visible {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+.apr-adjunto__icono {
+  color: var(--md-primary);
+  flex: none;
+}
+
+.apr-adjunto__texto {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+}
+
+.apr-adjunto__nombre {
+  overflow: hidden;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface);
+  white-space: nowrap;
+  text-overflow: ellipsis;
   word-break: break-all;
 }
 
-.aportes-item-registro {
-  margin: 10px 0 0;
-  font-size: var(--fs-xs);
-  color: var(--color-text-secondary);
+.apr-adjunto__hint {
+  font-size: 10px;
+  color: var(--md-on-surface-variant);
 }
 
-.aportes-item-actions {
+.apr-adjunto__go {
+  color: var(--md-on-surface-variant);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.apr-adjunto:hover .apr-adjunto__go,
+.apr-adjunto:focus-visible .apr-adjunto__go {
+  opacity: 1;
+}
+
+/* Mini estado vacío / inválido del wireframe. */
+.apr-sin-adjunto {
   display: flex;
-  gap: 8px;
-  margin-top: 12px;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-4);
+  text-align: center;
 }
 
-.aportes-item-actions button {
+.apr-sin-adjunto p {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.apr-sin-adjunto__icono {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 12px;
-  border: 1px solid var(--color-border);
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container);
+  color: var(--md-outline);
+}
+
+.apr-adjunto-invalido {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  padding: var(--space-2);
+  border-radius: var(--radius-lg);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: var(--text-caption);
+}
+
+/* ------------------------------------------------------------ paginación */
+.apr-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: var(--space-5);
+}
+
+/* -------------------------------------------------------- loading/error */
+.apr-error {
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
-  color: var(--color-text);
-  font: inherit;
-  font-size: var(--fs-xs);
-  font-weight: var(--fw-semibold);
-  cursor: pointer;
-  transition: all var(--transition-fast);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: var(--fs-sm);
 }
 
-.aportes-item-actions button.danger:hover {
-  border-color: var(--color-error);
-  color: var(--color-error);
-  background: var(--color-error-bg);
-}
-
-/* Modal */
-.aportes-modal h2 {
-  margin: 0 0 20px;
-  font-size: var(--fs-lg);
+/* ----------------------------------------------------------------- modal */
+.apr-modal h2 {
+  margin: 0 0 var(--space-5);
   font-family: var(--font-heading);
-  color: var(--color-text);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  color: var(--md-on-surface);
 }
 
-.aportes-modal .field-grid {
+/* Nota de campo inmutable (mascota) en el modal de edición */
+.apr-modal__nota {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: calc(-1 * var(--space-2)) 0 var(--space-4);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--md-primary-fixed) 45%, transparent);
+  color: var(--md-on-primary-fixed-variant);
+  font-size: var(--text-caption);
+}
+
+.apr-modal__nota .icon {
+  color: var(--md-on-primary-fixed-variant);
+}
+
+.apr-modal .field-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: var(--space-4);
 }
 
-.aportes-modal .field {
+.apr-modal .field {
   display: grid;
   gap: 6px;
   text-align: left;
 }
 
-.aportes-modal .field--full {
+.apr-modal .field--full {
   grid-column: 1 / -1;
 }
 
-.aportes-modal .field > span {
+.apr-modal .field > span {
   font-size: var(--fs-sm);
   font-weight: var(--fw-semibold);
-  color: var(--color-gray-700);
+  color: var(--md-on-surface-variant);
 }
 
-.aportes-modal .field input,
-.aportes-modal .field select,
-.aportes-modal .field textarea {
+.apr-modal .field input,
+.apr-modal .field select,
+.apr-modal .field textarea {
   width: 100%;
   box-sizing: border-box;
   padding: 10px 12px;
-  border: 1.5px solid var(--color-gray-150);
+  border: 1.5px solid var(--md-outline-variant);
   border-radius: var(--radius-md);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface);
   font: inherit;
   font-size: var(--fs-base);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.aportes-modal .field select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23637184' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 36px;
-  cursor: pointer;
+.apr-modal .field input:focus,
+.apr-modal .field select:focus,
+.apr-modal .field textarea:focus {
+  border-color: var(--md-primary);
+  outline: 3px solid color-mix(in srgb, var(--md-primary) 12%, transparent);
 }
 
-.aportes-modal .field input:focus,
-.aportes-modal .field select:focus,
-.aportes-modal .field textarea:focus {
-  border-color: var(--color-primary);
-  outline: 3px solid rgba(0, 102, 232, 0.12);
-}
-
-.aportes-modal .field small {
-  color: var(--color-error);
+.apr-modal .field small {
+  color: var(--md-error);
   font-size: var(--fs-xs);
 }
 
-.aportes-modal .submit-error {
-  padding: 10px 14px;
-  margin-top: 12px;
-  color: var(--color-error);
-  background: var(--color-error-bg);
-  border: 1px solid #fecdca;
+.submit-error {
+  padding: var(--space-3) var(--space-4);
+  margin-top: var(--space-3);
+  border: 1px solid color-mix(in srgb, var(--md-error) 30%, transparent);
   border-radius: var(--radius-md);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
   font-size: var(--fs-sm);
 }
 
-.aportes-modal-actions {
+.apr-modal-actions {
   display: flex;
-  gap: 12px;
   justify-content: flex-end;
-  margin-top: 24px;
+  gap: var(--space-3);
+  margin-top: var(--space-6);
 }
 
-@media (max-width: 640px) {
-  .aportes-page {
-    padding: 16px 14px;
-  }
-  .aportes-modal .field-grid {
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 1100px) {
+  .apr-main {
     grid-template-columns: 1fr;
+  }
+
+  /* En pantallas chicas el resumen pasa arriba en fila y la nota se omite
+     (mismo criterio que el wireframe: card ilustrada solo en desktop). */
+  .apr-side {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .apr-nota {
+    display: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .apr-page {
+    padding: var(--space-4);
+  }
+
+  .apr-header {
+    align-items: stretch;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .apr-title {
+    font-size: var(--text-headline-lg-mobile);
+  }
+
+  .apr-card {
+    flex-direction: column;
+  }
+
+  .apr-card__detalles {
+    grid-template-columns: 1fr;
+  }
+
+  .apr-card__adjuntos {
+    width: auto;
+    border-left: none;
+    border-top: 1px solid color-mix(in srgb, var(--md-outline-variant) 30%, transparent);
+  }
+
+  .apr-modal .field-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* --------------------------------------------------------- reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .apr-card,
+  .apr-iconbtn,
+  .apr-adjunto,
+  .apr-adjunto__go {
+    transition: none;
+  }
+
+  .apr-card:hover {
+    transform: none;
   }
 }
