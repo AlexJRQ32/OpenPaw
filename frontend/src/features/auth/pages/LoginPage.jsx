@@ -1,34 +1,13 @@
-﻿import { useState, useEffect } from "react"
+﻿import { useState } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import { useGoogleLogin } from "@react-oauth/google"
 import { useAuth } from "../context/AuthContext"
-import { loginGoogleApi, loginFacebookApi } from "../../../shared/utils/api"
+import { loginGoogleApi } from "../../../shared/utils/api"
 import { useLoading } from "../../../shared/context/LoadingContext"
 import { GOOGLE_CLIENT_ID } from "../../../constants"
 import { Button } from "../../../shared/components/Button/Button"
 import { Icon } from "../../../shared/components/Icon/Icon"
 import "./LoginPage.css"
-
-window.fbAsyncInit = function() {
-  window.FB.init({
-    appId: import.meta.env.VITE_FACEBOOK_APP_ID ?? "2470437836755419",
-    cookie: true,
-    xfbml: true,
-    version: "v19.0"
-  })
-  window.FB.AppEvents.logPageView()
-  window.__fbReady = true
-}
-
-function loadFbSdk() {
-  if (window.FB) { window.__fbReady = true; return }
-  var js, fjs = document.getElementsByTagName("script")[0]
-  if (document.getElementById("facebook-jssdk")) return
-  js = document.createElement("script")
-  js.id = "facebook-jssdk"
-  js.src = "https://connect.facebook.net/en_US/sdk.js"
-  fjs.parentNode.insertBefore(js, fjs)
-}
 
 export function LoginPage() {
   const { login, loginWithSocial } = useAuth()
@@ -40,10 +19,6 @@ export function LoginPage() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [submitting, setSubmitting] = useState(false)
-
-  useEffect(() => {
-    loadFbSdk()
-  }, [])
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -68,39 +43,6 @@ export function LoginPage() {
       setError("No se pudo iniciar sesion con Google")
     },
   })
-
-  const handleFacebookLogin = () => {
-    if (!window.__fbReady) {
-      setError("Facebook SDK no listo. Intenta de nuevo.")
-      return
-    }
-    if (!window.FB) {
-      setError("Facebook SDK no cargo. Intente de nuevo.")
-      return
-    }
-    window.FB.login((response) => {
-      if (response.authResponse) {
-        setSubmitting(true)
-        setError("")
-        showLoader()
-        loginFacebookApi(response.authResponse.accessToken).then(data => {
-          loginWithSocial(data)
-          if (data.requiereTelefono) {
-            navigate("/perfil", { replace: true, state: { completarTelefono: true } })
-          } else {
-            navigate(from, { replace: true })
-          }
-        }).catch(err => {
-          setError(err.message)
-        }).finally(() => {
-          setSubmitting(false)
-          hideLoader()
-        })
-      } else {
-        setError("Inicio de sesion con Facebook cancelado")
-      }
-    }, { scope: "public_profile,email" })
-  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -205,19 +147,6 @@ export function LoginPage() {
               <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
             </svg>
             {GOOGLE_CLIENT_ID ? "Continuar con Google" : "Google no configurado"}
-          </button>
-
-          <button
-            type="button"
-            className="social-btn social-btn--facebook"
-            onClick={handleFacebookLogin}
-            disabled={submitting}
-            aria-label="Iniciar sesion con Facebook"
-          >
-            <svg viewBox="0 0 48 48" width="20" height="20">
-              <path fill="#ffffff" d="M24 5C13.5 5 5 13.5 5 24c0 9.5 6.9 17.4 16 18.9V30h-4.8v-6H21v-4.2c0-4.8 2.8-7.4 7.2-7.4 2.1 0 4.3.4 4.3.4v4.7h-2.4c-2.4 0-3.1 1.5-3.1 3v3.5h5.3l-.8 6H27v12.9c9.1-1.5 16-9.4 16-18.9 0-10.5-8.5-19-19-19z"/>
-            </svg>
-            Continuar con Facebook
           </button>
         </div>
       </div>

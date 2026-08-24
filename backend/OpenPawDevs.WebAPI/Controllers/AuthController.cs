@@ -85,22 +85,6 @@ public class AuthController : ControllerBase
         }
     }
 
-    /// <summary> PBI 45/PBI 48 - Login/Registro con Facebook </summary>
-    [HttpPost("login-facebook")]
-    [AllowAnonymous]
-    public async Task<IActionResult> LoginWithFacebookAsync([FromBody] LoginFacebookDto facebookDto)
-    {
-        try
-        {
-            var result = await _authService.LoginWithFacebookAsync(facebookDto);
-            return Ok(result);
-        }
-        catch (UnauthorizedAccessException ex)
-        {
-            return Unauthorized(new { mensaje = ex.Message });
-        }
-    }
-
     /// <summary> PBI 10 - Refresh token </summary>
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshTokenAsync([FromBody] RefreshTokenRequestDto refreshDto)

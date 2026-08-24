@@ -35,7 +35,6 @@ vi.mock('@react-oauth/google', () => ({
 
 vi.mock('../shared/utils/api', () => ({
   loginGoogleApi: vi.fn(),
-  loginFacebookApi: vi.fn(),
 }))
 
 vi.mock('../constants', () => ({
@@ -45,14 +44,10 @@ vi.mock('../constants', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
-  // loadFbSdk inserta el SDK antes del primer <script> del documento
-  if (!document.getElementsByTagName('script').length) {
-    document.head.appendChild(document.createElement('script'))
-  }
 })
 
 describe('AuthMethodPage', () => {
-  test('renderiza título, subtítulo y las 3 opciones de acceso', () => {
+  test('renderiza título, subtítulo y las 2 opciones de acceso (email + Google)', () => {
     render(<AuthMethodPage />)
 
     expect(
@@ -65,9 +60,6 @@ describe('AuthMethodPage', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('button', { name: /continuar con google/i })
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /continuar con facebook/i })
     ).toBeInTheDocument()
   })
 
