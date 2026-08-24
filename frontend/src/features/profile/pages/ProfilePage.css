@@ -224,12 +224,18 @@
 }
 .profile-card-head .profile-card-title {
   margin-bottom: var(--space-5);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .profile-social-count {
   padding: 2px 10px;
   font-size: var(--fs-xs);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 /* --------------------------------------------------------------------------
@@ -450,6 +456,8 @@
 }
 .profile-social-edit-actions {
   display: flex;
+  flex-direction: column;
+  align-items: stretch;
   gap: var(--space-2);
 }
 .profile-social-tile--add {

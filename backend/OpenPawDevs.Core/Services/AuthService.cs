@@ -132,59 +132,6 @@ public class AuthService : IAuthService
         return await GenerateTokenAsync(usuario);
     }
 
-    /// <summary> PBI 45/PBI 48 - Login/Registro con Facebook: Verifica token de Facebook, busca o crea usuario </summary>
-    public async Task<LoginResponseDto> LoginWithFacebookAsync(LoginFacebookDto request)
-    {
-        var fbAppId = _configuration["Facebook:AppId"] ?? "";
-        var fbAppSecret = _configuration["Facebook:AppSecret"] ?? "";
-        
-        // Verificar token con Facebook API
-        var debugUrl = $"https://graph.facebook.com/debug_token?input_token={request.Token}&access_token={fbAppId}|{fbAppSecret}";
-        var debugResponse = await _httpClient.GetAsync(debugUrl);
-        if (!debugResponse.IsSuccessStatusCode)
-            throw new UnauthorizedAccessException("Token de Facebook invalido");
-
-        var debugInfo = await debugResponse.Content.ReadFromJsonAsync<FacebookDebugResponse>();
-        if (debugInfo?.Data == null || !debugInfo.Data.IsValid)
-            throw new UnauthorizedAccessException("Token de Facebook invalido o expirado");
-
-        var fbUserId = debugInfo.Data.UserId;
-        
-        // Obtener informacion del usuario de Facebook
-        var userInfoUrl = $"https://graph.facebook.com/{fbUserId}?fields=id,name,email,picture&access_token={request.Token}";
-        var userResponse = await _httpClient.GetAsync(userInfoUrl);
-        if (!userResponse.IsSuccessStatusCode)
-            throw new UnauthorizedAccessException("No se pudo obtener informacion del usuario de Facebook");
-
-        var fbUser = await userResponse.Content.ReadFromJsonAsync<FacebookUserInfo>();
-        if (fbUser == null || string.IsNullOrEmpty(fbUser.Email))
-            throw new UnauthorizedAccessException("No se pudo obtener el email de Facebook");
-
-        // Buscar usuario existente o crear uno nuevo
-        var usuario = await _usuarioRepository.GetByEmailAsync(fbUser.Email);
-        if (usuario == null)
-        {
-            usuario = new Usuario
-            {
-                Nombre = fbUser.Name ?? fbUser.Email.Split('@')[0],
-                Email = fbUser.Email,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
-                RolId = (int)RolTipo.Cliente,
-                Activo = true,
-                FotoUrl = fbUser.Picture?.Data?.Url,
-                FechaRegistro = DateTime.UtcNow
-            };
-            await _usuarioRepository.AddAsync(usuario);
-        }
-        else if (fbUser.Picture?.Data?.Url != null && usuario.FotoUrl != fbUser.Picture.Data.Url)
-        {
-            usuario.FotoUrl = fbUser.Picture.Data.Url;
-            await _usuarioRepository.UpdateAsync(usuario);
-        }
-
-        return await GenerateTokenAsync(usuario);
-    }
-
     private async Task<LoginResponseDto> GenerateTokenAsync(Usuario usuario)
     {
         var jwtSection = _configuration.GetSection("Jwt");

@@ -78,21 +78,6 @@ export async function registerGoogleApi(idToken) {
 
   return data
 }
-export async function loginFacebookApi(accessToken) {
-  const response = await fetch(`${API_BASE_URL}/auth/login-facebook`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: accessToken }),
-  })
-
-  const data = await response.json()
-
-  if (!response.ok) {
-    throw new Error(data.mensaje || "Error al iniciar sesion con Facebook")
-  }
-
-  return data
-}
 
 export async function authFetch(url, options = {}) {
   const token = localStorage.getItem("openpaw_auth_token")
