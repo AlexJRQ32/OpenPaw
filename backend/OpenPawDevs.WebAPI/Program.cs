@@ -69,7 +69,7 @@ if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("REPLACE_WITH_ENV_VAR
     throw new InvalidOperationException(
         "Jwt:Key no configurado. Define la variable de entorno 'Jwt__Key' (min 32 chars). "
         + "Local: usa User Secrets (dotnet user-secrets set \"Jwt:Key\" \"tu_clave\") o .env. "
-        + "Produccion: configurar ConnectionStrings__DefaultConnection, Jwt__Key y Facebook__AppSecret via env vars. "
+        + "Produccion: configurar ConnectionStrings__DefaultConnection y Jwt__Key via env vars. "
         + "Ver backend/.env.example.");
 }
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

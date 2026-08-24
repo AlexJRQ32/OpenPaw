@@ -59,10 +59,20 @@ export function ProfileMap({ ariaLabel = 'Mapa de ubicación de cobertura activa
         markerZoomAnimation: !reduceMotion,
       })
 
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map)
+      // Tile provider: CartoDB Voyager (rastertiles/voyager).
+      // Look pastel M3-friendly que coincide con el wireframe Stitch del
+      // perfil (verdes suaves, beige, calles azul claro) frente al OSM
+      // estándar que satura con naranjas/morados/iconos rojos.
+      // Gratuito, sin API key, mismo origen de datos OSM.
+      L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          maxZoom: 19,
+          subdomains: 'abcd',
+          attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+        },
+      ).addTo(map)
 
       L.marker(CENTRO, { icon: pin, title: 'Zona de cobertura activa' }).addTo(map)
 

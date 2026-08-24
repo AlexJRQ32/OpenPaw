@@ -19,7 +19,4 @@ public interface IAuthService
     
     /// <summary> PBI 44/PBI 47 - Login/Registro con Google </summary>
     Task<LoginResponseDto> LoginWithGoogleAsync(LoginGoogleDto request);
-    
-    /// <summary> PBI 45/PBI 48 - Login/Registro con Facebook </summary>
-    Task<LoginResponseDto> LoginWithFacebookAsync(LoginFacebookDto request);
 }

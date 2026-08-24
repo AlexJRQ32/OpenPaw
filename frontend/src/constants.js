@@ -1,6 +1,5 @@
 ﻿export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://openpaw.alwaysdata.net/api'
 export const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '502526650421-o7vf4m2spjq05k8g6sbpaklkr9pb5fr9.apps.googleusercontent.com'
-export const FACEBOOK_APP_ID = import.meta.env.VITE_FACEBOOK_APP_ID ?? '2470437836755419'
 export const MAX_FILE_SIZE = 5 * 1024 * 1024
 export const LOCAL_REGISTRY_KEY = 'openpaw_veterinary_registration_requests'
 export const LOCAL_STORE_REGISTRY_KEY = 'openpaw_store_registration_requests'

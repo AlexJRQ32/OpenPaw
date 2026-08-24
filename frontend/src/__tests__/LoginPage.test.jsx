@@ -30,7 +30,6 @@ vi.mock('@react-oauth/google', () => ({
 
 vi.mock('../shared/utils/api', () => ({
   loginGoogleApi: vi.fn(),
-  loginFacebookApi: vi.fn(),
 }))
 
 vi.mock('../constants', () => ({
@@ -40,10 +39,6 @@ vi.mock('../constants', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
-  // loadFbSdk inserta el SDK antes del primer <script> del documento
-  if (!document.getElementsByTagName('script').length) {
-    document.head.appendChild(document.createElement('script'))
-  }
 })
 
 describe('LoginPage', () => {

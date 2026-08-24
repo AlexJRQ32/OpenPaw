@@ -1,33 +1,12 @@
-﻿import { useState, useEffect } from "react"
+﻿import { useState } from "react"
 import { Link, useNavigate, useLocation } from "react-router-dom"
 import { useGoogleLogin } from "@react-oauth/google"
 import { useAuth } from "../context/AuthContext"
-import { loginGoogleApi, loginFacebookApi } from "../../../shared/utils/api"
+import { loginGoogleApi } from "../../../shared/utils/api"
 import { useLoading } from "../../../shared/context/LoadingContext"
 import { GOOGLE_CLIENT_ID } from "../../../constants"
 import { Icon } from "../../../shared/components/Icon/Icon"
 import "./AuthMethodPage.css"
-
-window.fbAsyncInit = function() {
-  window.FB.init({
-    appId: import.meta.env.VITE_FACEBOOK_APP_ID ?? "2470437836755419",
-    cookie: true,
-    xfbml: true,
-    version: "v19.0"
-  })
-  window.FB.AppEvents.logPageView()
-  window.__fbReady = true
-}
-
-function loadFbSdk() {
-  if (window.FB) { window.__fbReady = true; return }
-  var js, fjs = document.getElementsByTagName("script")[0]
-  if (document.getElementById("facebook-jssdk")) return
-  js = document.createElement("script")
-  js.id = "facebook-jssdk"
-  js.src = "https://connect.facebook.net/en_US/sdk.js"
-  fjs.parentNode.insertBefore(js, fjs)
-}
 
 export function AuthMethodPage() {
   const { loginWithSocial } = useAuth()
@@ -37,10 +16,6 @@ export function AuthMethodPage() {
   const from = location.state?.from?.pathname || location.state?.from || "/dashboard"
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState("")
-
-  useEffect(() => {
-    loadFbSdk()
-  }, [])
 
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: (tokenResponse) => {
@@ -66,43 +41,10 @@ export function AuthMethodPage() {
     },
   })
 
-  const handleFacebookLogin = () => {
-    if (!window.__fbReady) {
-      setError("Facebook SDK no listo. Intenta de nuevo.")
-      return
-    }
-    if (!window.FB) {
-      setError("Facebook SDK no cargo. Intente de nuevo.")
-      return
-    }
-    window.FB.login((response) => {
-      if (response.authResponse) {
-        setSubmitting(true)
-        setError("")
-        showLoader()
-        loginFacebookApi(response.authResponse.accessToken).then(data => {
-          loginWithSocial(data)
-          if (data.requiereTelefono) {
-            navigate("/perfil", { replace: true, state: { completarTelefono: true } })
-          } else {
-            navigate(from, { replace: true })
-          }
-        }).catch(err => {
-          setError(err.message)
-        }).finally(() => {
-          setSubmitting(false)
-          hideLoader()
-        })
-      } else {
-        setError("Inicio de sesion con Facebook cancelado")
-      }
-    }, { scope: "public_profile,email" })
-  }
-
   /* ==========================================================================
      Rediseño Sprint 1 / Task #21 (wireframe Stitch "Método de acceso").
      Funcionalidad conservada íntegra: banner error role=alert, estado
-     submitting/disabled, SDK Google/Facebook reales, redirect requiereTelefono,
+     submitting/disabled, SDK Google real, redirect requiereTelefono,
      email -> /register (Link), footer -> /login.
      ========================================================================== */
   return (
@@ -149,19 +91,6 @@ export function AuthMethodPage() {
             <span className="auth-option-label">
               {GOOGLE_CLIENT_ID ? "Continuar con Google" : "Google no configurado"}
             </span>
-          </button>
-
-          <button
-            type="button"
-            className="auth-option"
-            onClick={handleFacebookLogin}
-            disabled={submitting}
-            aria-label="Continuar con Facebook"
-          >
-            <svg viewBox="0 0 48 48" width="24" height="24" className="auth-option-icon" aria-hidden="true">
-              <path fill="currentColor" d="M24 5C13.5 5 5 13.5 5 24c0 9.5 6.9 17.4 16 18.9V30h-4.8v-6H21v-4.2c0-4.8 2.8-7.4 7.2-7.4 2.1 0 4.3.4 4.3.4v4.7h-2.4c-2.4 0-3.1 1.5-3.1 3v3.5h5.3l-.8 6H27v12.9c9.1-1.5 16-9.4 16-18.9 0-10.5-8.5-19-19-19z"/>
-            </svg>
-            <span className="auth-option-label">Continuar con Facebook</span>
           </button>
         </div>
 

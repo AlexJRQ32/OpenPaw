@@ -288,7 +288,12 @@ export function ProfilePage() {
                       <Icon name="hub" size={20} />
                       Redes & Contacto
                     </h2>
-                    <Badge variant="active" className="profile-social-count">{connectedCount} Conectadas</Badge>
+                    <Badge
+                      variant={connectedCount > 0 ? 'active' : 'neutral'}
+                      className="profile-social-count"
+                    >
+                      {connectedCount} Conectadas
+                    </Badge>
                   </div>
                   <div className="profile-social-grid">
                     {REDES_PREDETERMINADAS.map((red) => {
