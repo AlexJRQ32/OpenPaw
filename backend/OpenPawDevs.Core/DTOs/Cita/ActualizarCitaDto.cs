@@ -10,6 +10,9 @@ public class ActualizarCitaDto
     [StringLength(20)]
     public string? Estado { get; set; }
 
+    [StringLength(20)]
+    public string? TipoCita { get; set; }
+
     [StringLength(500)]
     public string? Servicio { get; set; }
 

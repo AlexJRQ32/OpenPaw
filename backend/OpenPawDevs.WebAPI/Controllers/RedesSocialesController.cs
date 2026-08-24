@@ -13,6 +13,11 @@ namespace OpenPawDevs.WebAPI.Controllers;
 [Authorize]
 public class RedesSocialesController : ControllerBase
 {
+    private static readonly string[] PlataformasPermitidas =
+    {
+        "facebook", "instagram", "twitter", "tiktok", "whatsapp", "linkedin", "github", "youtube", "website"
+    };
+
     private readonly IRedSocialRepository _redSocialRepository;
     private readonly IUsuarioRepository _usuarioRepository;
 
@@ -33,13 +38,23 @@ public class RedesSocialesController : ControllerBase
     [HttpPut("{plataforma}")]
     public async Task<IActionResult> UpsertAsync(string plataforma, [FromBody] string? url)
     {
-        var plataformasPermitidas = new[] { "facebook", "instagram", "twitter", "tiktok", "whatsapp" };
-        if (!plataformasPermitidas.Contains(plataforma, StringComparer.OrdinalIgnoreCase))
+        if (string.IsNullOrWhiteSpace(plataforma) || !PlataformasPermitidas.Contains(plataforma, StringComparer.OrdinalIgnoreCase))
             return BadRequest(new { mensaje = $"La plataforma '{plataforma}' no es valida" });
+
+        // Normalizar para evitar duplicados case-sensitive (ej: PUT /LinkedIn y PUT /linkedin).
+        var plataformaNorm = plataforma.ToLowerInvariant();
+
+        if (string.IsNullOrWhiteSpace(url))
+            return BadRequest(new { mensaje = "La URL de la red social es obligatoria" });
+        if (url.Length > 500)
+            return BadRequest(new { mensaje = "La URL no puede superar los 500 caracteres" });
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            || (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
+            return BadRequest(new { mensaje = "La URL debe ser una direccion http/https valida" });
 
         var userId = GetAuthenticatedUserId();
         var existing = (await _redSocialRepository.GetByUsuarioIdAsync(userId))
-            .FirstOrDefault(r => r.Plataforma == plataforma);
+            .FirstOrDefault(r => r.Plataforma == plataformaNorm);
 
         if (existing != null)
         {
@@ -51,13 +66,35 @@ public class RedesSocialesController : ControllerBase
             var nueva = new RedSocial
             {
                 UsuarioId = userId,
-                Plataforma = plataforma,
+                Plataforma = plataformaNorm,
                 Url = url,
                 FechaCreacion = DateTime.UtcNow,
             };
             await _redSocialRepository.AddAsync(nueva);
         }
 
+        return NoContent();
+    }
+
+    /// <summary>
+    /// Desvincula una red social del usuario autenticado.
+    /// Tarea 28 - rediseño UI Perfil: el frontend usa este endpoint para "Desvincular" una red.
+    /// </summary>
+    [HttpDelete("{plataforma}")]
+    public async Task<IActionResult> DeleteAsync(string plataforma)
+    {
+        if (string.IsNullOrWhiteSpace(plataforma) || !PlataformasPermitidas.Contains(plataforma, StringComparer.OrdinalIgnoreCase))
+            return BadRequest(new { mensaje = $"La plataforma '{plataforma}' no es valida" });
+
+        var plataformaNorm = plataforma.ToLowerInvariant();
+        var userId = GetAuthenticatedUserId();
+        var existing = (await _redSocialRepository.GetByUsuarioIdAsync(userId))
+            .FirstOrDefault(r => r.Plataforma == plataformaNorm);
+
+        if (existing == null)
+            return NotFound(new { mensaje = $"La red social '{plataforma}' no esta vinculada" });
+
+        await _redSocialRepository.DeleteAsync(existing);
         return NoContent();
     }
 

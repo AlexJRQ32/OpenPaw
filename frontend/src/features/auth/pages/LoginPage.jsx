@@ -1,10 +1,12 @@
 ﻿import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { useGoogleLogin } from "@react-oauth/google"
 import { useAuth } from "../context/AuthContext"
 import { loginGoogleApi, loginFacebookApi } from "../../../shared/utils/api"
 import { useLoading } from "../../../shared/context/LoadingContext"
 import { GOOGLE_CLIENT_ID } from "../../../constants"
+import { Button } from "../../../shared/components/Button/Button"
+import { Icon } from "../../../shared/components/Icon/Icon"
 import "./LoginPage.css"
 
 window.fbAsyncInit = function() {
@@ -32,6 +34,8 @@ export function LoginPage() {
   const { login, loginWithSocial } = useAuth()
   const { showLoader, hideLoader } = useLoading()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || location.state?.from || "/dashboard"
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -51,7 +55,7 @@ export function LoginPage() {
         if (data.requiereTelefono) {
           navigate("/perfil", { replace: true, state: { completarTelefono: true } })
         } else {
-          navigate("/dashboard", { replace: true })
+          navigate(from, { replace: true })
         }
       }).catch(err => {
         setError(err.message)
@@ -84,7 +88,7 @@ export function LoginPage() {
           if (data.requiereTelefono) {
             navigate("/perfil", { replace: true, state: { completarTelefono: true } })
           } else {
-            navigate("/dashboard", { replace: true })
+            navigate(from, { replace: true })
           }
         }).catch(err => {
           setError(err.message)
@@ -106,7 +110,7 @@ export function LoginPage() {
     showLoader()
     try {
       await login(email, password)
-      navigate("/", { replace: true })
+      navigate(from, { replace: true })
     } catch (err) {
       setError(err.message)
     } finally {
@@ -117,52 +121,73 @@ export function LoginPage() {
 
   return (
     <main className="login-page">
-      <div className="login-card">
-        <div className="login-brand">
-          <img src="/logo.png" alt="OpenPaw" className="login-logo-img" />
-          <h1 className="login-title">OpenPaw</h1>
-          <p className="login-subtitle">Iniciar sesion</p>
-        </div>
+      <div className="login-bg" aria-hidden="true">
+        <span className="login-bg-blob login-bg-blob--primary" />
+        <span className="login-bg-blob login-bg-blob--secondary" />
+      </div>
 
-        <form onSubmit={handleSubmit} noValidate>
+      <div className="login-card">
+        <header className="login-brand">
+          <div className="login-logo">
+            <Icon name="pets" size={32} filled className="login-logo-icon" />
+            <span className="login-logo-ring" aria-hidden="true" />
+          </div>
+          <h1 className="login-title">OpenPaw</h1>
+          <p className="login-subtitle">Iniciar sesión para continuar</p>
+        </header>
+
+        <form onSubmit={handleSubmit} noValidate className="login-form">
           {error && (
             <div className="login-error" role="alert">{error}</div>
           )}
 
-          <label className="field">
-            <span>Correo electronico</span>
+          <div className="login-field">
             <input
+              id="login-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="ejemplo@correo.com"
+              placeholder="Correo electrónico"
               required
               autoFocus
+              autoComplete="email"
             />
-          </label>
+            <label htmlFor="login-email">Correo electrónico</label>
+          </div>
 
-          <label className="field">
-            <span>Contrasena</span>
+          <div className="login-field">
             <input
+              id="login-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="......"
+              placeholder="Contraseña"
               required
+              autoComplete="current-password"
             />
-          </label>
+            <label htmlFor="login-password">Contraseña</label>
+          </div>
 
-          <button type="submit" className="login-btn" disabled={submitting}>
-            {submitting ? "Iniciando sesion..." : "Iniciar sesion"}
-          </button>
+          <div className="login-forgot">
+            <a href="#" className="login-link" onClick={(e) => e.preventDefault()}>
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
 
-          <a href="#" className="login-link" onClick={(e) => e.preventDefault()}>
-            Olvidaste tu contrasena?
-          </a>
+          <Button
+            type="submit"
+            size="lg"
+            className="login-submit"
+            icon={submitting ? undefined : "arrow_forward"}
+            iconPosition="right"
+            loading={submitting}
+          >
+            {submitting ? "Iniciando sesión..." : "Ingresar"}
+          </Button>
         </form>
 
         <div className="social-divider">
-          <span>o continua con</span>
+          <span>O continuar con</span>
         </div>
 
         <div className="social-login-group">
@@ -196,12 +221,12 @@ export function LoginPage() {
           </button>
         </div>
       </div>
+
+      <footer className="login-footer">
+        © 2024 OpenPaw. Sistema de gestión de salud veterinaria.
+      </footer>
     </main>
   )
 }
 
 export default LoginPage
-
-
-
-

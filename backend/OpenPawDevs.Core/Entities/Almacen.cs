@@ -19,6 +19,16 @@ public class Almacen
     public int UsuarioId { get; set; }
     public bool Activo { get; set; } = true;
 
+    // Sprint 1 - Tarea 7: campos del wireframe de Registro de Almacen
+    // (Informacion General + Ubicacion y Capacidad). Valores string legibles
+    // (enum.ToString()) para que el frontend los consuma directo.
+    public string? TipoAlmacen { get; set; }
+    public string? NombreResponsable { get; set; }
+    public string? CapacidadAlmacenamiento { get; set; }
+    public string? ControlTemperatura { get; set; }
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
+
     public virtual Veterinaria? Veterinaria { get; set; }
     public virtual ICollection<Inventario>? Inventarios { get; set; }
 }

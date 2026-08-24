@@ -81,4 +81,137 @@ public class TrasladoExpedienteDtosTests
 
         Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(RechazarTrasladoDto.MotivoRechazo)));
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Sprint 1 - Tarea 10: campos de logistica del wireframe
+    // ─────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConCamposLogisticaValidos_NoDebeTenerErrores()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            OrigenLatitud = 9.934739m,
+            OrigenLongitud = -84.087502m,
+            DestinoLatitud = -90m,
+            DestinoLongitud = 180m,
+            EstadoLogistica = "EnTransito",
+            EtaLlegada = new DateTime(2026, 8, 22, 10, 15, 0, DateTimeKind.Utc),
+            Salida = new DateTime(2026, 8, 22, 9, 30, 0, DateTimeKind.Utc)
+        };
+
+        Validate(dto).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConOrigenLatitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            OrigenLatitud = 90.1m
+        };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearTrasladoExpedienteDto.OrigenLatitud)));
+    }
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConOrigenLongitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            OrigenLongitud = -180.01m
+        };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearTrasladoExpedienteDto.OrigenLongitud)));
+    }
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConDestinoLatitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            DestinoLatitud = 90.5m
+        };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearTrasladoExpedienteDto.DestinoLatitud)));
+    }
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConDestinoLongitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            DestinoLongitud = 180.1m
+        };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearTrasladoExpedienteDto.DestinoLongitud)));
+    }
+
+    [Fact]
+    public void CrearTrasladoExpedienteDto_ConEstadoLogisticaDemasiadoLargo_DebeSerInvalido()
+    {
+        var dto = new CrearTrasladoExpedienteDto
+        {
+            MascotaId = 1,
+            VeterinariaDestinoId = 2,
+            EstadoLogistica = new string('x', 21)
+        };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(CrearTrasladoExpedienteDto.EstadoLogistica)));
+    }
+
+    [Fact]
+    public void ActualizarTrasladoExpedienteDto_ConCamposValidos_NoDebeTenerErrores()
+    {
+        var dto = new ActualizarTrasladoExpedienteDto
+        {
+            OrigenLatitud = 9.934739m,
+            OrigenLongitud = -84.087502m,
+            EstadoLogistica = "Completado",
+            EtaLlegada = new DateTime(2026, 8, 22, 10, 15, 0, DateTimeKind.Utc)
+        };
+
+        Validate(dto).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ActualizarTrasladoExpedienteDto_ConVacio_NoDebeTenerErrores()
+    {
+        // Update parcial: un DTO vacio (todos los campos null) es valido y preserva todo.
+        Validate(new ActualizarTrasladoExpedienteDto()).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void ActualizarTrasladoExpedienteDto_ConLatitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new ActualizarTrasladoExpedienteDto { DestinoLatitud = -90.1m };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(ActualizarTrasladoExpedienteDto.DestinoLatitud)));
+    }
+
+    [Fact]
+    public void ActualizarTrasladoExpedienteDto_ConLongitudFueraDeRango_DebeSerInvalido()
+    {
+        var dto = new ActualizarTrasladoExpedienteDto { DestinoLongitud = 181m };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(ActualizarTrasladoExpedienteDto.DestinoLongitud)));
+    }
+
+    [Fact]
+    public void ActualizarTrasladoExpedienteDto_ConEstadoLogisticaDemasiadoLargo_DebeSerInvalido()
+    {
+        var dto = new ActualizarTrasladoExpedienteDto { EstadoLogistica = new string('x', 21) };
+
+        Validate(dto).Should().Contain(r => r.MemberNames.Contains(nameof(ActualizarTrasladoExpedienteDto.EstadoLogistica)));
+    }
 }

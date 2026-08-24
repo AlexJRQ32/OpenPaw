@@ -1,165 +1,356 @@
 ﻿@import "../../../shared/styles/tokens.css";
 
+/* ==========================================================================
+   RegisterPage — Rediseño Sprint 1 / Task #22 (wireframe Stitch "registro")
+   Material 3 + glassmorphism. Mismo lenguaje visual del login (#20):
+   logo círculo pets + anillo ping, card glass, labels flotantes CSS puro.
+   Cero hex hardcodeados: solo tokens (--md-*, --glass-*, --shadow-*,
+   --space-*, --rounded-*). Iconos dentro de cada input (person, mail,
+   phone, location_on, lock, lock_clock) según wireframe.
+   Funcionalidad conservada: validaciones por campo, mensaje de éxito,
+   errores de submit y estado submitting.
+   ========================================================================== */
+
 .register-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
   min-height: 100svh;
-  max-height: 100svh;
+  display: flex;
+  padding: var(--space-lg) var(--space-md);
+  background: var(--md-background);
   overflow-y: auto;
-  background: var(--color-bg);
-  padding: 20px;
-  box-sizing: border-box;
 }
 
+/* ------------------------------------------------------- fondo ambiental */
+/* Wireframe: primary-fixed blur 120px arriba-izq + secondary-fixed blur 100px abajo-der */
+.register-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+.register-bg-blob {
+  position: absolute;
+  border-radius: var(--rounded-full);
+}
+.register-bg-blob--primary {
+  top: -20%;
+  left: -10%;
+  width: 60%;
+  height: 60%;
+  background: color-mix(in srgb, var(--md-primary-fixed) 30%, transparent);
+  filter: blur(120px);
+}
+.register-bg-blob--secondary {
+  bottom: -20%;
+  right: -10%;
+  width: 50%;
+  height: 50%;
+  background: color-mix(in srgb, var(--md-secondary-fixed) 20%, transparent);
+  filter: blur(100px);
+}
+
+/* ------------------------------------------------------------ tarjeta glass */
 .register-card {
+  position: relative;
+  z-index: 1;
+  margin: auto; /* centra sin recortar el top cuando el contenido excede el viewport */
   width: 100%;
-  max-width: 440px;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 40px 32px;
+  max-width: 448px;
+  padding: var(--space-12);
+  box-sizing: border-box;
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid color-mix(in srgb, var(--md-surface-container-highest) 50%, transparent);
+  border-radius: var(--rounded-xl);
+  box-shadow: var(--shadow-level-2);
+  transition: box-shadow var(--transition-slow), transform var(--transition-slow);
+}
+.register-card:hover {
+  box-shadow: var(--shadow-xl);
 }
 
+/* --------------------------------------------------------------- branding */
 .register-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-bottom: 28px;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-lg);
 }
-
 .register-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 64px;
   height: 64px;
-  margin-bottom: 16px;
-  border-radius: 12px;
+  margin-bottom: var(--space-sm);
+  border-radius: var(--rounded-full);
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+  color: var(--md-primary);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--md-primary) 15%, transparent);
 }
-
+.register-logo-icon {
+  position: relative;
+  z-index: 1;
+}
+.register-logo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--md-primary) 20%, transparent);
+  animation: register-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes register-ping {
+  75%,
+  100% {
+    transform: scale(2);
+    opacity: 0;
+  }
+}
 .register-title {
   margin: 0;
-  color: #101828;
-  font-size: 24px;
-  letter-spacing: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-lg);
+  line-height: var(--lh-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--md-on-surface);
 }
-
 .register-subtitle {
-  margin: 6px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 15px;
-}
-
-.register-card .registration-form {
-  max-width: none;
   margin: 0;
-  padding: 0;
-  gap: 0;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
 }
 
-.register-card .field-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+/* ------------------------------------------- formulario + labels flotantes */
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
-
-.register-card .field-grid .wide {
-  grid-column: 1 / -1;
+.register-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
 }
-
-.register-card h2 {
-  display: none;
-}
-
-.register-card .field {
-  display: grid;
-  gap: 8px;
+.register-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
   min-width: 0;
-  text-align: left;
+}
+/* Contraseñas lado a lado en desktop (wireframe: sm:flex-row) */
+.register-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+@media (min-width: 520px) {
+  .register-row {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .register-row .register-group {
+    flex: 1;
+  }
 }
 
-.register-card .field span {
-  color: var(--color-text);
-  font-size: 14px;
-  font-weight: 600;
+.register-field {
+  position: relative;
 }
-
-.register-card .field input,
-.register-card .field select {
+.register-field input,
+.register-field textarea {
   width: 100%;
   box-sizing: border-box;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1px solid #cad3df;
-  border-radius: var(--radius-md);
+  padding: 16px 20px 16px 48px; /* padding-left para el icono */
   font: inherit;
-  font-size: 15px;
-  padding: 12px 14px;
-  transition: border-color 0.2s;
+  font-size: var(--text-body-lg);
+  line-height: var(--lh-body-lg);
+  color: var(--md-on-surface);
+  background: var(--md-surface-container);
+  border: none;
+  border-radius: var(--rounded-full);
+  outline: none;
+  transition:
+    background-color var(--transition-normal),
+    box-shadow var(--transition-normal);
+}
+/* Dirección: textarea de 2 filas, esquinas suaves (wireframe rounded-xl) */
+.register-field textarea {
+  resize: none;
+  border-radius: var(--rounded-md);
+  min-height: calc(2 * var(--lh-body-lg) * 1em + 32px);
+}
+.register-field input::placeholder,
+.register-field textarea::placeholder {
+  color: transparent; /* el label flotante ocupa su lugar */
+}
+.register-field input:focus,
+.register-field textarea:focus {
+  background: var(--md-surface-container-lowest);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--md-primary) 30%, transparent),
+    0 0 15px color-mix(in srgb, var(--md-primary) 10%, transparent);
+}
+/* Estado inválido (validación por campo conservada) */
+.register-field input[aria-invalid="true"],
+.register-field textarea[aria-invalid="true"] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-error) 40%, transparent);
 }
 
-.register-card .field input:focus {
-  border-color: var(--color-accent);
-  outline: 3px solid var(--color-accent-light);
+/* Icono Material a la izquierda del input (absolute) */
+.register-field-icon {
+  position: absolute;
+  left: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--md-outline);
+  pointer-events: none;
+  transition: color var(--transition-normal);
+}
+.register-field-icon--top {
+  top: 18px;
+  transform: none;
+}
+.register-field:focus-within .register-field-icon {
+  color: var(--md-primary);
 }
 
-.register-card .actions {
-  margin-top: 12px;
+/* Label flotante CSS puro (equivalente peer-focus/peer-valid del wireframe) */
+.register-field label {
+  position: absolute;
+  left: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: var(--text-body-md);
+  color: var(--md-on-surface-variant);
+  pointer-events: none;
+  transition:
+    top var(--transition-normal),
+    left var(--transition-normal),
+    transform var(--transition-normal),
+    color var(--transition-normal),
+    font-size var(--transition-normal),
+    background-color var(--transition-normal);
+}
+/* Variante textarea: label alineado con la primera línea */
+.register-field--area label {
+  top: 18px;
+  transform: none;
+}
+/* Label flotado: enfocado O con contenido */
+.register-field input:not(:placeholder-shown) ~ label,
+.register-field input:focus ~ label,
+.register-field textarea:not(:placeholder-shown) ~ label,
+.register-field textarea:focus ~ label {
+  left: 40px;
+  top: 0;
+  transform: translateY(-50%);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-medium);
+  padding: 0 var(--space-xs);
+  border-radius: var(--radius-sm);
+  /* el chip combina con el bg del input para "recortar" su borde superior */
+  background: var(--md-surface-container);
+}
+.register-field input:focus ~ label,
+.register-field textarea:focus ~ label {
+  color: var(--md-primary);
+  background: var(--md-surface-container-lowest); /* = bg del input enfocado */
 }
 
-.register-card .actions button {
+/* ------------------------------------------- validación por campo (small) */
+.register-error {
+  padding-left: var(--space-sm);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-error);
+}
+
+/* ------------------------------------------------ alertas submit (éxito/error) */
+.register-alert {
+  padding: var(--space-3) var(--space-4);
+  margin: 0;
+  border-radius: var(--rounded-md);
+  font-size: var(--text-label-md);
+  line-height: var(--lh-label);
+}
+.register-alert--error {
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+}
+.register-alert--success {
+  background: var(--md-secondary-container);
+  color: var(--md-on-secondary-container);
+}
+
+/* ------------------------------------------------------------------ submit */
+.register-submit {
   width: 100%;
-  min-height: 48px;
-  padding: 0 22px;
-  color: #ffffff;
-  background: var(--color-accent);
-  border: 0;
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-weight: 700;
-  font-size: 15px;
-  cursor: pointer;
-  transition: background 0.2s;
+  margin-top: var(--space-xs);
 }
 
-.register-card .actions button:hover {
-  background: var(--color-accent-hover);
-}
-
-.register-card .actions button:disabled {
-  background: var(--color-text-secondary);
-  cursor: progress;
-}
-
-.register-card .submit-error {
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  color: var(--color-error);
-  background: var(--color-error-bg);
-  border: 1px solid #fecdca;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-}
-
-.register-card .submit-success {
-  padding: 12px 16px;
-  margin-bottom: 16px;
-  color: var(--color-success);
-  background: var(--color-success-bg);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  font-size: 14px;
-}
-
+/* ------------------------------------------------------------- footer link */
 .register-footer {
-  margin: 24px 0 0;
+  margin: var(--space-lg) 0 0;
   text-align: center;
-  color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
 }
-
-.register-footer a {
-  color: var(--color-accent);
+.register-footer-link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  color: var(--md-primary);
+  font-weight: var(--fw-semibold);
   text-decoration: none;
-  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+.register-footer-icon {
+  transition: transform var(--transition-normal);
+}
+.register-footer-link:hover {
+  color: var(--md-on-primary-fixed-variant);
+  text-decoration: underline;
+}
+.register-footer-link:hover .register-footer-icon {
+  transform: translateX(3px); /* icono login animado en hover (wireframe) */
+}
+.register-footer-link:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
-.register-footer a:hover {
-  text-decoration: underline;
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 480px) {
+  .register-page {
+    padding: var(--space-lg) var(--space-4);
+  }
+  .register-card {
+    padding: var(--space-8) var(--space-6);
+  }
+  .register-title {
+    font-size: var(--text-headline-lg-mobile);
+  }
+}
+
+/* ------------------------------------------------------ motion reducido */
+@media (prefers-reduced-motion: reduce) {
+  .register-logo-ring {
+    animation: none;
+  }
+  .register-card,
+  .register-field input,
+  .register-field textarea,
+  .register-field label,
+  .register-field-icon,
+  .register-footer-link,
+  .register-footer-icon {
+    transition: none;
+  }
 }

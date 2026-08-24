@@ -6,7 +6,10 @@ public class UsuarioDto
     public string Nombre { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string? Telefono { get; set; }
+    public string? TelefonoEmergencia { get; set; }
     public string? Direccion { get; set; }
+    public string? LicenciaMedica { get; set; }
+    public DateTime? FechaIncorporacion { get; set; }
     public int RolId { get; set; }
     public string RolNombre { get; set; } = string.Empty;
     public bool Activo { get; set; }
@@ -16,4 +19,10 @@ public class UsuarioDto
     public int? VeterinariaId { get; set; }
     public int? AlmacenId { get; set; }
     public string? ComercioNombre { get; set; }
+
+    // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios.
+    public string? IdCorporativo { get; set; }
+    public string? Especialidad { get; set; }
+    public string? Sede { get; set; }
+    public string? Estado { get; set; }
 }

@@ -12,7 +12,9 @@ export const REDES_PREDETERMINADAS = [
   { plataforma: 'tiktok', label: 'TikTok', icon: 'fab fa-tiktok', color: '#000', link: 'https://tiktok.com/@', placeholder: 'usuario' },
   { plataforma: 'youtube', label: 'YouTube', icon: 'fab fa-youtube', color: '#FF0000', link: 'https://youtube.com/@', placeholder: 'canal' },
   { plataforma: 'whatsapp', label: 'WhatsApp', icon: 'fab fa-whatsapp', color: '#25D366', link: 'https://wa.me/', placeholder: 'numero' },
-  { plataforma: 'telegram', label: 'Telegram', icon: 'fab fa-telegram', color: '#0088CC', link: 'https://t.me/', placeholder: 'usuario' },
+  // QA T28 Fix 2: telegram NO está en PlataformasPermitidas del backend
+  // (RedesSocialesController) -> el PUT devolvía 400 silencioso. Se alinea la
+  // UI al backend: las únicas plataformas ofrecidas son las permitidas.
 ]
 
 function toForm(data) {
@@ -32,6 +34,7 @@ export function useProfile() {
   const [status, setStatus] = useState('loading')
   const [confirmation, setConfirmation] = useState(null)
   const [submitError, setSubmitError] = useState('')
+  const [socialError, setSocialError] = useState('')
   const {
     values: form, errors, updateField, reset, handleSubmit,
   } = useForm(toForm(null), validateProfileForm)
@@ -87,7 +90,11 @@ export function useProfile() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           nombre: data.nombre,
-          telefono: data.telefono || null,
+          // QA T28 Fix 1: el backend (ActualizarUsuarioDto.Telefono) rechaza
+          // espacios (^[0-9+\-()]{8,15}$) y el seed guarda "+506 8888-2001".
+          // Se normaliza quitando espacios antes de enviar para evitar el
+          // 400 "Revise los datos ingresados" al guardar el perfil.
+          telefono: data.telefono ? data.telefono.replace(/\s+/g, '') : null,
           direccion: data.direccion ?? null,
           fotoUrl: data.fotoUrl || null,
         }),
@@ -109,11 +116,13 @@ export function useProfile() {
   })
 
   const startEditingSocial = (plataforma) => {
+    setSocialError('')
     setEditingSocial(plataforma)
     setSocialInput(socialLinks[plataforma] || '')
   }
 
   const cancelEditingSocial = () => {
+    setSocialError('')
     setEditingSocial(null)
     setSocialInput('')
   }
@@ -122,12 +131,44 @@ export function useProfile() {
     if (!editingSocial) return
     const red = REDES_PREDETERMINADAS.find((r) => r.plataforma === editingSocial)
     const username = socialInput.trim()
-    const url = username && red ? red.link + username : null
-    await authFetch(`${API_BASE_URL}/usuarios/me/redes-sociales/${editingSocial}`, {
+    const url = username && red ? red.link + username : ''
+
+    // QA T28 Fix 3 (v2): al desvincular (username vacío) se usa el endpoint
+    // DELETE /usuarios/me/redes-sociales/{plataforma} (204 NoContent) que el
+    // backend ya expone; el PUT con "" lo rechazaba con 400 silencioso. Tras
+    // el 204 se quita la red de socialLinks -> "No conectado" real, no un
+    // estado optimista falso.
+    if (!url) {
+      const response = await authFetch(`${API_BASE_URL}/usuarios/me/redes-sociales/${editingSocial}`, {
+        method: 'DELETE',
+      })
+      if (!response.ok) {
+        const errData = await response.json().catch(() => ({}))
+        setSocialError(errData.mensaje ?? 'No se pudo desvincular la red social.')
+        return
+      }
+      setSocialError('')
+      setSocialLinks((prev) => {
+        const next = { ...prev }
+        delete next[editingSocial]
+        return next
+      })
+      setEditingSocial(null)
+      setSocialInput('')
+      return
+    }
+
+    const response = await authFetch(`${API_BASE_URL}/usuarios/me/redes-sociales/${editingSocial}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(url),
     })
+    if (!response.ok) {
+      const errData = await response.json().catch(() => ({}))
+      setSocialError(errData.mensaje ?? 'No se pudo guardar la red social.')
+      return
+    }
+    setSocialError('')
     setSocialLinks((prev) => ({ ...prev, [editingSocial]: url }))
     setEditingSocial(null)
     setSocialInput('')
@@ -137,7 +178,7 @@ export function useProfile() {
 
   return {
     profile, form, errors: allErrors, status, confirmation,
-    socialLinks, editingSocial, socialInput,
+    socialLinks, editingSocial, socialInput, socialError,
     startEditing, cancelEditing, updateField, submitUpdate,
     startEditingSocial, setSocialInput, saveSocialLink, cancelEditingSocial,
   }

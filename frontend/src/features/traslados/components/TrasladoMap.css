@@ -1,0 +1,35 @@
+@import "../../../shared/styles/tokens.css";
+
+/* ==========================================================================
+   TrasladoMap — mapa Leaflet punto a punto (T35).
+   Tokens Material 3 (--md-*). Cero hex hardcodeados: los pines SVG usan
+   var(--md-*) y la caption vive en la página (TrasladosPage.css).
+   ========================================================================== */
+
+.traslado-map {
+  width: 100%;
+  height: 320px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: var(--md-surface-container-low);
+}
+
+/* Los pines son divIcon de Leaflet (html inline); los estilos del contenedor
+   se aplican a la clase del div generado. */
+.traslado-map__pin {
+  background: transparent;
+  border: none;
+}
+
+/* Popup de ruta (buildPopupHtml): lista y nota de aproximación */
+.traslado-map__popup-route {
+  margin: 4px 0;
+  font-weight: var(--fw-semibold);
+  color: var(--md-on-surface);
+}
+
+.traslado-map__popup-note {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}

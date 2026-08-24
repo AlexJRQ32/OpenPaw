@@ -18,4 +18,11 @@ public class VeterinariaDto
     public string? MotivoRechazo { get; set; }
     public string? DocumentoPersoneriaJuridica { get; set; }
     public DateTime FechaRegistro { get; set; }
+
+    // Sprint 1 - Tarea 6: campos del wireframe de Registro de Veterinaria.
+    public string? RazonSocial { get; set; }
+    public string? Nit { get; set; }
+    public string? CorreoOficial { get; set; }
+    public decimal? Latitud { get; set; }
+    public decimal? Longitud { get; set; }
 }

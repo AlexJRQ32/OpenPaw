@@ -188,7 +188,13 @@ public class AuthService : IAuthService
     private async Task<LoginResponseDto> GenerateTokenAsync(Usuario usuario)
     {
         var jwtSection = _configuration.GetSection("Jwt");
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSection["Key"] ?? "OpenPawDevsSuperSecretKey2026!Minimum32Chars!"));
+        var jwtKey = jwtSection["Key"];
+        if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("REPLACE_WITH_ENV_VAR", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Jwt:Key no configurado. Define la variable de entorno 'Jwt__Key'. Ver backend/.env.example.");
+        }
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]

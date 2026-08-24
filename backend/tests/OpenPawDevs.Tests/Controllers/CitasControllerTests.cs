@@ -219,4 +219,149 @@ public class CitasControllerTests
         result.Should().BeOfType<ForbidResult>();
         _citas.Verify(r => r.UpdateAsync(It.IsAny<Cita>()), Times.Never);
     }
+
+    // --- Sprint 1 - T5: Tipo de cita (Rutina / Especialista / Urgencia) ---
+
+    private (CitasController sut, CrearCitaDto dto, DateTime fecha) CrearBase()
+    {
+        var fecha = DateTime.UtcNow.AddDays(2);
+        var dto = new CrearCitaDto
+        {
+            MascotaId = 1,
+            VeterinariaId = 2,
+            UsuarioId = 3,
+            FechaHora = fecha,
+            Servicio = "Consulta general"
+        };
+        _mascotas.Setup(r => r.ExistsAsync(1)).ReturnsAsync(true);
+        _veterinarias.Setup(r => r.ExistsAsync(2)).ReturnsAsync(true);
+        _usuarios.Setup(r => r.ExistsAsync(3)).ReturnsAsync(true);
+        return (CreateSut(), dto, fecha);
+    }
+
+    [Fact]
+    public async Task Create_TipoCitaInvalido_DebeRetornar400()
+    {
+        var (sut, dto, _) = CrearBase();
+        dto.TipoCita = "999";
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        _citas.Verify(r => r.CrearConValidacionAsync(It.IsAny<Cita>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Create_SinTipoCita_DebeUsarRutinaPorDefecto()
+    {
+        var (sut, dto, _) = CrearBase();
+        Cita? capturada = null;
+        _citas.Setup(r => r.CrearConValidacionAsync(It.IsAny<Cita>()))
+            .Callback<Cita>(c => { capturada = c; c.Id = 12; })
+            .ReturnsAsync((Cita c) => c);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<CreatedResult>();
+        capturada.Should().NotBeNull();
+        capturada!.TipoCita.Should().Be(TipoCitaEnum.Rutina.ToString());
+    }
+
+    [Fact]
+    public async Task Create_ConTipoCitaValido_DebePersistirTipoNormalizado()
+    {
+        var (sut, dto, _) = CrearBase();
+        dto.TipoCita = "especialista";
+        Cita? capturada = null;
+        _citas.Setup(r => r.CrearConValidacionAsync(It.IsAny<Cita>()))
+            .Callback<Cita>(c => { capturada = c; c.Id = 12; })
+            .ReturnsAsync((Cita c) => c);
+
+        var result = await sut.CreateAsync(dto);
+
+        result.Should().BeOfType<CreatedResult>();
+        capturada.Should().NotBeNull();
+        capturada!.TipoCita.Should().Be(TipoCitaEnum.Especialista.ToString());
+    }
+
+    [Fact]
+    public async Task Update_TipoCitaValido_DebeActualizarTipo()
+    {
+        var cita = new Cita
+        {
+            Id = 5,
+            UsuarioId = 3,
+            Estado = EstadoCita.Confirmada.ToString(),
+            TipoCita = TipoCitaEnum.Rutina.ToString()
+        };
+        _citas.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(cita);
+
+        var result = await CreateSut().UpdateAsync(
+            5, new ActualizarCitaDto { TipoCita = "Urgencia" });
+
+        result.Should().BeOfType<NoContentResult>();
+        cita.TipoCita.Should().Be(TipoCitaEnum.Urgencia.ToString());
+        _citas.Verify(r => r.UpdateAsync(cita), Times.Once);
+    }
+
+    [Fact]
+    public async Task Update_TipoCitaInvalido_DebeRetornar400YNoModificar()
+    {
+        var cita = new Cita
+        {
+            Id = 5,
+            UsuarioId = 3,
+            Estado = EstadoCita.Confirmada.ToString(),
+            TipoCita = TipoCitaEnum.Rutina.ToString()
+        };
+        _citas.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(cita);
+
+        var result = await CreateSut().UpdateAsync(
+            5, new ActualizarCitaDto { TipoCita = "999" });
+
+        result.Should().BeOfType<BadRequestObjectResult>();
+        cita.TipoCita.Should().Be(TipoCitaEnum.Rutina.ToString());
+        _citas.Verify(r => r.UpdateAsync(It.IsAny<Cita>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Update_SinTipoCita_DebePreservarValorExistente()
+    {
+        var cita = new Cita
+        {
+            Id = 5,
+            UsuarioId = 3,
+            Estado = EstadoCita.Confirmada.ToString(),
+            TipoCita = TipoCitaEnum.Especialista.ToString()
+        };
+        _citas.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(cita);
+
+        var result = await CreateSut().UpdateAsync(5, new ActualizarCitaDto());
+
+        result.Should().BeOfType<NoContentResult>();
+        cita.TipoCita.Should().Be(TipoCitaEnum.Especialista.ToString());
+    }
+
+    [Fact]
+    public async Task GetById_DebeRetornarDtoConTipoCita()
+    {
+        var cita = new Cita
+        {
+            Id = 5,
+            UsuarioId = 3,
+            MascotaId = 1,
+            VeterinariaId = 2,
+            Estado = EstadoCita.Confirmada.ToString(),
+            TipoCita = TipoCitaEnum.Urgencia.ToString()
+        };
+        _citas.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(cita);
+
+        var result = await CreateSut().GetByIdAsync(5);
+
+        result.Should().BeOfType<OkObjectResult>();
+        var ok = result as OkObjectResult;
+        var dto = ok!.Value as CitaDto;
+        dto.Should().NotBeNull();
+        dto!.TipoCita.Should().Be(TipoCitaEnum.Urgencia.ToString());
+    }
 }

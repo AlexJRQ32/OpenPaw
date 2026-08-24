@@ -55,4 +55,10 @@ public class UsuarioRepository : GenericRepository<Usuario>, IUsuarioRepository
         return await _context.Usuarios
             .CountAsync(u => u.RolId == rolId && u.Activo);
     }
+
+    public async Task<int> CountByRolAsync(int rolId)
+    {
+        return await _context.Usuarios
+            .CountAsync(u => u.RolId == rolId);
+    }
 }

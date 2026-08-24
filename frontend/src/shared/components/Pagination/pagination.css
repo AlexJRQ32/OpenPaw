@@ -1,0 +1,98 @@
+@import "../../styles/tokens.css";
+
+/* ==========================================================================
+   Pagination — OpenPaw Design System (Material 3, Task #17)
+   --------------------------------------------------------------------------
+   Wireframes funcionarios/inventario: info "Mostrando 1-3 de 142" + flechas
+   chevron + paginas numeradas. Activa = bg primary / texto on-primary.
+   ========================================================================== */
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.pagination__info {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.pagination__pages {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* --------------------------------------------------- botones (paginas/arrow) */
+.pagination__page,
+.pagination__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 36px;
+  height: 36px;
+  padding: 0 6px;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: transparent;
+  color: var(--md-on-surface-variant);
+  font-family: var(--font-body);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+  transition:
+    background-color var(--transition-fast),
+    color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+.pagination__page:hover {
+  background-color: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+
+.pagination__page:focus-visible,
+.pagination__arrow:focus-visible {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+/* Pagina activa — bg primary + on-primary (wireframe) */
+.pagination__page.is-active,
+.pagination__page.is-active:hover {
+  background-color: var(--md-primary);
+  color: var(--md-on-primary);
+  font-weight: var(--fw-semibold);
+  box-shadow: var(--shadow-glow);
+  transform: none;
+  cursor: default;
+}
+
+/* Flechas prev/next */
+.pagination__arrow .icon {
+  flex: none;
+}
+.pagination__arrow:hover:not(:disabled) {
+  background-color: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+}
+.pagination__arrow:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Elipsis */
+.pagination__ellipsis {
+  min-width: 24px;
+  text-align: center;
+  color: var(--md-outline);
+  font-size: var(--text-label-md);
+  user-select: none;
+}

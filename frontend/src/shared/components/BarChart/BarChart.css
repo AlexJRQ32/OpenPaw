@@ -1,0 +1,103 @@
+@import "../../styles/tokens.css";
+
+/* ==========================================================================
+   BarChart — OpenPaw Design System (Material 3, Task #16)
+   --------------------------------------------------------------------------
+   Gráfico de barras sin librería (divs + flex). Barras con radio superior,
+   color pleno en la barra resaltada / semitransparente en las demás,
+   hover a color pleno + glow, tooltip nativo (title) y animación de altura
+   (scaleY con stagger) al montar. Patrón wireframe "Historial de Peso".
+   ========================================================================== */
+
+.barchart {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* Área de barras: flex con align-items:flex-end (barras crecen desde abajo) */
+.barchart__plot {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-2);
+}
+
+.barchart__col {
+  flex: 1 1 0;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+/* Valor sobre la barra: oculto por defecto, visible en hover y en resaltada */
+.barchart__value {
+  margin-bottom: var(--space-1);
+  font-size: var(--text-caption);
+  font-weight: var(--fw-bold);
+  opacity: 0;
+  transform: translateY(2px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+.barchart__col:hover .barchart__value,
+.barchart__col--highlight .barchart__value {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Barra: radio superior, altura vía variable inline --bar-height */
+.barchart__bar {
+  flex-shrink: 0; /* Evita que .barchart__value (flex item oculto) comprima la altura real */
+  width: 100%;
+  max-width: 48px;
+  height: var(--bar-height);
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  transform-origin: bottom;
+  animation: barchart-grow 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  transition:
+    filter var(--transition-fast),
+    box-shadow var(--transition-fast);
+}
+
+/* Barras no resaltadas: color semitransparente (como en wireframe) */
+.barchart__col:not(.barchart__col--highlight) .barchart__bar {
+  opacity: 0.45;
+}
+.barchart__col:not(.barchart__col--highlight):hover .barchart__bar {
+  opacity: 1;
+}
+
+/* Barra resaltada: color pleno + glow del color de la serie */
+.barchart__col--highlight .barchart__bar {
+  opacity: 1;
+  box-shadow: 0 0 10px color-mix(in srgb, currentColor 35%, transparent);
+}
+
+@keyframes barchart-grow {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+/* Etiquetas (meses) alineadas bajo las barras */
+.barchart__labels {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.barchart__label {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: center;
+  font-size: var(--text-caption);
+  color: var(--md-on-surface-variant);
+}

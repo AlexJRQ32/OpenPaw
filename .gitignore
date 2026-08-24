@@ -1,8 +1,12 @@
-# Build outputs
+# Build outputs (Deuda #73: todos los publish son artefactos, no versionar)
 backend/publish-selfcontained/
 backend/publish-deploy/
-backend/*/bin/
-backend/*/obj/
+backend/publish-standalone/
+backend/publish-dll/
+backend/publish-linux/
+backend/**/publish/
+backend/**/bin/
+backend/**/obj/
 
 # Dependencies
 node_modules/
@@ -25,12 +29,24 @@ Desktop.ini
 # Graphify
 graphify-out/
 
+# ASP.NET Data Protection
+backend/**/.aspnet-data-protection-keys/
+
 # Test artifacts
-frontend/e2e/
+# Suite Playwright (Sprint 2 T41) — versionar config, specs y helpers.
+# Solo se ignoran los artifacts generados (diffs PNG, html-report, json).
+frontend/e2e/artifacts/
 frontend/test-results/
 frontend/playwright-report/
 
-# Environment
+# Environment (Deuda #72/#73: .env ignorado, .env.example versionado)
 .env
 .env.local
 .env.production.local
+# Plantillas - NO ignorar
+!.env.example
+!.env.local.example
+!frontend/.env.example
+!frontend/.env.local.example
+!backend/.env.example
+!backend/OpenPawDevs.WebAPI/.env.example

@@ -12,6 +12,11 @@ public class Mascota
     public string? Color { get; set; }
     public string? Identificacion { get; set; }
     public string? FotoUrl { get; set; }
+    public string EstadoSalud { get; set; } = "Saludable";
+    public string? ProximaVacuna { get; set; }
+    public DateTime? ProximaVacunaFecha { get; set; }
+    public string? MedicacionActual { get; set; }
+    public DateTime? ProximaMedicacionFecha { get; set; }
     public int DuenioId { get; set; }
     public bool Activo { get; set; }
     public DateTime FechaRegistro { get; set; }

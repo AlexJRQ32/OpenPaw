@@ -36,7 +36,15 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<bool>("Aprobada")
                         .HasColumnType("bit");
 
+                    b.Property<string>("CapacidadAlmacenamiento")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("CedulaJuridica")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("ControlTemperatura")
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
@@ -55,12 +63,24 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal?>("Latitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
+                    b.Property<decimal?>("Longitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("NombreResponsable")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 
@@ -73,6 +93,10 @@ namespace OpenPawDevs.Data.Migrations
 
                     b.Property<int>("Tipo")
                         .HasColumnType("int");
+
+                    b.Property<string>("TipoAlmacen")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
 
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
@@ -179,6 +203,13 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("TipoCita")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasDefaultValue("Rutina");
+
                     b.Property<int>("UsuarioId")
                         .HasColumnType("int");
 
@@ -208,8 +239,16 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Diagnostico")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
                     b.Property<bool>("EsEnPlataforma")
                         .HasColumnType("bit");
+
+                    b.Property<string>("EstadoPaciente")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("FechaAtencion")
                         .HasColumnType("datetime2");
@@ -217,20 +256,39 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
+                    b.Property<int?>("FrecuenciaCardiaca")
+                        .HasColumnType("int");
+
                     b.Property<int>("MascotaId")
                         .HasColumnType("int");
+
+                    b.Property<string>("MedicoACargo")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<string>("Motivo")
                         .IsRequired()
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<string>("NivelSeveridad")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<int>("PropietarioId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("SaturacionO2")
                         .HasColumnType("int");
 
                     b.Property<string>("Sintomas")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
+
+                    b.Property<decimal?>("Temperatura")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<string>("TratamientoAplicado")
                         .HasMaxLength(2000)
@@ -358,8 +416,16 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<int>("Cantidad")
                         .HasColumnType("int");
 
+                    b.Property<string>("Categoria")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<DateTime>("FechaActualizacion")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Lote")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
@@ -369,6 +435,14 @@ namespace OpenPawDevs.Data.Migrations
 
                     b.Property<int>("StockMinimo")
                         .HasColumnType("int");
+
+                    b.Property<string>("Ubicacion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UnidadMedida")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -403,6 +477,13 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("EstadoSalud")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)")
+                        .HasDefaultValue("Saludable");
+
                     b.Property<DateTime?>("FechaNacimiento")
                         .HasColumnType("datetime2");
 
@@ -416,6 +497,10 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<string>("Identificacion")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MedicacionActual")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -424,6 +509,16 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<decimal?>("Peso")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("ProximaMedicacionFecha")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ProximaVacuna")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("ProximaVacunaFecha")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Raza")
                         .HasMaxLength(100)
@@ -748,10 +843,26 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<decimal?>("DestinoLatitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
+                    b.Property<decimal?>("DestinoLongitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
                     b.Property<string>("Estado")
                         .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("EstadoLogistica")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("EtaLlegada")
+                        .HasColumnType("datetime2");
 
                     b.Property<DateTime?>("FechaRespuesta")
                         .HasColumnType("datetime2");
@@ -765,6 +876,17 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
+
+                    b.Property<decimal?>("OrigenLatitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
+                    b.Property<decimal?>("OrigenLongitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
+                    b.Property<DateTime?>("Salida")
+                        .HasColumnType("datetime2");
 
                     b.Property<int>("SolicitadoPorId")
                         .HasColumnType("int");
@@ -811,12 +933,31 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Especialidad")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Estado")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("FechaIncorporacion")
+                        .HasColumnType("datetime2");
+
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("FotoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("IdCorporativo")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("LicenciaMedica")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Nombre")
                         .IsRequired()
@@ -838,7 +979,15 @@ namespace OpenPawDevs.Data.Migrations
                     b.Property<int>("RolId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Sede")
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
                     b.Property<string>("Telefono")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("TelefonoEmergencia")
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -851,6 +1000,10 @@ namespace OpenPawDevs.Data.Migrations
 
                     b.HasIndex("Email")
                         .IsUnique();
+
+                    b.HasIndex("IdCorporativo")
+                        .IsUnique()
+                        .HasFilter("[IdCorporativo] IS NOT NULL");
 
                     b.HasIndex("RolId");
 
@@ -877,6 +1030,10 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<string>("CorreoOficial")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("Descripcion")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
@@ -900,16 +1057,32 @@ namespace OpenPawDevs.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<decimal?>("Latitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
+
                     b.Property<string>("LogoUrl")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<decimal?>("Longitud")
+                        .HasPrecision(10, 7)
+                        .HasColumnType("decimal(10,7)");
 
                     b.Property<string>("MotivoRechazo")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<string>("Nit")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("Nombre")
                         .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("RazonSocial")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
 

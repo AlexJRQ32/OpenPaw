@@ -23,4 +23,17 @@ public class ActualizarMascotaDto
     public string? Identificacion { get; set; }
 
     public string? FotoUrl { get; set; }
+
+    [StringLength(30)]
+    public string? EstadoSalud { get; set; }
+
+    [StringLength(100)]
+    public string? ProximaVacuna { get; set; }
+
+    public DateTime? ProximaVacunaFecha { get; set; }
+
+    [StringLength(200)]
+    public string? MedicacionActual { get; set; }
+
+    public DateTime? ProximaMedicacionFecha { get; set; }
 }

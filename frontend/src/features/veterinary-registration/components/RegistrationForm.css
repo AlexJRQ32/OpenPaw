@@ -1,0 +1,572 @@
+@import "../../../shared/styles/tokens.css";
+
+/* ==========================================================================
+   RegistrationForm — rediseño Sprint 2 (T37). Wireframe
+   registro_de_veterinaria_openpaw: página única de dos columnas (identidad +
+   ubicación/mapa a la izquierda; documentación + términos/envío a la derecha).
+   Tokens Material 3 (--md-*). Tintes derivados con color-mix(); cero hex
+   hardcodeados salvo blanco puro del pin SVG (marca/accesibilidad sobre mapa).
+   ========================================================================== */
+
+.vreg-form {
+  /* ancho controlado por la página o el modal contenedor */
+  width: 100%;
+}
+
+.vreg-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: var(--space-md);
+  align-items: start;
+}
+
+.vreg-main,
+.vreg-side {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+/* --------------------------------------------------------------- cards */
+.vreg-card {
+  position: relative;
+  padding: var(--space-6);
+  background: var(--md-surface-container-lowest);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  transition: box-shadow var(--transition-normal);
+}
+
+.vreg-card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+/* Barra de acento lateral (patrón wireframe) */
+.vreg-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: color-mix(in srgb, var(--md-primary) 25%, transparent);
+  transition: background var(--transition-normal);
+}
+
+.vreg-card--ubicacion::before { background: color-mix(in srgb, var(--md-secondary) 30%, transparent); }
+.vreg-card--equipo::before    { background: color-mix(in srgb, var(--md-tertiary) 30%, transparent); }
+.vreg-card--docs::before      { background: color-mix(in srgb, var(--md-outline) 35%, transparent); }
+
+.vreg-card--identidad:hover::before { background: var(--md-primary); }
+.vreg-card--ubicacion:hover::before { background: var(--md-secondary); }
+.vreg-card--equipo:hover::before    { background: var(--md-tertiary); }
+
+.vreg-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.vreg-card__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-full);
+}
+
+.vreg-card__icon--primary   { background: color-mix(in srgb, var(--md-primary-container) 18%, transparent); color: var(--md-primary); }
+.vreg-card__icon--secondary { background: color-mix(in srgb, var(--md-secondary-container) 35%, transparent); color: var(--md-secondary); }
+.vreg-card__icon--tertiary  { background: color-mix(in srgb, var(--md-tertiary-fixed) 45%, transparent); color: var(--md-tertiary); }
+.vreg-card__icon--neutral   { background: var(--md-surface-container); color: var(--md-on-surface-variant); }
+
+.vreg-card__head h2 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-xl);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tighter);
+  line-height: var(--lh-headline-md);
+  color: var(--md-on-surface);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.vreg-card__head p {
+  margin: var(--space-1) 0 0;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
+}
+
+.vreg-optional-badge {
+  font-weight: var(--fw-semibold);
+}
+
+/* -------------------------------------------------------------- campos */
+.vreg-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-4);
+}
+
+.vreg-field--wide {
+  grid-column: 1 / -1;
+}
+
+/* Campos pill del wireframe (inputs compartidos DS + propios del scope) */
+.vreg-form .field {
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.vreg-form .field > span {
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+  line-height: var(--lh-label);
+  color: var(--md-on-surface);
+}
+
+.vreg-form .field input,
+.vreg-form .field textarea,
+.vreg-form .field select {
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-3) var(--space-4);
+  font: inherit;
+  font-size: var(--text-body-md);
+  color: var(--md-on-surface);
+  background: var(--md-surface-container);
+  border: 2px solid transparent;
+  border-radius: var(--rounded-full);
+  outline: none;
+  transition: background var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.vreg-form .field textarea {
+  border-radius: var(--rounded-lg);
+  resize: vertical;
+  min-height: 96px;
+}
+
+.vreg-form .field select {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--md-on-surface-variant) 50%),
+    linear-gradient(135deg, var(--md-on-surface-variant) 50%, transparent 50%);
+  background-position: calc(100% - 21px) 50%, calc(100% - 15px) 50%;
+  background-size: 6px 6px;
+  background-repeat: no-repeat;
+  padding-right: var(--space-8);
+}
+
+.vreg-form .field input::placeholder,
+.vreg-form .field textarea::placeholder {
+  color: color-mix(in srgb, var(--md-on-surface-variant) 55%, transparent);
+}
+
+.vreg-form .field input:hover,
+.vreg-form .field textarea:hover,
+.vreg-form .field select:hover {
+  background: var(--md-surface-container-high);
+}
+
+.vreg-form .field input:focus-visible,
+.vreg-form .field textarea:focus-visible,
+.vreg-form .field select:focus-visible {
+  background: var(--md-surface-container-lowest);
+  border-color: color-mix(in srgb, var(--md-primary) 35%, transparent);
+  box-shadow: var(--shadow-focus);
+}
+
+.vreg-form .field input[aria-invalid="true"],
+.vreg-form .field textarea[aria-invalid="true"] {
+  border-color: var(--md-error);
+}
+
+.vreg-form .field small {
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-error-container);
+}
+
+/* ---------------------------------------------------------------- mapa */
+.vreg-map {
+  position: relative;
+  height: 220px;
+  margin-top: var(--space-4);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.vreg-map__canvas {
+  position: absolute;
+  inset: 0;
+  background: var(--md-surface-container);
+}
+
+.vreg-map-pin {
+  /* contenedor del DivIcon de Leaflet */
+  background: transparent;
+  border: none;
+}
+
+.vreg-map__overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 800; /* sobre los paneles de Leaflet (≤700) */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-8) var(--space-4) var(--space-4);
+  /* Scrim derivado de --md-on-surface (≈ #1a1c1c): mismo resultado que el
+     rgba hardcodeado anterior, pero temático y sin hex en el scope. */
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--md-on-surface) 45%, transparent),
+    transparent
+  );
+  pointer-events: none;
+}
+
+.vreg-map__chip {
+  pointer-events: auto;
+  max-width: 80%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: var(--space-2) var(--space-4);
+  background: color-mix(in srgb, var(--md-surface-container-lowest) 92%, transparent);
+  backdrop-filter: var(--glass-backdrop);
+  border-radius: var(--rounded-full);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-medium);
+  color: var(--md-on-surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.vreg-map__locate {
+  pointer-events: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+  cursor: pointer;
+  box-shadow: var(--shadow-md);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.vreg-map__locate:hover {
+  transform: scale(1.06);
+  box-shadow: var(--shadow-glow);
+}
+
+.vreg-map__locate:focus-visible {
+  outline: 2px solid var(--md-on-primary);
+  outline-offset: 2px;
+}
+
+.vreg-map-note {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  margin: var(--space-4) 0 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--md-surface-container);
+  border-radius: var(--rounded-lg);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.vreg-map-note .material-symbols-outlined {
+  flex-shrink: 0;
+  margin-top: 2px;
+  color: var(--md-tertiary);
+}
+
+/* --------------------------------------------------- equipo (opcional) */
+.vreg-team-help {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.vreg-team-empty {
+  margin: 0 0 var(--space-4);
+  padding: var(--space-5);
+  text-align: center;
+  font-size: var(--text-caption);
+  color: var(--md-outline);
+  background: var(--md-surface-container-low);
+  border: 1.5px dashed var(--md-outline-variant);
+  border-radius: var(--rounded-lg);
+}
+
+.vreg-member {
+  margin-bottom: var(--space-3);
+  padding: var(--space-4);
+  background: var(--md-surface-container-low);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
+  border-radius: var(--rounded-lg);
+}
+
+.vreg-member__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.vreg-member__head strong {
+  font-family: var(--font-heading);
+  font-size: var(--text-label-md);
+  color: var(--md-on-surface);
+}
+
+.vreg-member__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: var(--radius-sm);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  cursor: pointer;
+  transition: filter var(--transition-fast);
+}
+
+.vreg-member__remove:hover {
+  filter: brightness(0.94);
+}
+
+.vreg-member__remove:focus-visible {
+  outline: 2px solid var(--md-error);
+  outline-offset: 2px;
+}
+
+.vreg-member__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-3);
+}
+
+.vreg-team-add {
+  width: 100%;
+  margin-top: var(--space-2);
+  border-style: dashed;
+}
+
+/* ------------------------------------------------------------ dropzone */
+.vreg-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 220px;
+  padding: var(--space-6);
+  text-align: center;
+  border: 2px dashed color-mix(in srgb, var(--md-outline-variant) 70%, transparent);
+  border-radius: var(--radius-xl);
+  cursor: default;
+}
+
+.vreg-dropzone__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  margin-bottom: var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container);
+  color: var(--md-on-surface-variant);
+  box-shadow: var(--shadow-sm);
+}
+
+.vreg-dropzone h3 {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-semibold);
+  color: var(--md-on-surface);
+}
+
+.vreg-dropzone p {
+  margin: 0;
+  max-width: 240px;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
+}
+
+.vreg-dropzone__badge {
+  margin-top: var(--space-3);
+}
+
+/* ----------------------------------------------------- términos y envío */
+.vreg-actions {
+  position: sticky;
+  bottom: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-backdrop);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-2xl);
+  box-shadow: var(--shadow-lg);
+}
+
+.vreg-terms {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+}
+
+.vreg-terms input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  margin: 2px 0 0;
+  flex-shrink: 0;
+  accent-color: var(--md-primary);
+  cursor: pointer;
+}
+
+.vreg-terms input[type="checkbox"]:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+}
+
+.vreg-terms label {
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+}
+
+.vreg-terms a {
+  color: var(--md-primary);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+}
+
+.vreg-terms a:hover {
+  text-decoration: underline;
+}
+
+.vreg-terms--error label {
+  color: var(--md-on-error-container);
+  font-weight: var(--fw-semibold);
+}
+
+.vreg-error {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  border-radius: var(--radius-md);
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+}
+
+.vreg-submit {
+  width: 100%;
+}
+
+/* --------------------------------------------------------------- toast */
+.vreg-toast {
+  position: fixed;
+  top: var(--space-5);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  background: color-mix(in srgb, var(--md-secondary-container) 60%, var(--md-surface-container-lowest));
+  border: 1px solid color-mix(in srgb, var(--md-secondary) 40%, transparent);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-lg);
+  font-family: var(--font-heading);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-bold);
+  color: var(--md-on-secondary-container);
+  animation: vreg-toast-in var(--transition-normal) ease-out;
+}
+
+@keyframes vreg-toast-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ----------------------------------------------------------- responsive */
+@media (max-width: 1024px) {
+  .vreg-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .vreg-actions {
+    position: static;
+  }
+}
+
+@media (max-width: 640px) {
+  .vreg-card {
+    padding: var(--space-5);
+  }
+
+  .vreg-fields,
+  .vreg-member__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ------------------------------------------------------ reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .vreg-card,
+  .vreg-card::before,
+  .vreg-map__locate,
+  .vreg-form .field input,
+  .vreg-form .field textarea,
+  .vreg-form .field select {
+    transition: none;
+  }
+
+  .vreg-map__locate:hover {
+    transform: none;
+  }
+
+  .vreg-toast {
+    animation: none;
+  }
+}

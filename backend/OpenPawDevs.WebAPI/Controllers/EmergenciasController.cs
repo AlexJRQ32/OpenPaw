@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OpenPawDevs.Core.DTOs.Emergencia;
 using OpenPawDevs.Core.Entities;
+using OpenPawDevs.Core.Enums;
 using OpenPawDevs.Core.Interfaces;
 
 namespace OpenPawDevs.WebAPI.Controllers;
@@ -30,6 +31,30 @@ public class EmergenciasController : ControllerBase
     private int UsuarioAutenticadoId =>
         int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
+    /// <summary> Mapeo seguro a DTO: no se serializa la entidad cruda ni sus navegaciones (evita PII) </summary>
+    private static EmergenciaDto MapToDto(Emergencia e) => new()
+    {
+        Id = e.Id,
+        MascotaId = e.MascotaId,
+        PropietarioId = e.PropietarioId,
+        VeterinariaId = e.VeterinariaId,
+        VeterinariaNombreExterna = e.VeterinariaNombreExterna,
+        FechaAtencion = e.FechaAtencion,
+        Motivo = e.Motivo,
+        Sintomas = e.Sintomas,
+        TratamientoAplicado = e.TratamientoAplicado,
+        EsEnPlataforma = e.EsEnPlataforma,
+        ArchivoAdjuntoUrl = e.ArchivoAdjuntoUrl,
+        FechaRegistro = e.FechaRegistro,
+        NivelSeveridad = e.NivelSeveridad,
+        FrecuenciaCardiaca = e.FrecuenciaCardiaca,
+        SaturacionO2 = e.SaturacionO2,
+        Temperatura = e.Temperatura,
+        EstadoPaciente = e.EstadoPaciente,
+        MedicoACargo = e.MedicoACargo,
+        Diagnostico = e.Diagnostico
+    };
+
     [HttpGet]
     public async Task<IActionResult> GetByMascotaAsync([FromQuery] int mascotaId)
     {
@@ -42,7 +67,7 @@ public class EmergenciasController : ControllerBase
             return error;
 
         var emergencias = await _emergenciaRepository.GetByMascotaIdAsync(mascotaId);
-        return Ok(emergencias);
+        return Ok(emergencias.Select(MapToDto));
     }
 
     [HttpGet("{id}")]
@@ -60,7 +85,7 @@ public class EmergenciasController : ControllerBase
         if (error != null)
             return error;
 
-        return Ok(emergencia);
+        return Ok(MapToDto(emergencia));
     }
 
     [HttpPost]
@@ -74,6 +99,16 @@ public class EmergenciasController : ControllerBase
         if (usuario == null)
             return NotFound(new { mensaje = "Usuario autenticado no encontrado" });
 
+        var nivelSeveridad = "Nivel1_Critico";
+        if (crearDto.NivelSeveridad != null)
+        {
+            if (!Enum.TryParse<NivelSeveridadEmergencia>(crearDto.NivelSeveridad, true, out var nivel)
+                || !Enum.IsDefined(typeof(NivelSeveridadEmergencia), nivel))
+                return BadRequest(new { mensaje = "Nivel de severidad no valido (use Nivel1_Critico, Nivel2_Urgente o Resuelto)" });
+
+            nivelSeveridad = nivel.ToString();
+        }
+
         var entity = new Emergencia
         {
             MascotaId = crearDto.MascotaId,
@@ -84,7 +119,14 @@ public class EmergenciasController : ControllerBase
             TratamientoAplicado = crearDto.TratamientoAplicado,
             ArchivoAdjuntoUrl = crearDto.ArchivoAdjuntoUrl,
             EsEnPlataforma = crearDto.EsEnPlataforma,
-            FechaRegistro = DateTime.UtcNow
+            FechaRegistro = DateTime.UtcNow,
+            NivelSeveridad = nivelSeveridad,
+            FrecuenciaCardiaca = crearDto.FrecuenciaCardiaca,
+            SaturacionO2 = crearDto.SaturacionO2,
+            Temperatura = crearDto.Temperatura,
+            EstadoPaciente = crearDto.EstadoPaciente,
+            MedicoACargo = crearDto.MedicoACargo,
+            Diagnostico = crearDto.Diagnostico
         };
 
         if (crearDto.EsEnPlataforma)
@@ -108,7 +150,72 @@ public class EmergenciasController : ControllerBase
         }
 
         var created = await _emergenciaRepository.AddAsync(entity);
-        return Created($"/api/emergencias/{created.Id}", created);
+        return Created($"/api/emergencias/{created.Id}", MapToDto(created));
+    }
+
+    /// <summary>
+    /// Actualizacion parcial: los campos null del DTO preservan el valor existente.
+    /// MascotaId y EsEnPlataforma no se pueden modificar (se fijan al crear).
+    /// </summary>
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateAsync(int id, [FromBody] ActualizarEmergenciaDto actualizarDto)
+    {
+        var emergencia = await _emergenciaRepository.GetByIdAsync(id);
+        if (emergencia == null)
+            return NotFound(new { mensaje = $"Emergencia con ID {id} no encontrada" });
+
+        var mascota = await _mascotaRepository.GetByIdAsync(emergencia.MascotaId);
+        if (mascota == null)
+            return NotFound(new { mensaje = $"Mascota con ID {emergencia.MascotaId} no encontrada" });
+
+        var error = await ValidarAccesoMascotaAsync(mascota);
+        if (error != null)
+            return error;
+
+        if (actualizarDto.NivelSeveridad != null)
+        {
+            if (!Enum.TryParse<NivelSeveridadEmergencia>(actualizarDto.NivelSeveridad, true, out var nivel)
+                || !Enum.IsDefined(typeof(NivelSeveridadEmergencia), nivel))
+                return BadRequest(new { mensaje = "Nivel de severidad no valido (use Nivel1_Critico, Nivel2_Urgente o Resuelto)" });
+
+            emergencia.NivelSeveridad = nivel.ToString();
+        }
+
+        if (actualizarDto.FechaAtencion != null)
+            emergencia.FechaAtencion = actualizarDto.FechaAtencion.Value;
+
+        if (actualizarDto.Motivo != null)
+            emergencia.Motivo = actualizarDto.Motivo.Trim();
+
+        if (actualizarDto.Sintomas != null)
+            emergencia.Sintomas = actualizarDto.Sintomas;
+
+        if (actualizarDto.TratamientoAplicado != null)
+            emergencia.TratamientoAplicado = actualizarDto.TratamientoAplicado;
+
+        if (actualizarDto.ArchivoAdjuntoUrl != null)
+            emergencia.ArchivoAdjuntoUrl = actualizarDto.ArchivoAdjuntoUrl;
+
+        if (actualizarDto.FrecuenciaCardiaca != null)
+            emergencia.FrecuenciaCardiaca = actualizarDto.FrecuenciaCardiaca;
+
+        if (actualizarDto.SaturacionO2 != null)
+            emergencia.SaturacionO2 = actualizarDto.SaturacionO2;
+
+        if (actualizarDto.Temperatura != null)
+            emergencia.Temperatura = actualizarDto.Temperatura;
+
+        if (actualizarDto.EstadoPaciente != null)
+            emergencia.EstadoPaciente = actualizarDto.EstadoPaciente;
+
+        if (actualizarDto.MedicoACargo != null)
+            emergencia.MedicoACargo = actualizarDto.MedicoACargo;
+
+        if (actualizarDto.Diagnostico != null)
+            emergencia.Diagnostico = actualizarDto.Diagnostico;
+
+        await _emergenciaRepository.UpdateAsync(emergencia);
+        return NoContent();
     }
 
     /// <summary> Visible para el propietario de la mascota y la veterinaria de cabecera </summary>

@@ -7,6 +7,33 @@ import { useAuth } from '../features/auth/context/AuthContext'
 
 const ROL_CLIENTE = 4
 
+/* Deuda #82: comercioId compuesto vet-{id} / alm-{id} — evita colisión
+   entre veterinarias (1-4) y almacenes (2,3) y permite distinguir el
+   vínculo en el backend (tipoComercio + comercioId). */
+function parseComercioValue(value) {
+  if (value == null || value === '') return { id: null, tipo: null }
+  const raw = String(value).trim()
+  if (raw.startsWith('vet-')) {
+    const id = Number(raw.slice(4))
+    return { id: Number.isNaN(id) ? null : id, tipo: 'veterinaria' }
+  }
+  if (raw.startsWith('alm-')) {
+    const id = Number(raw.slice(4))
+    return { id: Number.isNaN(id) ? null : id, tipo: 'almacen' }
+  }
+  const id = Number(raw)
+  return { id: Number.isNaN(id) ? null : id, tipo: null }
+}
+
+// toComercioValue reservado si en el futuro se unifica el modelo de comercio a valor compuesto
+// eslint-disable-next-line no-unused-vars
+function toComercioValue(id, tipo) {
+  if (id == null) return ''
+  if (tipo === 'almacen' || tipo === 'Almacen') return `alm-${id}`
+  if (tipo === 'veterinaria' || tipo === 'Veterinaria') return `vet-${id}`
+  return String(id)
+}
+
 export function useFuncionarios() {
   const { user } = useAuth()
   const userRol = Number(user?.rolId ?? user?.rol ?? user?.role)
@@ -34,12 +61,18 @@ export function useFuncionarios() {
           if (cancelled) return
           const info = res.ok ? await res.json() : null
           if (info?.veterinariaId || info?.almacenId) {
+            // Deuda #82: para no-admin se preserva valor numérico (test M3 espera 5) pero
+            // el POST inferirá tipoComercio por rol (veterinaria/almacen) para desambiguar.
             comercioId = info.veterinariaId ?? info.almacenId
             setValue('comercioId', comercioId)
           }
           if (comercioId) {
-            if (userRol === ROLE_IDS.VETERINARIA) url += `?veterinariaId=${comercioId}`
-            else if (userRol === ROLE_IDS.ALMACEN) url += `?almacenId=${comercioId}`
+            const { id: numericId } = parseComercioValue(comercioId)
+            const nid = numericId ?? Number(comercioId)
+            if (nid != null && !Number.isNaN(nid)) {
+              if (userRol === ROLE_IDS.VETERINARIA) url += `?veterinariaId=${nid}`
+              else if (userRol === ROLE_IDS.ALMACEN) url += `?almacenId=${nid}`
+            }
           }
         }
 
@@ -56,10 +89,14 @@ export function useFuncionarios() {
         )
 
         if (comercioId) {
-          filtered = filtered.filter((u) =>
-            Number(u.veterinariaId) === Number(comercioId) ||
-            Number(u.almacenId) === Number(comercioId)
-          )
+          const { id: numericId, tipo } = parseComercioValue(comercioId)
+          if (numericId != null) {
+            filtered = filtered.filter((u) => {
+              if (tipo === 'veterinaria') return Number(u.veterinariaId) === numericId
+              if (tipo === 'almacen') return Number(u.almacenId) === numericId
+              return Number(u.veterinariaId) === numericId || Number(u.almacenId) === numericId
+            })
+          }
         }
 
         setFuncionarios(filtered)
@@ -89,8 +126,12 @@ export function useFuncionarios() {
         if (info?.veterinariaId || info?.almacenId) {
           comercioId = info.veterinariaId ?? info.almacenId
           if (comercioId) {
-            if (userRol === ROLE_IDS.VETERINARIA) url += `?veterinariaId=${comercioId}`
-            else url += `?almacenId=${comercioId}`
+            const { id: numericId } = parseComercioValue(comercioId)
+            const nid = numericId ?? Number(comercioId)
+            if (nid != null && !Number.isNaN(nid)) {
+              if (userRol === ROLE_IDS.VETERINARIA) url += `?veterinariaId=${nid}`
+              else url += `?almacenId=${nid}`
+            }
           }
         }
       }
@@ -107,10 +148,14 @@ export function useFuncionarios() {
       )
 
       if (comercioId) {
-        filtered = filtered.filter((u) =>
-          Number(u.veterinariaId) === Number(comercioId) ||
-          Number(u.almacenId) === Number(comercioId)
-        )
+        const { id: numericId, tipo } = parseComercioValue(comercioId)
+        if (numericId != null) {
+          filtered = filtered.filter((u) => {
+            if (tipo === 'veterinaria') return Number(u.veterinariaId) === numericId
+            if (tipo === 'almacen') return Number(u.almacenId) === numericId
+            return Number(u.veterinariaId) === numericId || Number(u.almacenId) === numericId
+          })
+        }
       }
 
       setFuncionarios(filtered)
@@ -132,13 +177,22 @@ export function useFuncionarios() {
     }
   }
 
-  const crearFuncionario = handleSubmit(async (data) => {
+  const ejecutarCreacion = async (data) => {
     setStatus('submitting')
     setUltimoCreado(null)
     setSubmitError('')
 
     const body = { nombre: data.nombre, email: data.email, rolId: data.rolId }
-    if (data.comercioId) body.comercioId = data.comercioId
+    if (data.comercioId) {
+      const { id: numericId, tipo } = parseComercioValue(data.comercioId)
+      if (numericId != null) {
+        body.comercioId = numericId
+        if (tipo) body.tipoComercio = tipo
+        // Deuda #82: para no-admin sin prefijo, inferir tipo por rol del creador
+        else if (userRol === ROLE_IDS.VETERINARIA) body.tipoComercio = 'veterinaria'
+        else if (userRol === ROLE_IDS.ALMACEN) body.tipoComercio = 'almacen'
+      }
+    }
 
     try {
       const response = await authFetch(`${API_BASE_URL}/usuarios/funcionarios`, {
@@ -158,14 +212,29 @@ export function useFuncionarios() {
 
       const resData = await response.json()
       setUltimoCreado(resData)
-      reset(initialFuncionarioForm)
+      // M3 (QA): preservar comercioId al resetear. Sin esto, un no-admin (campo
+      // comercio oculto) perdia el vinculo a su comercio en el 2º alta.
+      reset({ ...initialFuncionarioForm, comercioId: data.comercioId || '' })
       setStatus('idle')
       await cargarFuncionarios()
+      return true
     } catch (error) {
       setStatus('idle')
       setSubmitError(error.message)
+      return false
     }
-  })
+  }
+
+  // M1 (QA): crearFuncionario resuelve true SOLO si el alta fue exitosa. Con
+  // error del servidor (400) o validacion cliente devuelve false para que la
+  // pagina no cierre el modal y pueda mostrar errors.submit.
+  const crearFuncionario = (event) => {
+    let exito = false
+    const submit = handleSubmit(async (data) => {
+      exito = await ejecutarCreacion(data)
+    })
+    return submit(event).then(() => exito)
+  }
 
   const cambiarRol = async (id, rolId) => {
     const response = await authFetch(`${API_BASE_URL}/usuarios/${id}/rol`, {

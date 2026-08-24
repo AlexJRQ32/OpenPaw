@@ -34,6 +34,11 @@ public class VeterinariaConfiguration : IEntityTypeConfiguration<Veterinaria>
         builder.Property(v => v.CedulaJuridica)
             .HasMaxLength(30);
 
+        // Deuda #89: índice único para evitar cédulas duplicadas (404->409 del frontend es código muerto sin esto).
+        builder.HasIndex(v => v.CedulaJuridica)
+            .IsUnique()
+            .HasFilter("[CedulaJuridica] IS NOT NULL");
+
         builder.Property(v => v.Descripcion)
             .HasMaxLength(1000);
 
@@ -42,5 +47,21 @@ public class VeterinariaConfiguration : IEntityTypeConfiguration<Veterinaria>
 
         builder.Property(v => v.MotivoRechazo)
             .HasMaxLength(500);
+
+        // Sprint 1 - Tarea 6: campos del wireframe de Registro de Veterinaria.
+        builder.Property(v => v.RazonSocial)
+            .HasMaxLength(150);
+
+        builder.Property(v => v.Nit)
+            .HasMaxLength(30);
+
+        builder.Property(v => v.CorreoOficial)
+            .HasMaxLength(100);
+
+        builder.Property(v => v.Latitud)
+            .HasPrecision(10, 7);
+
+        builder.Property(v => v.Longitud)
+            .HasPrecision(10, 7);
     }
 }

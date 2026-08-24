@@ -1,0 +1,91 @@
+@import "../../../shared/styles/tokens.css";
+
+/* ==========================================================================
+   Bento grid de stats del Perfil (T28 — wireframe perfil_openpaw)
+   Cards glass con icono tintado por tono, número grande y label uppercase.
+   auto-fit reparte las cards según cuántas haya por rol (2 a 4).
+   ========================================================================== */
+.profile-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+.profile-stat {
+  --stat-tone: var(--md-primary);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid var(--md-surface-container-high);
+  border-radius: var(--rounded-lg);
+  box-shadow: var(--shadow-level-1);
+  transition:
+    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
+    box-shadow var(--transition-fast) ease;
+}
+.profile-stat:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-level-2);
+}
+.profile-stat__icon {
+  color: var(--stat-tone);
+  margin-bottom: var(--space-2);
+}
+.profile-stat__value {
+  font-family: var(--font-heading);
+  font-size: var(--text-headline-lg);
+  font-weight: var(--fw-extrabold);
+  line-height: 1;
+  letter-spacing: var(--tracking-tight);
+  color: var(--md-on-surface);
+}
+.profile-stat__label {
+  font-size: var(--fs-xs);
+  font-weight: var(--fw-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--md-on-surface-variant);
+}
+.profile-stat--primary { --stat-tone: var(--md-primary); }
+.profile-stat--secondary { --stat-tone: var(--md-secondary); }
+.profile-stat--tertiary { --stat-tone: var(--md-tertiary); }
+.profile-stat--error { --stat-tone: var(--md-error); }
+
+/* Skeleton mientras cargan los stats */
+.profile-stat--skeleton {
+  min-height: 108px;
+  background: linear-gradient(100deg, var(--md-surface-container-low) 40%, var(--md-surface-container) 50%, var(--md-surface-container-low) 60%);
+  background-size: 200% 100%;
+  animation: profile-stat-pulse 1.4s ease-in-out infinite;
+  border-color: transparent;
+}
+@keyframes profile-stat-pulse {
+  0% { background-position: 100% 0; }
+  100% { background-position: -100% 0; }
+}
+
+@media (max-width: 768px) {
+  .profile-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+  .profile-stat {
+    padding: var(--space-4);
+  }
+  .profile-stat__value {
+    font-size: var(--fs-2xl);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .profile-stat,
+  .profile-stat:hover {
+    transform: none;
+    transition: none;
+  }
+  .profile-stat--skeleton {
+    animation: none;
+  }
+}

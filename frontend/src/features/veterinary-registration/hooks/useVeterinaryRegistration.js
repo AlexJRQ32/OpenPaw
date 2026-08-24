@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { authFetch } from '../../../shared/utils/api'
 import { API_BASE_URL, initialForm } from '../../../constants'
 import { rememberSubmittedBusiness } from '../../../utils'
@@ -8,17 +8,32 @@ import { useAuth } from '../../auth/context/AuthContext'
 
 
 const FORM_DRAFT_KEY = 'openpaw_vet_form_draft'
+
+/* Tope defensivo por campo: un borrador manipulado/corrupto con strings
+   gigantes no debe colgar el formulario ni inflar localStorage. */
+const DRAFT_MAX_FIELD_LENGTH = 2000
+
 function loadDraft(defaults) {
   try {
     const raw = localStorage.getItem(FORM_DRAFT_KEY)
-    if (raw) {
-      const parsed = JSON.parse(raw)
-      if (parsed && parsed._v === 1) {
-        delete parsed._v
-        return { ...defaults, ...parsed }
-      }
-    }
-  } catch {}
+    if (!raw) return defaults
+    const parsed = JSON.parse(raw)
+    if (!parsed || parsed._v !== 1) return defaults
+
+    /* QA #2: solo se restauran claves conocidas del formulario y SOLO como
+       string. Antes se hacía spread directo y un draft corrupto (número, null,
+       objeto…) en un campo obligatorio hacía que validateForm →
+       form[field].trim() lanzara TypeError en el primer keystroke. */
+    const restored = { ...defaults }
+    Object.keys(defaults).forEach((key) => {
+      const value = parsed[key]
+      restored[key] =
+        typeof value === 'string' ? value.slice(0, DRAFT_MAX_FIELD_LENGTH) : defaults[key]
+    })
+    return restored
+  } catch {
+    /* borrador corrupto o storage bloqueado: se ignora y parte en blanco */
+  }
   return defaults
 }
 function saveDraft(form) {
@@ -28,19 +43,22 @@ function saveDraft(form) {
       if (typeof v !== "object" || v === null || !("size" in v)) sanitized[k] = v
     })
     localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify({ ...sanitized, _v: 1 }))
-  } catch {}
+  } catch {
+    /* sin almacenamiento disponible: el flujo funciona sin borrador */
+  }
 }
 
 export function useVeterinaryRegistration() {
   const { user } = useAuth()
   const [status, setStatus] = useState('idle')
   const [sent, setSent] = useState(false)
-  const clearSent = () => setSent(false)
-  const [formVersion, setFormVersion] = useState(0)
+  /* Estable (useCallback) para poder depender de él en efectos del formulario
+     sin resetear timers en cada render. */
+  const clearSent = useCallback(() => setSent(false), [])
   const [submitError, setSubmitError] = useState('')
   const {
     values: form, errors, updateField, setValue,
-    handleSubmit, reset, setTouched,
+    reset, setTouched, setErrors,
   } = useForm(loadDraft(initialForm), validateForm)
 
   useEffect(() => { saveDraft(form) }, [form])
@@ -48,24 +66,20 @@ export function useVeterinaryRegistration() {
   useEffect(() => {
     if (!user?.email) return
     if (!form.email) setValue('email', user.email)
-
-  }, [user?.email, user?.nombre])
-
-  const fileSummary = useMemo(() => {
-    try {
-      if (!form.documentoPersoneriaJuridica) return 'Opcional'
-      const f = form.documentoPersoneriaJuridica
-      if (f && f.size) {
-        const s = f.size / 1024 / 1024
-        return `${f.name} - ${s.toFixed(2)}MB`
-      }
-      return 'Opcional'
-    } catch { return 'Opcional' }
-  }, [form.documentoPersoneriaJuridica])
+  }, [user?.email, form.email, setValue])
 
   const submitRequest = async (team = []) => {
-    const allErrors = validateForm(form)
     setSubmitError('')
+
+    /* QA #2 (cinturón y tirantes): loadDraft ya sanea tipos, pero un crash
+       de validación nunca debe escapar como unhandled rejection — se aborta
+       el envío igual que cuando hay errores de campo visibles. */
+    let allErrors
+    try {
+      allErrors = validateForm(form)
+    } catch {
+      return
+    }
     if (Object.keys(allErrors).length > 0) return
 
     setStatus('submitting')
@@ -117,7 +131,6 @@ export function useVeterinaryRegistration() {
       setSent(true)
       localStorage.removeItem(FORM_DRAFT_KEY)
       reset(initialForm)
-      setFormVersion((current) => current + 1)
       setStatus('sent')
     } catch (error) {
       setStatus('idle')
@@ -127,20 +140,12 @@ export function useVeterinaryRegistration() {
 
   const allErrors = submitError ? { ...errors, submit: submitError } : errors
 
-  const validateStep = (fields) => {
-    const stepErrors = {}
-    fields.forEach((f) => {
-      const err = validateForm(form)[f]
-      if (err) stepErrors[f] = err
-    })
-    setTouched((prev) => ({ ...prev, ...fields.reduce((acc, f) => ({ ...acc, [f]: true }), {}) }))
-    return Object.keys(stepErrors).length === 0
-  }
-
   return {
-    form, errors: allErrors, status, sent, clearSent, formVersion,
-    fileSummary, updateField, submitRequest,
-    validateStep,
+    form, errors: allErrors, status, sent, clearSent,
+    updateField, submitRequest,
+    /* T37 QA: setters del useForm expuestos para que la página única pueda
+       mostrar todos los errores de campo en el envío (errores visibles a11y). */
+    setErrors, setTouched,
   }
 }
 

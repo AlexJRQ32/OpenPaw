@@ -1,179 +1,348 @@
 @import "../../../shared/styles/tokens.css";
 
+/* ==========================================================================
+   AuthMethodPage — Rediseño Sprint 1 / Task #21
+   (wireframe Stitch "Método de acceso OpenPaw")
+   Material 3 + glassmorphism, alineado al rediseño de LoginPage (#20).
+   Cero hex hardcodeados: solo tokens (--md-*, --glass-*, --shadow-*,
+   --text-*, --space-*, --rounded-*, --transition-*).
+   Excepciones documentadas:
+     - SVG Google: colores oficiales de marca (inline en el JSX,
+       sin token M3 equivalente).
+     - SVG Facebook: fill="currentColor" (monocromo como el wireframe).
+   Decisiones:
+     - Logo unificado con LoginPage: círculo pets + anillo ping (80px aquí,
+       40px de glifo según wireframe) en lugar del tile rounded-[20px].
+     - "¿Ya tienes cuenta? Inicia sesión" se conserva discretamente bajo el
+       footer legal: es navegación funcional hacia /login.
+   Funcionalidad conservada: banner error role=alert, submitting/disabled,
+   SDK Google/Facebook reales, email -> /register.
+   ========================================================================== */
+
 .auth-method-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  position: relative;
   min-height: 100svh;
-  background: var(--color-bg);
-  padding: 20px;
-  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg) var(--space-md);
+  background: var(--md-background);
+  overflow: hidden;
 }
 
+/* ------------------------------------------------------- fondo ambiental */
+.auth-method-bg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+.auth-method-blob {
+  position: absolute;
+  border-radius: var(--rounded-full);
+  animation: auth-blob-pulse 7s ease-in-out infinite;
+}
+/* blob primario: top-right, primary/10, blur 100px (wireframe animate-pulse) */
+.auth-method-blob--primary {
+  top: -100px;
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+  filter: blur(100px);
+}
+/* blob secundario: bottom-left, secondary/20, blur 80px + mix-blend-multiply */
+.auth-method-blob--secondary {
+  bottom: -50px;
+  left: -50px;
+  width: 400px;
+  height: 400px;
+  background: color-mix(in srgb, var(--md-secondary-fixed-dim) 20%, transparent);
+  filter: blur(80px);
+  mix-blend-mode: multiply;
+  animation-delay: 2.4s;
+}
+@keyframes auth-blob-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* ------------------------------------------------------------ tarjeta glass */
 .auth-method-card {
+  position: relative;
+  z-index: 1;
   width: 100%;
-  max-width: 440px;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  padding: 40px 32px;
+  max-width: 480px;
+  padding: var(--space-12) var(--space-10);
+  box-sizing: border-box;
+  /* = bg-surface-container-lowest/80 + backdrop-blur-xl del wireframe */
+  background: var(--glass-bg-strong);
+  backdrop-filter: var(--glass-backdrop);
+  -webkit-backdrop-filter: var(--glass-backdrop);
+  border: 1px solid color-mix(in srgb, var(--md-surface-container-highest) 50%, transparent);
+  border-radius: var(--rounded-xl); /* rounded-[24px] del wireframe */
+  box-shadow: var(--shadow-level-2); /* 0 12px 40px rgba(0,0,0,.08) exacto */
+  overflow: hidden;
+  transition:
+    box-shadow var(--transition-slow),
+    transform var(--transition-slow);
+}
+/* brillo interior superior (gradiente + highlight 1px del wireframe) */
+.auth-method-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--md-surface-container-lowest) 40%, transparent),
+    transparent
+  );
+  box-shadow: inset 0 1px 0 var(--glass-border);
+}
+.auth-method-card:hover {
+  transform: scale(1.01); /* hover:scale-[1.01] del wireframe */
+  box-shadow: var(--shadow-xl);
 }
 
+/* --------------------------------------------------------------- branding */
 .auth-method-brand {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--space-lg);
 }
-
-.auth-method-logo-img {
-  width: 64px;
-  height: 64px;
-  margin-bottom: 16px;
-  border-radius: 12px;
+/* Logo unificado con .login-logo (#20): círculo pets + anillo ping */
+.auth-method-logo {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px; /* tile 80×80 del wireframe */
+  height: 80px;
+  margin-bottom: var(--space-md);
+  border-radius: var(--rounded-full);
+  background: color-mix(in srgb, var(--md-primary) 10%, transparent);
+  color: var(--md-primary);
+  box-shadow: 0 0 20px color-mix(in srgb, var(--md-primary) 15%, transparent);
 }
-
+.auth-method-logo-icon {
+  position: relative;
+  z-index: 1;
+  transition: transform var(--transition-normal); /* group-hover:scale-110 */
+}
+.auth-method-logo:hover .auth-method-logo-icon {
+  transform: scale(1.1);
+}
+.auth-method-logo-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--md-primary) 20%, transparent);
+  animation: auth-method-ping 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+@keyframes auth-method-ping {
+  75%,
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
 .auth-method-title {
-  margin: 0;
-  color: #101828;
-  font-size: 24px;
+  margin: 0 0 var(--space-xs);
   font-family: var(--font-heading);
-  letter-spacing: 0;
+  font-size: var(--text-headline-lg);
+  line-height: var(--lh-headline-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--md-on-surface);
 }
-
 .auth-method-subtitle {
-  margin: 6px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 15px;
+  margin: 0;
+  font-size: var(--text-body-md);
+  line-height: var(--lh-body);
+  color: var(--md-on-surface-variant);
 }
 
+/* ---------------------------------------------------------- banner error */
 .auth-method-error {
-  padding: 12px 16px;
-  margin-bottom: 18px;
-  color: var(--color-error);
-  background: var(--color-error-bg);
-  border: 1px solid #fecdca;
-  border-radius: var(--radius-md);
-  font-size: 14px;
+  position: relative;
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-md);
+  border-radius: var(--rounded-md);
+  background: var(--md-error-container);
+  color: var(--md-on-error-container);
+  font-size: var(--text-label-md);
+  line-height: var(--lh-label);
 }
 
-/* ---- Option list ---- */
-
+/* ---------------------------------------------------- opciones (pills M3) */
 .auth-method-options {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-md); /* gap-md del wireframe */
 }
 
+/* Las 3 opciones comparten estilo idéntico (bg-surface-container-high) */
 .auth-option {
   display: flex;
   align-items: center;
-  gap: 14px;
-  width: 100%;
-  min-height: 56px;
-  padding: 0 18px;
-  border-radius: var(--radius-md);
-  font: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  box-sizing: border-box;
-  transition:
-    border-color var(--transition-fast),
-    background var(--transition-fast),
-    box-shadow var(--transition-fast);
-}
-
-.auth-option-icon {
-  flex-shrink: 0;
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  font-size: 18px;
-  color: inherit;
-}
-
-.auth-option-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.auth-option-label {
-  font-weight: 600;
-  font-size: 15px;
-  line-height: 1.3;
-}
-
-.auth-option-desc {
-  font-size: 13px;
-  color: var(--color-text-secondary);
-  font-weight: 400;
-  line-height: 1.3;
-}
-
-/* -- Email option -- */
-
-.auth-option--email {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid var(--color-border);
-}
-
-.auth-option--email:hover {
-  border-color: var(--color-accent);
-}
-
-/* -- Google option -- */
-
-.auth-option--google {
-  background: #ffffff;
-  color: #333333;
-  border: 1px solid #dadce0;
-}
-
-.auth-option--google:hover {
-  background: #f8f9fa;
-}
-
-/* -- Facebook option -- */
-
-.auth-option--facebook {
-  background: #1877f2;
-  color: #ffffff;
+  gap: var(--space-sm);
+  width: 100%;
+  min-height: 52px;
+  padding: var(--space-3) var(--space-md);
+  box-sizing: border-box;
   border: none;
+  border-radius: var(--rounded-full);
+  font: inherit;
+  font-size: var(--text-label-md);
+  line-height: var(--lh-label);
+  font-weight: var(--fw-semibold);
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  transition:
+    background-color var(--transition-normal),
+    transform var(--transition-fast),
+    box-shadow var(--transition-normal);
 }
-
-.auth-option--facebook:hover {
-  background: #166fe5;
+.auth-option:hover:not(:disabled) {
+  background: var(--md-surface-dim);
+  transform: translateY(calc(-1 * var(--space-xs))); /* hover:-translate-y-1 */
+  box-shadow: var(--shadow-sm);
 }
-
+.auth-option:active:not(:disabled) {
+  transform: scale(0.98);
+}
+.auth-option:focus-visible {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
 .auth-option:disabled {
   opacity: 0.6;
   cursor: progress;
 }
 
-.auth-option:focus-visible {
-  outline: 3px solid var(--color-accent-light);
-  outline-offset: 2px;
+/* iconos monocromos: on-surface-variant -> primary en hover (wireframe) */
+.auth-option-icon {
+  flex: none;
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--md-on-surface-variant);
+  transition: color var(--transition-fast);
+}
+.auth-option:hover:not(:disabled) .auth-option-icon {
+  color: var(--md-primary);
 }
 
-/* ---- Footer ---- */
+.auth-option-label {
+  font-weight: var(--fw-semibold);
+}
 
-.auth-method-footer {
-  margin: 24px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 14px;
+/* ------------------------------------------------------------- footer legal */
+.auth-method-legal {
+  position: relative;
+  margin: var(--space-lg) 0 0;
   text-align: center;
+  font-size: var(--text-caption);
+  line-height: var(--lh-caption);
+  color: var(--md-on-surface-variant);
 }
-
-.auth-method-link {
-  color: var(--color-accent);
+.auth-method-legal-link {
+  color: var(--md-primary);
+  font-weight: var(--fw-medium);
   text-decoration: none;
-  font-weight: 600;
+  transition: color var(--transition-fast);
+}
+.auth-method-legal-link:hover {
+  text-decoration: underline;
+  color: var(--md-on-primary-fixed-variant);
+}
+.auth-method-legal-link:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
 }
 
-.auth-method-link:hover {
+/* ------------------------------- acceso a cuenta existente (conservado) */
+.auth-method-footer {
+  position: relative;
+  margin: var(--space-sm) 0 0;
+  text-align: center;
+  font-size: var(--text-caption);
+  color: color-mix(in srgb, var(--md-on-surface-variant) 70%, transparent);
+}
+.auth-method-footer-link {
+  color: var(--md-primary);
+  font-weight: var(--fw-medium);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+.auth-method-footer-link:hover {
+  color: var(--md-on-primary-fixed-variant);
   text-decoration: underline;
+}
+.auth-method-footer-link:focus-visible {
+  outline: 2px solid var(--md-primary);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* -------------------------------------------------------------- responsive */
+@media (max-width: 480px) {
+  .auth-method-page {
+    align-items: flex-start;
+    padding-top: var(--space-xl);
+  }
+  .auth-method-card {
+    padding: var(--space-8) var(--space-6);
+  }
+  .auth-method-options {
+    gap: var(--space-3);
+  }
+  .auth-method-blob--primary {
+    width: 400px;
+    height: 400px;
+  }
+  .auth-method-blob--secondary {
+    width: 280px;
+    height: 280px;
+  }
+}
+
+/* ------------------------------------------------------ motion reducido */
+@media (prefers-reduced-motion: reduce) {
+  .auth-method-blob {
+    animation: none;
+  }
+  .auth-method-logo-ring {
+    animation: none;
+  }
+  .auth-method-logo-icon,
+  .auth-method-card,
+  .auth-option,
+  .auth-option-icon,
+  .auth-method-legal-link,
+  .auth-method-footer-link {
+    transition: none;
+  }
+  .auth-method-card:hover,
+  .auth-option:hover:not(:disabled),
+  .auth-option:active:not(:disabled) {
+    transform: none;
+  }
 }

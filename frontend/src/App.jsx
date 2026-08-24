@@ -23,6 +23,7 @@ const CitasPage = lazy(() => import(`./features/citas/pages/CitasPage`).then(m =
 const TrasladosPage = lazy(() => import(`./features/traslados/pages/TrasladosPage`).then(m => ({ default: m.TrasladosPage })))
 const EmergenciasPage = lazy(() => import(`./features/emergencias/pages/EmergenciasPage`).then(m => ({ default: m.EmergenciasPage })))
 const AportesPage = lazy(() => import(`./features/expediente/pages/AportesPage`).then(m => ({ default: m.AportesPage })))
+const ExpedientePage = lazy(() => import(`./features/expediente/pages/ExpedientePage`).then(m => ({ default: m.ExpedientePage })))
 const MascotasPage = lazy(() => import(`./features/mascotas/pages/MascotasPage`).then(m => ({ default: m.MascotasPage })))
 const MarketplacePage = lazy(() => import(`./features/marketplace/pages/MarketplacePage`).then(m => ({ default: m.MarketplacePage })))
 
@@ -47,6 +48,7 @@ function AnimatedRoutes() {
         <Route path="/dashboard/traslados" element={<ProtectedRoute><TrasladosPage /></ProtectedRoute>} />
         <Route path="/dashboard/emergencias" element={<ProtectedRoute roles={[ROLE_IDS.CLIENTE, ROLE_IDS.VETERINARIA]}><EmergenciasPage /></ProtectedRoute>} />
         <Route path="/dashboard/aportes" element={<ProtectedRoute roles={[ROLE_IDS.CLIENTE]}><AportesPage /></ProtectedRoute>} />
+        <Route path="/dashboard/expediente" element={<ProtectedRoute><ExpedientePage /></ProtectedRoute>} />
         <Route path="/dashboard/inventario" element={<ProtectedRoute roles={FUNCIONARIOS_ROLE_IDS}><InventarioPage /></ProtectedRoute>} />
         <Route path="/dashboard/aprobaciones" element={<ProtectedRoute roles={[ROLE_IDS.ADMINISTRADOR]}><ApprovalsListPage /></ProtectedRoute>} />
         <Route path="*" element={<Navigate to="/" replace />} />

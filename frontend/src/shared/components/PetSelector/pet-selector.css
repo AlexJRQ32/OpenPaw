@@ -1,0 +1,106 @@
+@import "../../styles/tokens.css";
+
+/* ==========================================================================
+   PetSelector — OpenPaw Design System (Material 3, Task #17)
+   --------------------------------------------------------------------------
+   Wireframe aportes_medicos: pildoras de mascotas con avatar. Activa:
+   bg primary-container + borde/sombra primary + foto a todo color.
+   Inactivas: atenuadas (opacity + grayscale). Sin foto -> iniciales sobre
+   secondary-container. Radios nativos ocultos (accesibilidad).
+   ========================================================================== */
+
+.pet-selector {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Radio nativo oculto (mantiene teclado/lectores de pantalla) */
+.pet-selector__input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.pet-selector__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 6px var(--space-4) 6px 6px;
+  border-radius: var(--radius-full);
+  border: 2px solid transparent;
+  background-color: var(--md-surface-container-high);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    border-color var(--transition-normal),
+    box-shadow var(--transition-normal),
+    background-color var(--transition-normal);
+}
+
+.pet-selector__pill:hover {
+  border-color: var(--md-outline-variant);
+}
+
+.pet-selector__pill:focus-within {
+  outline: 3px solid var(--md-primary-fixed-dim);
+  outline-offset: 2px;
+}
+
+/* ------------------------------------------------------------- avatar */
+.pet-selector__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  color: var(--md-on-secondary-container);
+  filter: grayscale(1);
+  opacity: 0.7;
+  transition:
+    filter var(--transition-normal),
+    opacity var(--transition-normal);
+}
+
+/* Sin foto -> iniciales sobre secondary-container */
+.pet-selector__avatar--initials {
+  font-family: var(--font-heading);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-bold);
+  background-color: var(--md-secondary-container);
+}
+
+/* ------------------------------------------------------------- activa */
+.pet-selector__pill.is-active {
+  background-color: var(--md-primary-container);
+  border-color: var(--md-primary);
+  box-shadow: var(--shadow-glow), var(--shadow-level-1);
+}
+.pet-selector__pill.is-active .pet-selector__avatar {
+  filter: none;
+  opacity: 1;
+}
+
+.pet-selector__name {
+  font-family: var(--font-body);
+  font-size: var(--text-label-md);
+  font-weight: var(--fw-medium);
+  line-height: var(--lh-label);
+  color: var(--md-on-surface-variant);
+  white-space: nowrap;
+  transition: color var(--transition-normal);
+}
+.pet-selector__pill.is-active .pet-selector__name {
+  color: var(--md-on-primary-container);
+  font-weight: var(--fw-semibold);
+}

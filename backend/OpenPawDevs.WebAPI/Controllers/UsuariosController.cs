@@ -49,7 +49,7 @@ public class UsuariosController : ControllerBase
         if (almacenId.HasValue)
             usuarios = usuarios.Where(u => u.AlmacenId == almacenId.Value).ToList();
 
-        return Ok(usuarios.Select(ToDto));
+        return Ok(usuarios.Select(ToListadoDto));
     }
 
     [HttpGet("{id}")]
@@ -266,6 +266,13 @@ public class UsuariosController : ControllerBase
         if (entity == null)
             return NotFound(new { mensaje = "Usuario autenticado no encontrado" });
 
+        // Sprint 1 - Tarea 9: Estado validado y normalizado a forma canonica antes del update parcial.
+        var errorEstado = ValidarNormalizarEstado(actualizarDto.Estado, out var estadoNormalizado);
+        if (errorEstado != null)
+            return BadRequest(new { mensaje = errorEstado });
+        if (estadoNormalizado != null)
+            actualizarDto.Estado = estadoNormalizado;
+
         AplicarActualizacion(entity, actualizarDto);
         await _usuarioRepository.UpdateAsync(entity);
         return Ok(ToDto(entity));
@@ -279,9 +286,16 @@ public class UsuariosController : ControllerBase
         if (entity == null)
             return NotFound(new { mensaje = $"Usuario con ID {id} no encontrado" });
 
+        // Sprint 1 - Tarea 9: Estado validado y normalizado a forma canonica antes del update parcial.
+        var errorEstado = ValidarNormalizarEstado(actualizarDto.Estado, out var estadoNormalizado);
+        if (errorEstado != null)
+            return BadRequest(new { mensaje = errorEstado });
+        if (estadoNormalizado != null)
+            actualizarDto.Estado = estadoNormalizado;
+
         AplicarActualizacion(entity, actualizarDto);
         await _usuarioRepository.UpdateAsync(entity);
-        return NoContent();
+        return Ok(ToDto(entity));
     }
 
     /// <summary> PBI 53 - Gestión de funcionarios: listar usuarios por rol </summary>
@@ -290,7 +304,7 @@ public class UsuariosController : ControllerBase
     public async Task<IActionResult> GetByRolAsync(int rolId)
     {
         var usuarios = await _usuarioRepository.GetByRolAsync(rolId);
-        return Ok(usuarios.Select(ToDto));
+        return Ok(usuarios.Select(ToListadoDto));
     }
 
     /// <summary>
@@ -305,11 +319,32 @@ public class UsuariosController : ControllerBase
         if (crearDto.RolId == (int)RolTipo.Cliente)
             return BadRequest(new { mensaje = "El rol de Cliente no aplica a funcionarios." });
 
+        // A1b (QA, ALTO - BLOQUEANTE): solo un administrador (rol 1) puede crear un
+        // Administrador. Sin este guard, un rol 2/3 podria enviar RolId=1 y crear un
+        // Administrador, recibiendo la contrasena temporal en la respuesta (escalada de
+        // privilegios, mismo patron que el guard A1 de CambiarRolAsync).
+        if (crearDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
+            return Forbid();
+
+        // A1b (QA, ALTO - BLOQUEANTE): control de acceso de comercio (mismo patron que
+        // PuedeGestionarFuncionarioAsync): un rol 2/3 solo puede crear funcionarios en SU
+        // propio comercio; un ComercioId ajeno -> Forbid (previene IDOR).
+        // Deuda #82: resuelve ambigüedad vet-{id} vs alm-{id} usando TipoComercio.
+        if (!await PuedeCrearFuncionarioEnComercioAsync(crearDto.ComercioId, crearDto.TipoComercio))
+            return Forbid();
+
         var existente = await _usuarioRepository.GetByEmailAsync(crearDto.Email);
         if (existente != null)
             return BadRequest(new { mensaje = "El email ya est� registrado." });
 
         var passwordTemporal = GenerarPasswordTemporal();
+
+        // Sprint 1 - Tarea 9: validacion de Estado (Activo | Vacaciones | Inactivo) con
+        // Enum.TryParse + IsDefined -> 400 y normalizacion a enum.ToString() (patron tarea 7).
+        var errorEstado = ValidarNormalizarEstado(crearDto.Estado, out var estadoNormalizado);
+        if (errorEstado != null)
+            return BadRequest(new { mensaje = errorEstado });
+
         var entity = new Usuario
         {
             Nombre = crearDto.Nombre,
@@ -317,20 +352,47 @@ public class UsuariosController : ControllerBase
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(passwordTemporal),
             RolId = crearDto.RolId,
             Activo = true,
-            FechaRegistro = DateTime.UtcNow
+            FechaRegistro = DateTime.UtcNow,
+            // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios.
+            Especialidad = crearDto.Especialidad,
+            Sede = crearDto.Sede,
+            Estado = estadoNormalizado ?? nameof(EstadoFuncionario.Activo),
+            IdCorporativo = await GenerarIdCorporativoAsync(crearDto.RolId)
         };
 
-        // Asignar comercio seg�n ComercioId o del usuario autenticado
+        // Asignar comercio según ComercioId + TipoComercio (Deuda #82) o del usuario autenticado.
+        // Con TipoComercio se distingue vet-2 vs alm-2 (colisión ids 1-4 vs 2,3) y se valida existencia.
         if (crearDto.ComercioId.HasValue)
         {
-            var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
-            if (vet != null)
+            var tipoNorm = NormalizarTipoComercio(crearDto.TipoComercio);
+            if (tipoNorm == "veterinaria")
+            {
+                var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                if (vet == null)
+                    return BadRequest(new { mensaje = $"Veterinaria con ID {crearDto.ComercioId.Value} no encontrada." });
                 entity.VeterinariaId = vet.Id;
-            else
+            }
+            else if (tipoNorm == "almacen")
             {
                 var alm = await _almacenRepository.GetByIdAsync(crearDto.ComercioId.Value);
-                if (alm != null)
-                    entity.AlmacenId = alm.Id;
+                if (alm == null)
+                    return BadRequest(new { mensaje = $"Almacén con ID {crearDto.ComercioId.Value} no encontrado." });
+                entity.AlmacenId = alm.Id;
+            }
+            else
+            {
+                // Legacy / sin tipo: fallback vet → alm (compatibilidad), pero valida existencia
+                var vet = await _veterinariaRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                if (vet != null)
+                    entity.VeterinariaId = vet.Id;
+                else
+                {
+                    var alm = await _almacenRepository.GetByIdAsync(crearDto.ComercioId.Value);
+                    if (alm != null)
+                        entity.AlmacenId = alm.Id;
+                    else
+                        return BadRequest(new { mensaje = $"Comercio con ID {crearDto.ComercioId.Value} no encontrado." });
+                }
             }
         }
         else
@@ -370,12 +432,44 @@ public class UsuariosController : ControllerBase
     /// poder cambiarse a través del endpoint de autoedición de perfil.
     /// </summary>
     [HttpPut("{id}/rol")]
-    [Authorize(Roles = "1,2,3")]
+    [Authorize(Roles = "1,2,3,4")]
     public async Task<IActionResult> CambiarRolAsync(int id, [FromBody] CambiarRolDto cambiarRolDto)
     {
         var entity = await _usuarioRepository.GetByIdAsync(id);
         if (entity == null)
             return NotFound(new { mensaje = $"Usuario con ID {id} no encontrado" });
+
+        var authUserId = GetAuthenticatedUserId();
+        var isSelfPromotionClienteToVet = id == authUserId
+            && entity.RolId == (int)RolTipo.Cliente
+            && cambiarRolDto.RolId == (int)RolTipo.Veterinaria;
+
+        // Deuda #89 (c): Cliente (4) que registra veterinaria recibe 403 en PUT de rol.
+        // Permitir que el dueño de la veterinaria se autopromueva 4->2 sin pasar por PuedeGestionarFuncionarioAsync.
+        if (isSelfPromotionClienteToVet)
+        {
+            var ownsVet = await _veterinariaRepository.GetByUsuarioIdAsync(authUserId);
+            var hasVet = ownsVet.Count > 0 || entity.VeterinariaId.HasValue;
+            if (!hasVet)
+                return Forbid();
+            // bypass PuedeGestionar check, pero mantener guard de Admin
+            if (cambiarRolDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
+                return Forbid();
+        }
+        else
+        {
+            // A1 (Code Review, ALTO): solo un administrador (rol 1) puede asignar el rol
+            // Administrador. Sin este guard, un rol 2/3 que gestiona su comercio podria
+            // autopromoverse (o promover a un colega) a admin pasando rolId=1.
+            if (cambiarRolDto.RolId == (int)RolTipo.Administrador && !User.IsInRole("1"))
+                return Forbid();
+
+            // Sprint 1 - Tarea 9: control de acceso (patron tareas 6-8): admin siempre;
+            // rol 2/3 solo puede gestionar funcionarios de su comercio (previene IDOR).
+            // Para rol 4 (Cliente) sin autopromoción, este Forbid bloquea cambios ajenos.
+            if (!await PuedeGestionarFuncionarioAsync(entity))
+                return Forbid();
+        }
 
         if (entity.RolId == (int)RolTipo.Administrador && cambiarRolDto.RolId != (int)RolTipo.Administrador)
         {
@@ -385,6 +479,10 @@ public class UsuariosController : ControllerBase
         }
 
         entity.RolId = cambiarRolDto.RolId;
+        // M2 (Code Review): al cambiar de rol se regenera el IdCorporativo con el prefijo y la
+        // secuencia del nuevo rol para mantenerlo coherente (ej OP-VET-0042 -> OP-ALM-0001).
+        // Roles sin prefijo (ej Cliente) quedan en null (GenerarIdCorporativoAsync lo maneja).
+        entity.IdCorporativo = await GenerarIdCorporativoAsync(cambiarRolDto.RolId);
         await _usuarioRepository.UpdateAsync(entity);
         return Ok(ToDto(entity));
     }
@@ -398,7 +496,13 @@ public class UsuariosController : ControllerBase
         if (entity == null)
             return NotFound(new { mensaje = $"Usuario con ID {id} no encontrado" });
 
+        // Sprint 1 - Tarea 9: control de acceso (patron tareas 6-8).
+        if (!await PuedeGestionarFuncionarioAsync(entity))
+            return Forbid();
+
         entity.Activo = true;
+        // Sprint 1 - Tarea 9: reactivacion = Estado Activo + Activo=true (M3: helper centralizado).
+        AplicarEstadoYActivo(entity, nameof(EstadoFuncionario.Activo));
         await _usuarioRepository.UpdateAsync(entity);
         return Ok(ToDto(entity));
     }
@@ -417,6 +521,11 @@ public class UsuariosController : ControllerBase
         if (entity == null)
             return NotFound(new { mensaje = $"Usuario con ID {id} no encontrado" });
 
+        // Sprint 1 - Tarea 9: control de acceso (patron tareas 6-8): admin siempre;
+        // rol 2/3 solo puede desactivar funcionarios de su comercio (previene IDOR).
+        if (!await PuedeGestionarFuncionarioAsync(entity))
+            return Forbid();
+
         if (entity.RolId == (int)RolTipo.Administrador && entity.Activo)
         {
             var administradoresActivos = await _usuarioRepository.CountActivosByRolAsync((int)RolTipo.Administrador);
@@ -425,6 +534,8 @@ public class UsuariosController : ControllerBase
         }
 
         entity.Activo = false;
+        // Sprint 1 - Tarea 9: desactivacion = Estado Inactivo + Activo=false (M3: helper centralizado).
+        AplicarEstadoYActivo(entity, nameof(EstadoFuncionario.Inactivo));
         await _usuarioRepository.UpdateAsync(entity);
         return NoContent();
     }
@@ -442,6 +553,110 @@ public class UsuariosController : ControllerBase
         return new string(chars);
     }
 
+    /// <summary>
+    /// Sprint 1 - Tarea 9: valida Estado contra el enum EstadoFuncionario y devuelve
+    /// la forma canonica (enum.ToString()). null es valido (campo opcional).
+    /// </summary>
+    private static string? ValidarNormalizarEstado(string? estado, out string? estadoNormalizado)
+    {
+        estadoNormalizado = null;
+        if (estado == null)
+            return null;
+
+        if (!Enum.TryParse<EstadoFuncionario>(estado, true, out var parsed)
+            || !Enum.IsDefined(typeof(EstadoFuncionario), parsed))
+            return "Estado no valido (use Activo, Vacaciones o Inactivo)";
+
+        estadoNormalizado = parsed.ToString();
+        return null;
+    }
+
+    /// <summary>
+    /// Sprint 1 - Tarea 9: genera el IdCorporativo (ej OP-VET-0042) con prefijo segun el rol
+    /// y secuencia = cantidad de usuarios existentes con ese rol + 1 (4 digitos zero-padded).
+    /// M1/M2 (Code Review): el indice unico sobre IdCorporativo (migracion
+    /// AddUniqueIndexIdCorporativo) evita duplicados bajo concurrencia; los roles sin
+    /// prefijo (ej Cliente) devuelven null.
+    /// </summary>
+    private async Task<string?> GenerarIdCorporativoAsync(int rolId)
+    {
+        var prefijo = rolId switch
+        {
+            (int)RolTipo.Administrador => "OP-ADM",
+            (int)RolTipo.Veterinaria => "OP-VET",
+            (int)RolTipo.Almacen => "OP-ALM",
+            // M2 (Code Review): roles sin prefijo (ej Cliente) no generan IdCorporativo.
+            _ => null
+        };
+
+        if (prefijo == null)
+            return null;
+
+        var secuencia = await _usuarioRepository.CountByRolAsync(rolId) + 1;
+        return $"{prefijo}-{secuencia:D4}";
+    }
+
+    /// <summary>
+    /// Sprint 1 - Tarea 9: control de acceso de gestion de funcionarios (patron tareas 6-8):
+    /// administrador (rol "1") siempre; rol "2"/"3" solo puede gestionar funcionarios de su
+    /// propio comercio (VeterinariaId/AlmacenId coinciden). Ajeno -> Forbid (previene IDOR).
+    /// </summary>
+    private async Task<bool> PuedeGestionarFuncionarioAsync(Usuario funcionario)
+    {
+        if (User.IsInRole("1"))
+            return true;
+
+        var usuario = await _usuarioRepository.GetByIdAsync(GetAuthenticatedUserId());
+        if (usuario == null)
+            return false;
+
+        if (funcionario.VeterinariaId.HasValue)
+            return usuario.VeterinariaId == funcionario.VeterinariaId;
+        if (funcionario.AlmacenId.HasValue)
+            return usuario.AlmacenId == funcionario.AlmacenId;
+
+        return false;
+    }
+
+    /// <summary>
+    /// A1b (QA, ALTO - BLOQUEANTE): control de acceso para el alta de funcionarios
+    /// (CrearFuncionarioAsync): administrador (rol "1") siempre; un rol "2"/"3" solo puede
+    /// crear funcionarios en su propio comercio (el ComercioId del DTO debe coincidir con su
+    /// VeterinariaId/AlmacenId). Sin ComercioId el funcionario se asigna al comercio del propio
+    /// usuario autenticado (nunca ajeno), asi que se permite. Ajeno -> Forbid (previene IDOR).
+    /// Deuda #82: con TipoComercio se valida el comercio exacto (vet-2 vs alm-2) sin colisión.
+    /// </summary>
+    private async Task<bool> PuedeCrearFuncionarioEnComercioAsync(int? comercioId, string? tipoComercio = null)
+    {
+        if (User.IsInRole("1"))
+            return true;
+
+        var usuario = await _usuarioRepository.GetByIdAsync(GetAuthenticatedUserId());
+        if (usuario == null)
+            return false;
+
+        if (!comercioId.HasValue)
+            return true;
+
+        var tipoNorm = NormalizarTipoComercio(tipoComercio);
+        if (tipoNorm == "veterinaria")
+            return usuario.VeterinariaId == comercioId;
+        if (tipoNorm == "almacen")
+            return usuario.AlmacenId == comercioId;
+
+        return usuario.VeterinariaId == comercioId || usuario.AlmacenId == comercioId;
+    }
+
+    /// <summary>Deuda #82: normaliza TipoComercio (vet/veterinaria, alm/almacen) a forma canónica.</summary>
+    private static string? NormalizarTipoComercio(string? tipo)
+    {
+        if (string.IsNullOrWhiteSpace(tipo)) return null;
+        var t = tipo.Trim().ToLowerInvariant();
+        if (t is "vet" or "veterinaria" or "veterinarias") return "veterinaria";
+        if (t is "alm" or "almacen" or "almacenes" or "almacén" or "almacénes") return "almacen";
+        return null;
+    }
+
     private int GetAuthenticatedUserId()
     {
         var idClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
@@ -456,9 +671,69 @@ public class UsuariosController : ControllerBase
         entity.Telefono = actualizarDto.Telefono;
         entity.Direccion = actualizarDto.Direccion;
         entity.FotoUrl = actualizarDto.FotoUrl;
+
+        // Campos nuevos del perfil extendido: actualizacion parcial para no borrar
+        // valores guardados cuando el cliente no los envia (null en el DTO).
+        if (actualizarDto.TelefonoEmergencia != null)
+            entity.TelefonoEmergencia = actualizarDto.TelefonoEmergencia;
+        if (actualizarDto.LicenciaMedica != null)
+            entity.LicenciaMedica = actualizarDto.LicenciaMedica;
+        if (actualizarDto.FechaIncorporacion.HasValue)
+            entity.FechaIncorporacion = actualizarDto.FechaIncorporacion;
+
+        // Sprint 1 - Tarea 9: campos del wireframe de Funcionarios (update parcial: null preserva).
+        if (actualizarDto.Especialidad != null)
+            entity.Especialidad = actualizarDto.Especialidad;
+        if (actualizarDto.Sede != null)
+            entity.Sede = actualizarDto.Sede;
+        if (actualizarDto.Estado != null)
+            AplicarEstadoYActivo(entity, actualizarDto.Estado);
+    }
+
+    /// <summary>
+    /// M3 (Code Review): politica centralizada de sincronizacion Estado &lt;-&gt; Activo.
+    /// El wireframe maneja Estado (Activo | Vacaciones | Inactivo) y el modelo conserva el
+    /// bool Activo; ambos deben reflejar la misma realidad.
+    /// Regla: Estado "Inactivo" -&gt; Activo=false; Estado "Activo" o "Vacaciones" -&gt; Activo=true.
+    /// TODO cambio de Estado (PUT /me, PUT {id}, DELETE y Reactivar) pasa por este helper
+    /// para que nunca se desincronicen.
+    /// </summary>
+    private static void AplicarEstadoYActivo(Usuario entity, string estado)
+    {
+        entity.Estado = estado;
+        entity.Activo = estado != nameof(EstadoFuncionario.Inactivo);
     }
 
     private static UsuarioDto ToDto(Usuario usuario) => new()
+    {
+        Id = usuario.Id,
+        Nombre = usuario.Nombre,
+        Email = usuario.Email,
+        Telefono = usuario.Telefono,
+        TelefonoEmergencia = usuario.TelefonoEmergencia,
+        Direccion = usuario.Direccion,
+        LicenciaMedica = usuario.LicenciaMedica,
+        FechaIncorporacion = usuario.FechaIncorporacion,
+        RolId = usuario.RolId,
+        RolNombre = usuario.Rol?.Nombre ?? string.Empty,
+        Activo = usuario.Activo,
+        FechaRegistro = usuario.FechaRegistro,
+        FotoUrl = usuario.FotoUrl,
+        RedesSociales = usuario.RedesSociales?.Select(r => new RedSocialDto { Id = r.Id, UsuarioId = r.UsuarioId, Plataforma = r.Plataforma, Url = r.Url }).ToList(),
+        VeterinariaId = usuario.VeterinariaId,
+        AlmacenId = usuario.AlmacenId,
+        ComercioNombre = usuario.Veterinaria?.Nombre ?? usuario.Almacen?.Nombre,
+        IdCorporativo = usuario.IdCorporativo,
+        Especialidad = usuario.Especialidad,
+        Sede = usuario.Sede,
+        Estado = usuario.Estado
+    };
+
+    /// <summary>
+    /// Mapeo de listado: excluye PII sensible (LicenciaMedica, TelefonoEmergencia).
+    /// Usado en GET /api/usuarios y GET /api/usuarios/rol/{rolId}.
+    /// </summary>
+    private static UsuarioListadoDto ToListadoDto(Usuario usuario) => new()
     {
         Id = usuario.Id,
         Nombre = usuario.Nombre,
@@ -473,6 +748,10 @@ public class UsuariosController : ControllerBase
         RedesSociales = usuario.RedesSociales?.Select(r => new RedSocialDto { Id = r.Id, UsuarioId = r.UsuarioId, Plataforma = r.Plataforma, Url = r.Url }).ToList(),
         VeterinariaId = usuario.VeterinariaId,
         AlmacenId = usuario.AlmacenId,
-        ComercioNombre = usuario.Veterinaria?.Nombre ?? usuario.Almacen?.Nombre
+        ComercioNombre = usuario.Veterinaria?.Nombre ?? usuario.Almacen?.Nombre,
+        IdCorporativo = usuario.IdCorporativo,
+        Especialidad = usuario.Especialidad,
+        Sede = usuario.Sede,
+        Estado = usuario.Estado
     };
 }

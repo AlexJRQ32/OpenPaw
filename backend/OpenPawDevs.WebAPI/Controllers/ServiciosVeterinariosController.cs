@@ -97,6 +97,15 @@ public class ServiciosVeterinariosController : ControllerBase
     [Authorize(Roles = "1,2")]
     public async Task<IActionResult> CreateAsync([FromBody] CrearServicioVeterinarioDto crearDto)
     {
+        // IDOR fix (#81): rol Veterinaria (2) solo puede crear servicios para su propia veterinaria.
+        // Admin (rol 1) puede crear para cualquier veterinaria.
+        var usuario = await _usuarioRepository.GetByIdAsync(GetAuthenticatedUserId());
+        if (usuario != null && usuario.RolId == 2)
+        {
+            if (!usuario.VeterinariaId.HasValue || usuario.VeterinariaId.Value != crearDto.VeterinariaId)
+                return Forbid();
+        }
+
         if (!await _veterinariaRepository.ExistsAsync(crearDto.VeterinariaId))
             return BadRequest(new { mensaje = $"Veterinaria con ID {crearDto.VeterinariaId} no encontrada" });
 
@@ -126,6 +135,14 @@ public class ServiciosVeterinariosController : ControllerBase
         if (entity == null)
             return NotFound(new { mensaje = $"Servicio veterinario con ID {id} no encontrado" });
 
+        // IDOR fix (#81): rol Veterinaria (2) solo puede modificar servicios de su propia veterinaria.
+        var usuario = await _usuarioRepository.GetByIdAsync(GetAuthenticatedUserId());
+        if (usuario != null && usuario.RolId == 2)
+        {
+            if (!usuario.VeterinariaId.HasValue || entity.VeterinariaId != usuario.VeterinariaId.Value)
+                return Forbid();
+        }
+
         entity.Nombre = actualizarDto.Nombre.Trim();
         entity.Descripcion = actualizarDto.Descripcion;
         entity.Categoria = actualizarDto.Categoria;
@@ -145,6 +162,14 @@ public class ServiciosVeterinariosController : ControllerBase
         var entity = await _servicioRepository.GetByIdAsync(id);
         if (entity == null)
             return NotFound(new { mensaje = $"Servicio veterinario con ID {id} no encontrado" });
+
+        // IDOR fix (#81): rol Veterinaria (2) solo puede eliminar servicios de su propia veterinaria.
+        var usuarioDelete = await _usuarioRepository.GetByIdAsync(GetAuthenticatedUserId());
+        if (usuarioDelete != null && usuarioDelete.RolId == 2)
+        {
+            if (!usuarioDelete.VeterinariaId.HasValue || entity.VeterinariaId != usuarioDelete.VeterinariaId.Value)
+                return Forbid();
+        }
 
         await _servicioRepository.DeleteAsync(entity);
         return NoContent();
@@ -168,9 +193,18 @@ public class ServiciosVeterinariosController : ControllerBase
 
     private int GetAuthenticatedUserId()
     {
-        var idClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
-            ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (User == null) return 0;
+        try
+        {
+            var idClaim = User.FindFirstValue(JwtRegisteredClaimNames.Sub)
+                ?? User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-        return int.Parse(idClaim!);
+            if (idClaim == null) return 0;
+            return int.TryParse(idClaim, out var id) ? id : 0;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 }

@@ -1,18 +1,35 @@
-import { useMemo, useState, useCallback, useRef } from 'react'
+import { useMemo, useRef, useState, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../../features/auth/context/AuthContext'
 import { LandingNavbar } from '../../../shared/components/LandingNavbar/LandingNavbar'
 import { Reveal } from '../../../shared/components/Reveal/Reveal'
+import { Button } from '../../../shared/components/Button/Button'
+import { Badge } from '../../../shared/components/Badge/Badge'
+import { Icon } from '../../../shared/components/Icon/Icon'
+import { EmptyState } from '../../../shared/components/EmptyState'
+import { Pagination } from '../../../shared/components/Pagination/Pagination'
 import { CheckoutAuthModal } from '../../../features/auth/components/CheckoutAuthModal'
 import { useMarketplaceProducts } from '../hooks/useMarketplaceProducts'
 import { addToCart, cartCount, getCart, cartSubtotal, clearCart } from '../../../shared/utils/cart'
 import { CartDrawer } from '../components/CartDrawer'
 import { CheckoutSuccessModal } from '../components/CheckoutSuccessModal'
+import { VetCarousel } from '../components/VetCarousel'
 import './MarketplacePage.css'
 
 const ALL_CATEGORIES = 'Todas las categorias'
 const ALL_VETS = 'todas'
 const ALL_SERVICIO_TIPOS = 'todos'
+const PRODUCTS_PAGE_SIZE = 8
+const SERVICES_PAGE_SIZE = 6
+
+/* Icono y variante M3 por categoria de servicio (wireframe: spa / salud) */
+const SERVICIO_ESTILO = {
+  Grooming: { icon: 'content_cut', variant: 'warning', theme: 'grooming' },
+  Estetica: { icon: 'spa', variant: 'warning', theme: 'grooming' },
+  Consulta: { icon: 'stethoscope', variant: 'primary', theme: 'consulta' },
+  Procedimiento: { icon: 'medical_services', variant: 'success', theme: 'procedimiento' },
+}
+const SERVICIO_ESTILO_DEFAULT = { icon: 'pets', variant: 'neutral', theme: 'default' }
 
 function normalize(value) {
   return String(value || '')
@@ -29,12 +46,17 @@ function formatPrice(value) {
   }).format(Number(value) || 0)
 }
 
+function servicioEstilo(categoria) {
+  if (!categoria) return SERVICIO_ESTILO_DEFAULT
+  return SERVICIO_ESTILO[normalize(categoria).replace(/\s/g, '')] || SERVICIO_ESTILO_DEFAULT
+}
+
 function ProductImage({ product }) {
   const [failed, setFailed] = useState(false)
 
   if (!product.imagenUrl || failed) {
     return (
-      <div className="mp-card-placeholder" aria-hidden="true">
+      <div className="mp-card__placeholder" aria-hidden="true">
         <i className="fas fa-paw" />
       </div>
     )
@@ -42,7 +64,7 @@ function ProductImage({ product }) {
 
   return (
     <img
-      className="mp-card-img"
+      className="mp-card__img"
       src={product.imagenUrl}
       alt=""
       loading="lazy"
@@ -51,16 +73,31 @@ function ProductImage({ product }) {
   )
 }
 
+/* Badge DS por nivel de stock (no solo color: texto + icono) */
 function StockBadge({ stock, stockMinimo }) {
-  if (stock <= 0) return <span className="mp-stock mp-stock--out">Agotado</span>
-  if (stock <= stockMinimo) return <span className="mp-stock mp-stock--low">Stock bajo</span>
-  return <span className="mp-stock mp-stock--ok">Disponible</span>
+  if (stock <= 0) return <Badge variant="error" icon="block">Agotado</Badge>
+  if (stock <= stockMinimo) return <Badge variant="warning" icon="warning">Stock bajo</Badge>
+  return <Badge variant="success" icon="check_circle">Disponible</Badge>
+}
+
+/* Skeletons de carga (pulsos suaves; reduced-motion los congela via CSS) */
+function SkeletonGrid({ count = 8 }) {
+  return (
+    <div className="mp-grid" aria-hidden="true">
+      {Array.from({ length: count }).map((_, i) => (
+        <div key={i} className="mp-skeleton" />
+      ))}
+    </div>
+  )
 }
 
 export function MarketplacePage() {
   const { user, isAuthenticated } = useAuth()
   const navigate = useNavigate()
-  const { products, services, veterinariasById, categoriesInStock, serviceCategories, loading, error, reload } = useMarketplaceProducts()
+  const {
+    products, services, veterinariasById, categoriesInStock, serviceCategories,
+    loading, error, reload,
+  } = useMarketplaceProducts()
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState(ALL_CATEGORIES)
   const [minPrice, setMinPrice] = useState('')
@@ -69,16 +106,37 @@ export function MarketplacePage() {
   const [vista, setVista] = useState('productos')
   const [selectedVet, setSelectedVet] = useState(ALL_VETS)
   const [selectedServicioTipo, setSelectedServicioTipo] = useState(ALL_SERVICIO_TIPOS)
+  const [page, setPage] = useState(1)
+  const [servicePage, setServicePage] = useState(1)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [cartOpen, setCartOpen] = useState(false)
   const [checkoutInfo, setCheckoutInfo] = useState(null)
   const [cartItems, setCartItems] = useState(() => cartCount(user?.sub))
   const pendingCheckout = useRef(null)
   const pendingService = useRef(null)
+  const tabRefs = useRef([])
 
   const refreshCart = useCallback(() => {
     setCartItems(cartCount(user?.sub))
   }, [user?.sub])
+
+  /* Reinicia la paginacion cuando cambian los filtros (patron React:
+     ajuste de estado durante el render comparando la firma de filtros,
+     sin effects con setState que provocan renders en cascada) */
+  const productFilterSignature = `${query}|${category}|${minPrice}|${maxPrice}|${sort}|${selectedVet}`
+  const serviceFilterSignature = `${query}|${selectedVet}|${selectedServicioTipo}`
+  const [pageSignatures, setPageSignatures] = useState({
+    product: productFilterSignature,
+    service: serviceFilterSignature,
+  })
+  if (pageSignatures.product !== productFilterSignature) {
+    setPageSignatures((prev) => ({ ...prev, product: productFilterSignature }))
+    setPage(1)
+  }
+  if (pageSignatures.service !== serviceFilterSignature) {
+    setPageSignatures((prev) => ({ ...prev, service: serviceFilterSignature }))
+    setServicePage(1)
+  }
 
   const handleBuy = (product) => {
     addToCart(user?.sub, product)
@@ -102,7 +160,10 @@ export function MarketplacePage() {
     setCheckoutInfo(pendingCheckout.current)
   }
 
-  // userId: sub del usuario que acaba de iniciar sesion o registrarse (migra el carrito anonimo)
+  // userId: sub del usuario que acaba de iniciar sesion o registrarse (migra el carrito anonimo).
+  // IMPORTANTE: CheckoutAuthModal pasa decoded.sub explicitamente; NO depender de user?.sub
+  // porque el closure capturado pre-login tiene user=null y dejaria items comprados en la
+  // clave del usuario (carrito fantasma). Ver fix QA HIGH T39.
   const handleCheckoutSuccess = (userId = user?.sub) => {
     setSelectedProduct(null)
     const info = pendingCheckout.current
@@ -124,6 +185,7 @@ export function MarketplacePage() {
     irACitaConServicio(service)
   }
 
+  /* Deep-link hacia CitasPage (?servicio=...&veterinariaId=...): NO cambiar el contrato */
   const irACitaConServicio = (service) => {
     const params = new URLSearchParams({
       servicio: service.nombre,
@@ -135,7 +197,7 @@ export function MarketplacePage() {
   }
 
   // Se llama tras iniciar sesion/registro desde el modal de agendar cita
-  const handleAgendarAuthSuccess = (userId) => {
+  const handleAgendarAuthSuccess = () => {
     const service = pendingService.current
     setSelectedProduct(null)
     pendingService.current = null
@@ -146,45 +208,27 @@ export function MarketplacePage() {
   const vetMap = veterinariasById()
   const servicioTipos = serviceCategories()
 
-  // Veterinarias con productos, para la fila horizontal de "restaurantes"
-  const vetsConProductos = useMemo(() => {
-    const map = new Map()
-    products.forEach((p) => {
-      const vId = p.veterinariaId
-      const vKey = vId ?? 'sin-vet'
-      if (!map.has(vKey)) {
-        map.set(vKey, {
-          id: vKey,
-          nombre: vId && vetMap.get(vId) ? vetMap.get(vId).nombre : 'Sin veterinaria',
-          count: 0,
-        })
-      }
-      map.get(vKey).count += 1
-    })
-    return [...map.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-  }, [products, vetMap])
+  /* Tabs hero: seleccion + roving tabindex (flechas / Home / End) */
+  const switchVista = (next) => {
+    if (next === vista) return
+    setVista(next)
+    setSelectedVet(ALL_VETS)
+    setQuery('')
+  }
 
-  // Veterinarias con servicios, para la fila horizontal de "restaurantes"
-  const vetsConServicios = useMemo(() => {
-    const map = new Map()
-    services.forEach((s) => {
-      const vId = s.veterinariaId
-      const vKey = vId ?? 'sin-vet'
-      if (!map.has(vKey)) {
-        map.set(vKey, {
-          id: vKey,
-          nombre: vId && vetMap.get(vId) ? vetMap.get(vId).nombre : 'Sin veterinaria',
-          count: 0,
-        })
-      }
-      map.get(vKey).count += 1
-    })
-    return [...map.values()].sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-  }, [services, vetMap])
+  const handleTabKeys = (event) => {
+    const currentIdx = vista === 'productos' ? 0 : 1
+    let nextIdx = null
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') nextIdx = (currentIdx + 1) % 2
+    else if (event.key === 'Home') nextIdx = 0
+    else if (event.key === 'End') nextIdx = 1
+    if (nextIdx === null) return
+    event.preventDefault()
+    switchVista(nextIdx === 0 ? 'productos' : 'servicios')
+    tabRefs.current[nextIdx]?.focus()
+  }
 
-  const vetsActivas = vista === 'productos' ? vetsConProductos : vetsConServicios
-
-  const matchesFilters = (p) => {
+  const matchesFilters = useCallback((p) => {
     const vetNombre = vetMap.get(p.veterinariaId)?.nombre || ''
     const term = normalize(query.trim())
     const searchable = normalize([
@@ -199,9 +243,18 @@ export function MarketplacePage() {
       && (selectedVet === ALL_VETS || vKey === selectedVet)
       && (minimum === null || price >= minimum)
       && (maximum === null || price <= maximum)
-  }
+  }, [vetMap, query, category, selectedVet, minPrice, maxPrice])
 
-  // Servicios veterinarios filtrados por busqueda, veterinaria (ubicacion) y tipo
+  /* Productos filtrados + ordenados (catalogo destacados) */
+  const filteredProducts = useMemo(() => (
+    products.filter(matchesFilters).sort((a, b) => {
+      if (sort === 'price-asc') return Number(a.precio) - Number(b.precio)
+      if (sort === 'price-desc') return Number(b.precio) - Number(a.precio)
+      return String(a.nombre).localeCompare(String(b.nombre), 'es')
+    })
+  ), [products, matchesFilters, sort])
+
+  /* Servicios filtrados por busqueda, veterinaria (ubicacion) y tipo */
   const filteredServices = useMemo(() => {
     const term = normalize(query.trim())
     return services.filter((s) => {
@@ -215,59 +268,38 @@ export function MarketplacePage() {
     }).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
   }, [services, vetMap, query, selectedVet, selectedServicioTipo])
 
-  const sortItems = (items) => {
-    return [...items].sort((a, b) => {
-      if (sort === 'price-asc') return Number(a.precio) - Number(b.precio)
-      if (sort === 'price-desc') return Number(b.precio) - Number(a.precio)
-      return String(a.nombre).localeCompare(String(b.nombre), 'es')
-    })
-  }
+  const pagedProducts = filteredProducts.slice((page - 1) * PRODUCTS_PAGE_SIZE, page * PRODUCTS_PAGE_SIZE)
+  const pagedServices = filteredServices.slice((servicePage - 1) * SERVICES_PAGE_SIZE, servicePage * SERVICES_PAGE_SIZE)
 
-  // Estructura filtrada: veterinarias -> almacenes -> categorias -> productos
-  const estructura = useMemo(() => {
-    const filtradas = products.filter(matchesFilters)
-    const indexVet = new Map()
-    const indexAlm = new Map()
-    const result = []
-
-    filtradas.forEach((p) => {
-      const vId = p.veterinariaId
+  /* Veterinarias para el carrusel, segun la vista activa */
+  const carouselItems = useMemo(() => {
+    const fuente = vista === 'productos' ? products : services
+    const map = new Map()
+    fuente.forEach((item) => {
+      const vId = item.veterinariaId
       const vKey = vId ?? 'sin-vet'
-      if (!indexVet.has(vKey)) {
-        const vet = { id: vKey, nombre: vId && vetMap.get(vId) ? vetMap.get(vId).nombre : 'Sin veterinaria', almacenes: new Map() }
-        indexVet.set(vKey, vet)
-        result.push(vet)
+      if (!map.has(vKey)) {
+        const vet = vetMap.get(vId)
+        map.set(vKey, {
+          id: vKey,
+          nombre: vId && vet ? vet.nombre : 'Sin veterinaria',
+          direccion: vet?.direccion || '',
+          meta: '',
+          count: 0,
+          icon: vId ? undefined : 'storefront',
+        })
       }
-      const vet = indexVet.get(vKey)
-      if (!indexAlm.has(`${vKey}-${p.almacenId}`)) {
-        const alm = { id: p.almacenId, nombre: p.almacenNombre, categorias: new Map() }
-        indexAlm.set(`${vKey}-${p.almacenId}`, alm)
-        vet.almacenes.set(p.almacenId, alm)
-      }
-      const alm = indexAlm.get(`${vKey}-${p.almacenId}`)
-      const cat = p.categoria || 'Otros'
-      if (!alm.categorias.has(cat)) alm.categorias.set(cat, [])
-      alm.categorias.get(cat).push(p)
+      map.get(vKey).count += 1
     })
-
-    return result
+    const slides = [...map.values()]
       .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-      .map((vet) => ({
-        ...vet,
-        almacenes: [...vet.almacenes.values()]
-          .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
-          .map((alm) => ({
-            ...alm,
-            categorias: [...alm.categorias.entries()]
-              .sort(([a], [b]) => a.localeCompare(b, 'es'))
-              .map(([nombre, items]) => ({ nombre, items: sortItems(items) })),
-          })),
-      }))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [products, vetMap, query, category, minPrice, maxPrice, sort, selectedVet])
+      .map((v) => ({ ...v, meta: `${v.count} ${vista === 'productos' ? (v.count === 1 ? 'producto' : 'productos') : (v.count === 1 ? 'servicio' : 'servicios')}` }))
+    return [
+      { id: ALL_VETS, nombre: 'Todas las veterinarias', meta: `${fuente.length} en total`, icon: 'apps' },
+      ...slides,
+    ]
+  }, [vista, products, services, vetMap])
 
-  const totalCount = products.reduce((acc, p) => acc + (matchesFilters(p) ? 1 : 0), 0)
-  const totalServicios = services.length
   const hasFilters = vista === 'productos'
     ? (query || category !== ALL_CATEGORIES || minPrice || maxPrice || selectedVet !== ALL_VETS)
     : (query || selectedVet !== ALL_VETS || selectedServicioTipo !== ALL_SERVICIO_TIPOS)
@@ -281,259 +313,376 @@ export function MarketplacePage() {
     setSelectedServicioTipo(ALL_SERVICIO_TIPOS)
   }
 
-  const selectedVetNombre = selectedVet === ALL_VETS
-    ? 'Todos los comercios'
-    : (vetsConProductos.find((v) => v.id === selectedVet)?.nombre
-        || vetsConServicios.find((v) => v.id === selectedVet)?.nombre
-        || 'Comercio')
+  const totalCount = filteredProducts.length
+  const totalServicios = filteredServices.length
+  const searchPlaceholder = vista === 'productos'
+    ? 'Buscar alimentos, juguetes, veterinarias...'
+    : 'Buscar servicios, veterinarias o tipos...'
+  const cartSubtotalValue = cartSubtotal(user?.sub)
 
   return (
     <section className="marketplace-page">
       <LandingNavbar onLanding />
-      <header className="marketplace-header">
-        <div>
-          <span className="marketplace-eyebrow">OpenPaw Marketplace</span>
-          <h1>Encuentra lo mejor para tu mascota</h1>
-          <p>Explora productos con stock disponible de las veterinarias aliadas.</p>
-        </div>
-        <button type="button" className="mp-cart-indicator" onClick={() => setCartOpen(true)} aria-label="Abrir carrito">
-          <i className="fas fa-shopping-cart" aria-hidden="true" />
-          {cartItems > 0 && <span key={cartItems} className="mp-cart-badge">{cartItems}</span>}
-        </button>
-      </header>
 
-      {/* Barra de busqueda */}
-      <div className="mp-searchbar">
-        <i className="fas fa-search" aria-hidden="true" />
-        <input
-          type="search"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder={vista === 'productos' ? 'Buscar productos, veterinarias o categorias' : 'Buscar servicios, veterinarias o tipos'}
-        />
-        {query && (
-          <button type="button" onClick={() => setQuery('')} aria-label="Limpiar busqueda">
-            <i className="fas fa-times" aria-hidden="true" />
-          </button>
-        )}
-      </div>
-
-      {/* Selector de vista: Productos / Servicios */}
-      <Reveal>
-        <div className="mp-view-switch" role="tablist" aria-label="Contenido del marketplace">
-          <button
-            type="button"
-            role="tab"
-            aria-selected={vista === 'productos'}
-            className={`mp-view-tab ${vista === 'productos' ? 'active' : ''}`}
-            onClick={() => { setVista('productos'); setSelectedVet(ALL_VETS); setQuery('') }}
-          >
-            <span className="mp-view-icon"><i className="fas fa-box-open" aria-hidden="true" /></span>
-            <span className="mp-view-label">Productos</span>
-            <span className="mp-view-count">{totalCount}</span>
-          </button>
-          <button
-            type="button"
-            role="tab"
-            aria-selected={vista === 'servicios'}
-            className={`mp-view-tab ${vista === 'servicios' ? 'active' : ''}`}
-            onClick={() => { setVista('servicios'); setSelectedVet(ALL_VETS); setQuery('') }}
-          >
-            <span className="mp-view-icon"><i className="fas fa-stethoscope" aria-hidden="true" /></span>
-            <span className="mp-view-label">Servicios</span>
-            <span className="mp-view-count">{totalServicios}</span>
-          </button>
-        </div>
-      </Reveal>
-
-      {/* Fila horizontal de veterinarias (como restaurantes) */}
-      {!loading && !error && vetsActivas.length > 0 && (
-        <Reveal>
-          <div className="mp-vet-scroll" aria-label="Veterinarias disponibles">
+      {/* ================================================================
+          HERO AZUL — wireframe: eyebrow EXPLORAR + titulo + chip carrito +
+          buscador pill con boton circular + toggle Productos/Servicios
+         ================================================================ */}
+      <header className="mp-hero">
+        <div className="mp-hero__inner">
+          <div className="mp-hero__top">
+            <div>
+              <p className="mp-hero__eyebrow">Explorar</p>
+              <h1 className="mp-hero__title">Marketplace <span>OpenPaw</span></h1>
+              <p className="mp-hero__sub">
+                Productos con stock disponible y servicios de las veterinarias aliadas.
+              </p>
+            </div>
             <button
               type="button"
-              className={`mp-vet-tile ${selectedVet === ALL_VETS ? 'active' : ''}`}
-              onClick={() => setSelectedVet(ALL_VETS)}
+              className="mp-hero__cart"
+              onClick={() => setCartOpen(true)}
+              aria-label={`Abrir carrito, ${cartItems} ${cartItems === 1 ? 'artículo' : 'artículos'}, total ${formatPrice(cartSubtotalValue)}`}
             >
-              <span className="mp-vet-tile-avatar mp-vet-tile-avatar--all"><i className="fas fa-th-large" /></span>
-              <span className="mp-vet-tile-name">Todos</span>
+              <Icon name="shopping_cart" size={20} />
+              <span>{cartItems} {cartItems === 1 ? 'artículo' : 'artículos'}</span>
+              <span className="mp-hero__cart-dot" aria-hidden="true" />
+              <span>{formatPrice(cartSubtotalValue)}</span>
             </button>
-            {vetsActivas.map((vet) => (
-              <button
-                key={vet.id}
-                type="button"
-                className={`mp-vet-tile ${selectedVet === vet.id ? 'active' : ''}`}
-                onClick={() => setSelectedVet(vet.id)}
-              >
-                <span className="mp-vet-tile-avatar"><i className="fas fa-hospital" /></span>
-                <span className="mp-vet-tile-name">{vet.nombre}</span>
-                <span className="mp-vet-tile-count">{vet.count} {vista === 'productos' ? 'prod.' : 'srv.'}</span>
-              </button>
-            ))}
           </div>
-        </Reveal>
-      )}
 
-      {/* Filtros compactos */}
-      {!loading && !error && (
-        <div className="mp-filters">
-          {vista === 'productos' && (
-            <select value={category} onChange={(event) => setCategory(event.target.value)} aria-label="Categoria">
-              {categories.map((item) => <option key={item}>{item}</option>)}
-            </select>
-          )}
-          {vista === 'servicios' && servicioTipos.length > 0 && (
-            <select value={selectedServicioTipo} onChange={(event) => setSelectedServicioTipo(event.target.value)} aria-label="Tipo de servicio">
-              <option value={ALL_SERVICIO_TIPOS}>Todos los servicios</option>
-              {servicioTipos.map((tipo) => (
-                <option key={tipo} value={tipo}>{tipo}</option>
+          <div className="mp-hero__search-row">
+            <form
+              className="mp-search"
+              role="search"
+              onSubmit={(event) => event.preventDefault()}
+            >
+              <Icon name="search" size={22} className="mp-search__icon" />
+              <label className="mp-sr-only" htmlFor="mp-search-input">Buscar en el marketplace</label>
+              <input
+                id="mp-search-input"
+                type="search"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                autoComplete="off"
+              />
+              {query && (
+                <button
+                  type="button"
+                  className="mp-search__clear"
+                  onClick={() => setQuery('')}
+                  aria-label="Limpiar búsqueda"
+                >
+                  <Icon name="close" size={18} />
+                </button>
+              )}
+              <button type="submit" className="mp-search__go" aria-label="Buscar">
+                <Icon name="arrow_forward" size={20} />
+              </button>
+            </form>
+
+            <div
+              className="mp-tabs"
+              role="tablist"
+              aria-label="Contenido del marketplace"
+              onKeyDown={handleTabKeys}
+            >
+              <button
+                type="button"
+                role="tab"
+                id="mp-tab-productos"
+                ref={(el) => { tabRefs.current[0] = el }}
+                aria-selected={vista === 'productos'}
+                aria-controls="mp-panel-productos"
+                tabIndex={vista === 'productos' ? 0 : -1}
+                className={`mp-tab ${vista === 'productos' ? 'is-active' : ''}`.trim()}
+                onClick={() => switchVista('productos')}
+              >
+                Productos
+              </button>
+              <button
+                type="button"
+                role="tab"
+                id="mp-tab-servicios"
+                ref={(el) => { tabRefs.current[1] = el }}
+                aria-selected={vista === 'servicios'}
+                aria-controls="mp-panel-servicios"
+                tabIndex={vista === 'servicios' ? 0 : -1}
+                className={`mp-tab ${vista === 'servicios' ? 'is-active' : ''}`.trim()}
+                onClick={() => switchVista('servicios')}
+              >
+                Servicios
+              </button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* ================================================================
+          CONTENIDO
+         ================================================================ */}
+      <div className="mp-container">
+
+        {/* Carrusel: Veterinarias Aliadas (filtra productos/servicios por comercio) */}
+        {!loading && !error && carouselItems.length > 1 && (
+          <Reveal>
+            <VetCarousel
+              items={carouselItems}
+              selectedId={selectedVet}
+              onSelect={setSelectedVet}
+              label={`Veterinarias aliadas con ${vista === 'productos' ? 'productos' : 'servicios'}`}
+              onSeeAll={() => setSelectedVet(ALL_VETS)}
+            />
+          </Reveal>
+        )}
+
+        {loading && (
+          <div className="marketplace-status" aria-busy="true" aria-live="polite">
+            <SkeletonGrid count={8} />
+            <p className="mp-sr-only">Cargando marketplace...</p>
+          </div>
+        )}
+
+        {!loading && error && (
+          <div role="alert">
+            <EmptyState
+              icon="cloud_off"
+              variant="dashed"
+              title="No pudimos cargar el marketplace"
+              description={error}
+              action={<Button variant="primary" icon="refresh" onClick={reload}>Intentar de nuevo</Button>}
+            />
+          </div>
+        )}
+
+        {/* ---------------- VISTA PRODUCTOS: DESTACADOS ---------------- */}
+        {!loading && !error && vista === 'productos' && (
+          <section
+            id="mp-panel-productos"
+            role="tabpanel"
+            aria-labelledby="mp-tab-productos"
+            className="mp-section"
+          >
+            <div className="mp-section__head">
+              <h2 className="mp-h2">
+                <Icon name="pets" size={26} filled className="mp-h2__icon mp-h2__icon--secondary" />
+                Productos Destacados
+              </h2>
+              <span className="mp-section__count">
+                {totalCount} {totalCount === 1 ? 'producto con stock' : 'productos con stock'}
+              </span>
+            </div>
+
+            {/* Chips de categoria (reemplazan al select, misma funcion) */}
+            <div className="mp-chips" role="group" aria-label="Filtrar por categoría">
+              {categories.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`mp-chip ${category === cat ? 'is-active' : ''}`.trim()}
+                  aria-pressed={category === cat}
+                  onClick={() => setCategory(cat)}
+                >
+                  {cat}
+                </button>
               ))}
-            </select>
-          )}
-          {vista === 'productos' && (
-            <>
-              <input type="number" min="0" value={minPrice} onChange={(event) => setMinPrice(event.target.value)} placeholder="Min ₡" aria-label="Precio minimo" />
-              <input type="number" min="0" value={maxPrice} onChange={(event) => setMaxPrice(event.target.value)} placeholder="Max ₡" aria-label="Precio maximo" />
+            </div>
+
+            {/* Filtros avanzados conservados: precio min/max + orden + limpiar */}
+            <div className="mp-filters">
+              <input
+                type="number"
+                min="0"
+                value={minPrice}
+                onChange={(event) => setMinPrice(event.target.value)}
+                placeholder="Min ₡"
+                aria-label="Precio mínimo"
+              />
+              <input
+                type="number"
+                min="0"
+                value={maxPrice}
+                onChange={(event) => setMaxPrice(event.target.value)}
+                placeholder="Max ₡"
+                aria-label="Precio máximo"
+              />
               <select value={sort} onChange={(event) => setSort(event.target.value)} aria-label="Ordenar">
                 <option value="name-asc">Nombre</option>
                 <option value="price-asc">Menor precio</option>
                 <option value="price-desc">Mayor precio</option>
               </select>
-            </>
-          )}
-          {hasFilters && <button type="button" className="mp-clear" onClick={clearFilters}>Limpiar</button>}
-        </div>
-      )}
+              {hasFilters && (
+                <Button variant="outline" size="sm" icon="filter_alt_off" onClick={clearFilters}>
+                  Limpiar
+                </Button>
+              )}
+            </div>
 
-      {/* Cabecera de la veterinaria seleccionada */}
-      {!loading && !error && (vista === 'productos' ? estructura.length > 0 : filteredServices.length > 0) && (
-        <Reveal delay={0.1}>
-          <div className="mp-selected-head">
-            <h2>{selectedVetNombre}</h2>
-            <span>
-              {vista === 'productos'
-                ? `${totalCount} ${totalCount === 1 ? 'producto' : 'productos'} con stock`
-                : `${filteredServices.length} ${filteredServices.length === 1 ? 'servicio' : 'servicios'} disponibles`}
-            </span>
-          </div>
-        </Reveal>
-      )}
-
-      {loading && (
-        <div className="marketplace-status">
-          <i className="fas fa-paw" aria-hidden="true" />
-          <h2>Cargando marketplace...</h2>
-          <p>Consultando inventario de las veterinarias.</p>
-        </div>
-      )}
-
-      {!loading && error && (
-        <div className="marketplace-status marketplace-status--error" role="alert">
-          <i className="fas fa-exclamation-circle" aria-hidden="true" />
-          <h2>No pudimos cargar el marketplace</h2>
-          <p>{error}</p>
-          <button type="button" onClick={reload}>Intentar de nuevo</button>
-        </div>
-      )}
-
-      {!loading && !error && (vista === 'productos' ? estructura.length === 0 : filteredServices.length === 0) && (
-        <div className="marketplace-status">
-          <i className="fas fa-search" aria-hidden="true" />
-          <h2>No encontramos coincidencias</h2>
-          <p>Prueba con otros terminos, otra veterinaria o modifica los filtros.</p>
-          {hasFilters && <button type="button" onClick={clearFilters}>Ver todos</button>}
-        </div>
-      )}
-
-      {/* Productos de la veterinaria seleccionada, agrupados por categoria */}
-      {!loading && !error && vista === 'productos' && estructura.length > 0 && (
-        <div className="mp-menu">
-          {estructura.map((veterinaria) => (
-            <div key={veterinaria.id} className="mp-menu-vet">
-              {veterinaria.almacenes.map((almacen) => (
-                <div key={almacen.id} className="mp-menu-almacen">
-                  <div className="mp-almacen-label">
-                    <i className="fas fa-warehouse" aria-hidden="true" />
-                    {almacen.nombre}
-                  </div>
-                  {almacen.categorias.map((categoria) => (
-                    <section key={categoria.nombre} className="mp-menu-cat">
-                      <div className="mp-menu-cat-head">
-                        <h3>{categoria.nombre}</h3>
-                        <span>{categoria.items.length} {categoria.items.length === 1 ? 'producto' : 'productos'}</span>
+            {totalCount > 0 ? (
+              <>
+                <div className="mp-grid">
+                  {pagedProducts.map((product) => (
+                    <article key={`${product.id}-${product.almacenId}`} className="mp-card">
+                      <div className="mp-card__media">
+                        <ProductImage product={product} />
                       </div>
-                      <div className="mp-menu-grid">
-                        {categoria.items.map((product, pi) => (
-                          <Reveal key={`${product.id}-${product.almacenId}`} delay={Math.min(pi * 0.08, 0.4)}>
-                            <article className="mp-menu-item">
-                              <div className="mp-menu-item-media">
-                                <ProductImage product={product} />
-                                <button type="button" className="mp-add-btn" title="Agregar al carrito" onClick={() => handleBuy(product)}>
-                                  <i className="fas fa-cart-plus" aria-hidden="true" />
-                                  Agregar
-                                </button>
-                              </div>
-                              <div className="mp-menu-item-body">
-                                <div className="mp-menu-item-top">
-                                  <h4>{product.nombre}</h4>
-                                  <StockBadge stock={product.stock} stockMinimo={product.stockMinimo} />
-                                </div>
-                                <p className="mp-menu-item-desc">
-                                  {product.descripcion || `${product.proveedor || ''} · ${product.unidadMedida || ''}`.trim().replace(/^ ·|· $/g, '') || 'Producto veterinario'}
-                                </p>
-                                <div className="mp-menu-item-foot">
-                                  <span className="mp-menu-item-price">{formatPrice(product.precio)}</span>
-                                </div>
-                              </div>
-                            </article>
-                          </Reveal>
-                        ))}
+                      <div className="mp-card__body">
+                        <div className="mp-card__meta">
+                          <StockBadge stock={product.stock} stockMinimo={product.stockMinimo} />
+                        </div>
+                        <h3 className="mp-card__name">{product.nombre}</h3>
+                        <p className="mp-card__cat">
+                          {[product.categoria, product.almacenNombre].filter(Boolean).join(' · ') || 'Producto veterinario'}
+                        </p>
+                        <div className="mp-card__foot">
+                          <span className="mp-card__price">{formatPrice(product.precio)}</span>
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon="add_shopping_cart"
+                            className="mp-card__add"
+                            aria-label={`Agregar ${product.nombre} al carrito`}
+                            onClick={() => handleBuy(product)}
+                          />
+                        </div>
                       </div>
-                    </section>
+                    </article>
                   ))}
                 </div>
-              ))}
-            </div>
-          ))}
-        </div>
-      )}
+                {filteredProducts.length > PRODUCTS_PAGE_SIZE && (
+                  <div className="mp-pagination">
+                    <Pagination
+                      page={page}
+                      pageSize={PRODUCTS_PAGE_SIZE}
+                      total={filteredProducts.length}
+                      onChange={setPage}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <EmptyState
+                icon="search_off"
+                title="No encontramos coincidencias"
+                description="Prueba con otros términos, otra veterinaria o modifica los filtros."
+                actionLabel="Ver todos"
+                onAction={clearFilters}
+              />
+            )}
+          </section>
+        )}
 
-      {/* Servicios veterinarios (grooming, procedimientos, consultas) */}
-      {!loading && !error && vista === 'servicios' && filteredServices.length > 0 && (
-        <div className="mp-services">
-          <div className="mp-services-head">
-            <h2>Servicios veterinarios</h2>
-            <span>{filteredServices.length} {filteredServices.length === 1 ? 'servicio' : 'servicios'}</span>
-          </div>
-          <div className="mp-services-grid">
-            {filteredServices.map((service) => {
-              const vet = vetMap.get(service.veterinariaId)
-              return (
-                <article key={service.id} className="mp-service-card">
-                  <div className="mp-service-top">
-                    <h4>{service.nombre}</h4>
-                    {service.categoria && (
-                      <span className="mp-service-tag">{service.categoria}</span>
-                    )}
-                  </div>
-                  {service.descripcion && <p className="mp-service-desc">{service.descripcion}</p>}
-                  <p className="mp-service-meta">
-                    <i className="fas fa-hospital" aria-hidden="true" /> {service.veterinariaNombre || vet?.nombre || 'Veterinaria'}
-                    {vet?.direccion && ` · ${vet.direccion}`}
-                  </p>
-                  <div className="mp-service-foot">
-                    <span className="mp-service-price">{formatPrice(service.precio)}</span>
-                    <span className="mp-service-duracion">{service.duracionMinutos} min</span>
-                  </div>
-                  <button type="button" className="mp-book-btn" onClick={() => agendarServicio(service)}>
-                    <i className="fas fa-calendar-plus" aria-hidden="true" /> Agendar cita
+        {/* ------------- VISTA SERVICIOS: ESPECIALIZADOS --------------- */}
+        {!loading && !error && vista === 'servicios' && (
+          <section
+            id="mp-panel-servicios"
+            role="tabpanel"
+            aria-labelledby="mp-tab-servicios"
+            className="mp-section"
+          >
+            <div className="mp-section__head">
+              <h2 className="mp-h2">
+                <Icon name="spa" size={26} filled className="mp-h2__icon mp-h2__icon--tertiary" />
+                Servicios Especializados
+              </h2>
+              <span className="mp-section__count">
+                {totalServicios} {totalServicios === 1 ? 'servicio disponible' : 'servicios disponibles'}
+              </span>
+            </div>
+
+            {/* Chips de tipo de servicio (reemplazan al select) */}
+            {servicioTipos.length > 0 && (
+              <div className="mp-chips" role="group" aria-label="Filtrar por tipo de servicio">
+                <button
+                  type="button"
+                  className={`mp-chip ${selectedServicioTipo === ALL_SERVICIO_TIPOS ? 'is-active' : ''}`.trim()}
+                  aria-pressed={selectedServicioTipo === ALL_SERVICIO_TIPOS}
+                  onClick={() => setSelectedServicioTipo(ALL_SERVICIO_TIPOS)}
+                >
+                  Todos los servicios
+                </button>
+                {servicioTipos.map((tipo) => (
+                  <button
+                    key={tipo}
+                    type="button"
+                    className={`mp-chip ${selectedServicioTipo === tipo ? 'is-active' : ''}`.trim()}
+                    aria-pressed={selectedServicioTipo === tipo}
+                    onClick={() => setSelectedServicioTipo(tipo)}
+                  >
+                    {tipo}
                   </button>
-                </article>
-              )
-            })}
-          </div>
-        </div>
-      )}
+                ))}
+              </div>
+            )}
+
+            {totalServicios > 0 ? (
+              <>
+                <div className="mp-services-grid">
+                  {pagedServices.map((service) => {
+                    const estilo = servicioEstilo(service.categoria)
+                    const vet = vetMap.get(service.veterinariaId)
+                    return (
+                      <article key={service.id} className="mp-service">
+                        <div className={`mp-service__visual mp-service__visual--${estilo.theme}`} aria-hidden="true">
+                          <Icon name={estilo.icon} size={40} filled />
+                        </div>
+                        <div className="mp-service__body">
+                          <Badge variant={estilo.variant}>{service.categoria || 'Servicio'}</Badge>
+                          <h3 className="mp-service__name">{service.nombre}</h3>
+                          {service.descripcion && <p className="mp-service__desc">{service.descripcion}</p>}
+                          <p className="mp-service__meta">
+                            <Icon name="location_on" size={16} />
+                            {service.veterinariaNombre || vet?.nombre || 'Veterinaria'}
+                            {(vet?.direccion || service.duracionMinutos != null) && (
+                              <span className="mp-service__meta-extra">
+                                {vet?.direccion && ` · ${vet.direccion}`}
+                                {service.duracionMinutos != null && ` · ${service.duracionMinutos} min`}
+                              </span>
+                            )}
+                          </p>
+                          <div className="mp-service__foot">
+                            <div className="mp-service__pricing">
+                              <span className="mp-service__foot-label">Precio</span>
+                              <span className="mp-service__price">{formatPrice(service.precio)}</span>
+                            </div>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              icon="event_available"
+                              onClick={() => agendarServicio(service)}
+                            >
+                              Agendar cita
+                            </Button>
+                          </div>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+                {filteredServices.length > SERVICES_PAGE_SIZE && (
+                  <div className="mp-pagination">
+                    <Pagination
+                      page={servicePage}
+                      pageSize={SERVICES_PAGE_SIZE}
+                      total={filteredServices.length}
+                      onChange={setServicePage}
+                    />
+                  </div>
+                )}
+              </>
+            ) : (
+              <EmptyState
+                icon="search_off"
+                title="No encontramos servicios"
+                description="Prueba con otros términos, otra veterinaria o modifica los filtros."
+                actionLabel="Ver todos"
+                onAction={clearFilters}
+              />
+            )}
+          </section>
+        )}
+      </div>
 
       <CheckoutAuthModal
         open={!!selectedProduct}

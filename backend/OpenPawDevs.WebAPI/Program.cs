@@ -59,9 +59,19 @@ builder.Services.AddHttpClient<IAuthService, AuthService>();
 // Services
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// JWT Authentication
+// JWT Authentication — Jwt:Key debe venir de variable de entorno (Jwt__Key) o User Secrets.
+// ASP.NET Core mapea env vars con __ a : automáticamente, sin código extra.
+// Ver backend/.env.example para lista completa.
 var jwtSection = builder.Configuration.GetSection("Jwt");
-var jwtKey = jwtSection["Key"] ?? "OpenPawDevsSuperSecretKey2026!Minimum32Chars!";
+var jwtKey = jwtSection["Key"];
+if (string.IsNullOrWhiteSpace(jwtKey) || jwtKey.StartsWith("REPLACE_WITH_ENV_VAR", StringComparison.OrdinalIgnoreCase))
+{
+    throw new InvalidOperationException(
+        "Jwt:Key no configurado. Define la variable de entorno 'Jwt__Key' (min 32 chars). "
+        + "Local: usa User Secrets (dotnet user-secrets set \"Jwt:Key\" \"tu_clave\") o .env. "
+        + "Produccion: configurar ConnectionStrings__DefaultConnection, Jwt__Key y Facebook__AppSecret via env vars. "
+        + "Ver backend/.env.example.");
+}
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {

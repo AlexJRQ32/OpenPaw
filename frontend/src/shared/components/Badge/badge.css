@@ -1,37 +1,62 @@
 @import "../../styles/tokens.css";
 
+/* Chip pill base — Material 3. gap-xs (4px) para icono/dot + texto (wireframes Stitch). */
 .badge {
   display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 4px 12px;
   border-radius: 999px;
   font-size: 13px;
   font-weight: 700;
 }
 
+/* success / active → secondary-container (verde M3) */
+.badge--success,
 .badge--active {
-  color: #17624d;
-  background: #eaf7f1;
+  color: var(--md-on-secondary-container);
+  background-color: var(--md-secondary-container);
 }
 
-.badge--inactive {
-  color: #b42318;
-  background: #fbeae7;
+/* error / danger → error-container */
+.badge--error,
+.badge--danger {
+  color: var(--md-on-error-container);
+  background-color: var(--md-error-container);
 }
 
+/* warning / info / pending → tertiary-container */
+.badge--warning,
+.badge--info,
 .badge--pending {
-  color: #0066e8;
-  background: #dfeaff;
+  color: var(--md-on-tertiary-container);
+  background-color: var(--md-tertiary-container);
 }
 
-.badge--success {
-  color: #17624d;
-  background: #eaf7f1;
+/* neutral / inactive → surface-container-high */
+.badge--neutral,
+.badge--inactive {
+  color: var(--md-on-surface-variant);
+  background-color: var(--md-surface-container-high);
 }
-.badge--error {
-  color: #b42318;
-  background: #fef2f2;
+
+/* primary → primary-container */
+.badge--primary {
+  color: var(--md-on-primary-container);
+  background-color: var(--md-primary-container);
 }
-.badge--info {
-  color: #0066e8;
-  background: #dfeaff;
+
+/* Dot de estado (6px, como w-1.5 h-1.5 rounded-full en wireframes) */
+.badge__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  /* fallback si no llega color inline */
+  background-color: currentColor;
+}
+
+/* Icono Material Symbols dentro del chip (tamano lo define el componente) */
+.badge__icon {
+  flex-shrink: 0;
 }
