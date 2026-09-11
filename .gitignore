@@ -50,3 +50,7 @@ frontend/playwright-report/
 !frontend/.env.local.example
 !backend/.env.example
 !backend/OpenPawDevs.WebAPI/.env.example
+
+# Production config (secrets) - nunca trackear
+**/appsettings.Production.json
+!**/appsettings.Production.json.example
