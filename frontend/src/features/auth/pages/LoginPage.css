@@ -4,10 +4,8 @@
    LoginPage — Rediseño Sprint 1 / Task #20 (wireframe Stitch "Iniciar sesión")
    Material 3 + glassmorphism. Cero hex hardcodeados: solo tokens
    (--md-*, --glass-*, --shadow-*, --text-*, --space-*).
-   Única excepción documentada: --fb-brand (color corporativo de Facebook,
-   no existe token M3 equivalente).
    Funcionalidad conservada: banner error role=alert, estado submitting,
-   SDK Google/Facebook, redirect requiereTelefono, validaciones.
+   SDK Google, redirect requiereTelefono, validaciones.
    ========================================================================== */
 
 .login-page {
@@ -304,18 +302,6 @@
 }
 .social-btn--google:hover:not(:disabled) {
   background: var(--md-surface-container-high);
-}
-/* Color de marca Facebook: constante externa sin token M3 equivalente */
-.social-btn--facebook {
-  --fb-brand: #1877f2;
-  background: color-mix(in srgb, var(--fb-brand) 10%, transparent);
-  color: var(--fb-brand);
-}
-.social-btn--facebook:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--fb-brand) 20%, transparent);
-}
-.social-btn--facebook svg path {
-  fill: currentColor;
 }
 
 /* -------------------------------------------------------- footer copyright */
