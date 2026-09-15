@@ -1,6 +1,6 @@
 {
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
-  "installCommand": "npm install",
-  "buildCommand": "vite build",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "buildCommand": "pnpm run build",
   "outputDirectory": "dist"
 }
