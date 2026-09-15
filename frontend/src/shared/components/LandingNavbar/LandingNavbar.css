@@ -29,10 +29,37 @@
 .landing-navbar-links { display: flex; align-items: center; gap: 4px; }
 .landing-navbar-links a { padding: 7px 14px; color: #55708a; text-decoration: none; font-family: system-ui, "Segoe UI", Roboto, sans-serif; font-size: 14px; font-weight: 500; border-radius: 8px; transition: color 0.2s, background 0.2s; }
 .landing-navbar-links a:hover { color: var(--color-primary); background: var(--color-accent-light); }
-.landing-navbar-links .landing-btn-nav { padding: 8px 20px; background: linear-gradient(135deg, var(--color-primary-lighter) 0%, var(--color-primary) 100%); color: #ffffff; border-radius: 8px; font-weight: 700; }
-.landing-navbar-links .landing-btn-nav:hover { background: linear-gradient(135deg, var(--color-primary-lighter), var(--color-primary-dark)); color: #fff; }
+.landing-navbar-links .landing-btn-nav { padding: 8px 20px; background: var(--color-primary); color: #ffffff; border-radius: 8px; font-weight: 700; }
+.landing-navbar-links .landing-btn-nav:hover { background: var(--color-primary-hover); color: #fff; }
 .landing-navbar-back { color: var(--color-primary) !important; font-weight: 600 !important; }
 .landing-navbar-back:hover { background: var(--color-accent-light) !important; }
+
+/* ============================================================================
+   Variante DARK GLASS (landing): flota sobre el hero fotográfico oscuro.
+   Glass navy translúcido + blur fuerte + saturate suave. Texto claro.
+   Elegida sobre blanco translúcido: con fondo 0.35-0.45 blanco el navy
+   #0b1c2e cae bajo 4.5:1 sobre zonas claras de la foto; el glass oscuro
+   compone siempre fondo legible <=> texto claro ≥ 7:1 en toda la barra.
+   Marketplace sigue en glass claro (variante base, sin --dark).
+   ============================================================================ */
+.landing-navbar--dark {
+  background: rgba(10, 23, 39, 0.42);
+  backdrop-filter: blur(24px) saturate(150%);
+  -webkit-backdrop-filter: blur(24px) saturate(150%);
+  border-color: rgba(244, 239, 229, 0.16);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.28);
+}
+.landing-navbar--dark .landing-navbar-brand span { color: #f4efe5; }
+.landing-navbar--dark .landing-navbar-links a { color: rgba(244, 239, 229, 0.78); }
+.landing-navbar--dark .landing-navbar-links a:hover {
+  color: #ffffff;
+  background: rgba(244, 239, 229, 0.1); /* hover sobrio, consistente con el glass */
+}
+.landing-navbar--dark .landing-navbar-burger,
+.landing-navbar--dark .landing-navbar-burger .material-symbols-outlined { color: #f4efe5; }
+.landing-navbar--dark .landing-navbar-user-pill { background: rgba(244, 239, 229, 0.08); }
+.landing-navbar--dark .landing-navbar-user-pill:hover { background: rgba(244, 239, 229, 0.16); }
+.landing-navbar--dark .landing-navbar-user-name { color: rgba(244, 239, 229, 0.9); }
 .landing-navbar-user-pill { display: flex; align-items: center; gap: 6px; padding: 3px 10px 3px 3px; text-decoration: none; border-radius: 999px; background: rgba(0, 0, 0, 0.04); transition: background 0.2s; }
 .landing-navbar-user-pill:hover { background: rgba(0, 0, 0, 0.08); }
 .landing-navbar-user-pill:hover .landing-navbar-user-avatar { box-shadow: 0 0 0 3px var(--color-primary-light); }
@@ -52,7 +79,7 @@
 .landing-mobile-menu__nav a .material-symbols-outlined { color: var(--color-primary); flex-shrink: 0; width: 18px; text-align: center; }
 .landing-mobile-menu__nav a:hover { background: var(--color-accent-light); }
 .landing-mobile-menu__divider { height: 1px; margin: 4px 0; background: rgba(12, 34, 62, 0.12); }
-.landing-mobile-menu__cta { justify-content: center; padding: 14px !important; background: linear-gradient(135deg, var(--color-primary-lighter) 0%, var(--color-primary) 100%); color: #fff !important; font-weight: 700; border-radius: 12px !important; }
+.landing-mobile-menu__cta { justify-content: center; padding: 14px !important; background: var(--color-primary) !important; color: #fff !important; font-weight: 700; border-radius: 12px !important; }
 .landing-mobile-menu__cta i,
 .landing-mobile-menu__cta .material-symbols-outlined { color: #fff !important; }
 @keyframes menuBackdropIn { from { opacity: 0; } to { opacity: 1; } }

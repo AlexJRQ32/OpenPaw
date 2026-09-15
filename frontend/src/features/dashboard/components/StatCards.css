@@ -1,73 +1,42 @@
-@import "../../../shared/styles/tokens.css";
+﻿@import "../../../shared/styles/tokens.css";
 
 /* ==========================================================================
-   Stat cards del Dashboard (T24 — wireframe dashboard_openpaw)
+   Stat cards del Dashboard (layout uniforme — sin bento)
    Anatomía por card:
-     · icono gigante decorativo 80px al 10% de opacidad (escala al hover)
      · chip circular tintado del tono + label uppercase tracking wide
-     · valor grande formateado + adornos SOLO con datos reales del backend
-       (tendencia/cupo/"en ruta" no existen en /usuarios/me/stats → omitidos).
+     · valor grande formateado
+   Sin iconos decorativos gigantes/watermark (ronda 7).
    Variante crítica (`--critical`, solicitudes pendientes > 0): overlay con
    --md-error-container, número en --md-error y badge "Críticas" con pulse.
    El color de acento se inyecta vía --stat-accent según el tono de la card.
+   Tokens --md-* exclusivos, cero gradientes/sombras de color, hover sobrio
+   150ms.
    ========================================================================== */
 .stat-card {
   --stat-accent: var(--md-primary);
-  position: relative;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--space-2);
-  padding: var(--space-md);
+  padding: var(--space-5);
   background: var(--md-surface-container-lowest);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-level-1);
-  transition:
-    transform var(--transition-normal) ease,
-    box-shadow var(--transition-normal) ease;
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
+  border-radius: var(--radius-xl);
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+.stat-card:hover {
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 .stat-card--secondary { --stat-accent: var(--md-secondary); }
 .stat-card--tertiary { --stat-accent: var(--md-tertiary); }
 .stat-card--error { --stat-accent: var(--md-error); }
 
-/* Hover: elevación level-2 + glow sutil del color de acento.
-   El glow usa color-mix para derivar el tinte del token sin hex; en
-   navegadores sin soporte degrada a la elevación level-2 sola. */
-.stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow:
-    var(--shadow-level-2),
-    0 8px 28px color-mix(in srgb, var(--stat-accent) 16%, transparent);
-}
-
-/* Icono gigante decorativo (el tamaño va en CSS para poder reducirlo en móvil) */
-.stat-card__ghost {
-  position: absolute;
-  top: calc(-1 * var(--space-2));
-  right: calc(-1 * var(--space-2));
-  pointer-events: none;
-  opacity: 0.1;
-  color: var(--stat-accent);
-  transition:
-    transform var(--transition-slow) ease,
-    opacity var(--transition-slow) ease;
-}
-.stat-card__ghost .icon {
-  font-size: 80px;
-}
-.stat-card:hover .stat-card__ghost {
-  opacity: 0.2;
-  transform: scale(1.1);
-}
-
 /* Fila superior: chip circular tintado + label */
 .stat-card__head {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  margin-bottom: var(--space-2);
 }
 .stat-card__chip {
   width: 40px;
@@ -90,16 +59,14 @@
 
 /* Valor grande */
 .stat-card__value {
-  position: relative;
-  z-index: 1;
   display: flex;
   align-items: baseline;
   gap: var(--space-sm);
 }
 .stat-card__number {
   font-family: var(--font-heading);
-  font-size: var(--fs-3xl);
-  line-height: var(--lh-headline-xl);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-headline-md);
   letter-spacing: var(--tracking-tight);
   font-weight: var(--fw-extrabold);
   color: var(--md-on-surface);
@@ -121,13 +88,13 @@
 }
 
 /* Variante crítica: tinte de fondo + número y chip en rojo */
-.stat-card--critical::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+.stat-card--critical {
   background: var(--md-error-container);
-  opacity: 0.35;
-  pointer-events: none;
+  border-color: color-mix(in srgb, var(--md-error) 30%, transparent);
+}
+.stat-card--critical:hover {
+  background: color-mix(in srgb, var(--md-error) 6%, var(--md-error-container));
+  border-color: color-mix(in srgb, var(--md-error) 40%, transparent);
 }
 .stat-card--critical .stat-card__number {
   color: var(--md-error);
@@ -138,13 +105,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .stat-card,
-  .stat-card__ghost {
+  .stat-card {
     transition: none;
-  }
-  .stat-card:hover,
-  .stat-card:hover .stat-card__ghost {
-    transform: none;
   }
   .stat-card__flag {
     animation: none;
@@ -154,9 +116,6 @@
 @media (max-width: 768px) {
   .stat-card {
     padding: var(--space-4);
-  }
-  .stat-card__ghost .icon {
-    font-size: 64px;
   }
   .stat-card__chip {
     width: 36px;

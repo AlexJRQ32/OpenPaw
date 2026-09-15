@@ -102,11 +102,11 @@
   border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-level-1);
-  transition: transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1), box-shadow var(--transition-fast) ease-out;
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 .citas-request-item:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-level-2);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--color-primary-light) 60%, var(--md-outline-variant));
 }
 .citas-request-servicio {
   margin: 0 0 var(--space-2);
@@ -186,14 +186,12 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-level-1);
   transition:
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow var(--transition-fast) ease-out,
-    border-color var(--transition-fast) ease-out;
+    background-color var(--transition-fast) ease,
+    border-color var(--transition-fast) ease;
 }
 .citas-vet-card:hover {
-  transform: translateY(-3px);
-  border-color: var(--color-primary-lighter);
-  box-shadow: var(--shadow-level-2);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--color-primary-light) 60%, var(--md-outline-variant));
 }
 .citas-vet-card__top {
   display: flex;
@@ -434,7 +432,7 @@
   background: var(--md-primary);
   color: var(--md-on-primary);
   transform: scale(1.05);
-  box-shadow: 0 4px 16px color-mix(in srgb, var(--md-primary) 30%, transparent);
+  box-shadow: var(--shadow-level-1);
 }
 .citas-day--selected:hover {
   background: var(--md-primary);
@@ -566,10 +564,10 @@
   background: var(--md-surface);
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-level-1);
-  transition: transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 .cita-card:not(.cita-card--muted):hover {
-  transform: translateY(-3px);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface));
 }
 .cita-card__bar {
   position: absolute;
@@ -726,11 +724,7 @@
   text-align: center;
 }
 .citas-availability::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(135deg, color-mix(in srgb, var(--md-primary) 5%, transparent), transparent 60%);
-  pointer-events: none;
+  content: none;
 }
 .citas-availability > * {
   position: relative;
@@ -856,10 +850,11 @@
   background: var(--md-surface-container-lowest);
   border: 1px solid color-mix(in srgb, var(--md-outline-variant) 50%, transparent);
   border-radius: var(--radius-xl);
-  transition: box-shadow var(--transition-fast) ease-out;
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 .citas-item:hover {
-  box-shadow: var(--shadow-level-1);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 .citas-item-top {
   display: flex;

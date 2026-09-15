@@ -94,7 +94,7 @@
   font-size: 13px;
 }
 
-.csm-estado i { font-size: 8px; animation: csm-blink 1.4s ease-in-out infinite; }
+.csm-estado .material-symbols-outlined { animation: csm-blink 1.4s ease-in-out infinite; }
 
 @keyframes csm-blink {
   0%, 100% { opacity: 1; }
@@ -115,14 +115,14 @@
   text-align: left;
 }
 
-.csm-note i { margin-top: 2px; }
+.csm-note .material-symbols-outlined { margin-top: 2px; }
 
 .csm-btn {
   width: 100%;
   padding: 13px 20px;
   border: 0;
   border-radius: var(--radius-md);
-  background: linear-gradient(120deg, #0044cc, #087dce 62%, #08a29a);
+  background: var(--brand-blue-deep);
   color: var(--color-white);
   font: inherit;
   font-size: 15px;

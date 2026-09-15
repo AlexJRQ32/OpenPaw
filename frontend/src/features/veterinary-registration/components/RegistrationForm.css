@@ -80,9 +80,10 @@
   border-radius: var(--radius-full);
 }
 
-.vreg-card__icon--primary   { background: color-mix(in srgb, var(--md-primary-container) 18%, transparent); color: var(--md-primary); }
-.vreg-card__icon--secondary { background: color-mix(in srgb, var(--md-secondary-container) 35%, transparent); color: var(--md-secondary); }
-.vreg-card__icon--tertiary  { background: color-mix(in srgb, var(--md-tertiary-fixed) 45%, transparent); color: var(--md-tertiary); }
+/* Heading icons heredan neutral: decor no lleva color random */
+.vreg-card__icon--primary   { background: var(--md-surface-container); color: var(--md-on-surface-variant); }
+.vreg-card__icon--secondary { background: var(--md-surface-container); color: var(--md-on-surface-variant); }
+.vreg-card__icon--tertiary  { background: var(--md-surface-container); color: var(--md-on-surface-variant); }
 .vreg-card__icon--neutral   { background: var(--md-surface-container); color: var(--md-on-surface-variant); }
 
 .vreg-card__head h2 {

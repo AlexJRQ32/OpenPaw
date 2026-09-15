@@ -344,21 +344,21 @@ export function MascotasPage() {
       <Modal open={modalOpen} onClose={cerrar} className="mascotas-modal">
         <div className="mascotas-modal-header">
           <div className="mascotas-modal-icon" aria-hidden="true">
-            <i className="fas fa-paw"></i>
+            <Icon name="pets" size={22} filled />
           </div>
           <div className="mascotas-modal-heading">
             <h2 className="mascotas-modal-title">Agregar mascota</h2>
             <p className="mascotas-modal-subtitle">Completa los datos de tu nueva mascota.</p>
           </div>
           <button type="button" className="mascotas-modal-close" onClick={cerrar} aria-label="Cerrar">
-            <i className="fas fa-times"></i>
+            <Icon name="close" size={20} />
           </button>
         </div>
 
         <form onSubmit={guardar} noValidate>
           <fieldset className="mascotas-form-section">
             <legend className="mascotas-form-section-title">
-              <i className="fas fa-paw"></i>
+              <Icon name="pets" size={16} aria-hidden="true" />
               Informacion basica
             </legend>
             <div className="mascotas-field-grid">
@@ -404,7 +404,7 @@ export function MascotasPage() {
 
           <fieldset className="mascotas-form-section">
             <legend className="mascotas-form-section-title">
-              <i className="fas fa-sliders-h"></i>
+              <Icon name="tune" size={16} aria-hidden="true" />
               Detalles opcionales
             </legend>
             <div className="mascotas-field-grid">
@@ -455,7 +455,7 @@ export function MascotasPage() {
           <div className="mascotas-modal-footer">
             {submitError && (
               <p className="mascotas-submit-error" role="alert">
-                <i className="fas fa-exclamation-circle"></i>
+                <Icon name="error" size={16} aria-hidden="true" />
                 {submitError}
               </p>
             )}
@@ -466,11 +466,11 @@ export function MascotasPage() {
               <Button variant="primary" type="submit" disabled={submitStatus === 'submitting'}>
                 {submitStatus === 'submitting' ? (
                   <>
-                    <i className="fas fa-spinner fa-spin"></i> Guardando...
+                    <Icon name="progress_activity" size={16} style={{ animation: 'sidebar-spin 0.7s linear infinite' }} aria-hidden="true" /> Guardando...
                   </>
                 ) : (
                   <>
-                    <i className="fas fa-check"></i> Guardar mascota
+                    <Icon name="check" size={16} aria-hidden="true" /> Guardar mascota
                   </>
                 )}
               </Button>

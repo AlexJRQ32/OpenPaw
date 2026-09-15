@@ -28,12 +28,11 @@ function formatearMoneda(value) {
 
 /* ---------------------------------------------------------------------------
    Stat bento (wireframe inventario_openpaw): 4 tarjetas con icono en círculo
-   tintado + glow decorativo por esquina.
+   tintado + sombra neutra corta (sin glows de color).
    --------------------------------------------------------------------------- */
 function StatCard({ label, value, icon, tone }) {
   return (
     <div className={`inv-stat inv-stat--${tone}`}>
-      <span className="inv-stat__glow" aria-hidden="true" />
       <div className="inv-stat__row">
         <span className="inv-stat__icon" aria-hidden="true">
           <Icon name={icon} size={24} filled />

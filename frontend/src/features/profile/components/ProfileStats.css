@@ -1,9 +1,10 @@
 @import "../../../shared/styles/tokens.css";
 
 /* ==========================================================================
-   Bento grid de stats del Perfil (T28 — wireframe perfil_openpaw)
-   Cards glass con icono tintado por tono, número grande y label uppercase.
+   Stats del Perfil (T28 — wireframe perfil_openpaw)
+   Cards con icono tintado por tono, número grande y label uppercase.
    auto-fit reparte las cards según cuántas haya por rol (2 a 4).
+   Tokens --md-*, cero gradientes/sombras de color, hover sobrio 150ms.
    ========================================================================== */
 .profile-stats {
   display: grid;
@@ -15,19 +16,19 @@
   --stat-tone: var(--md-primary);
   display: flex;
   flex-direction: column;
+  justify-content: space-between;
   gap: var(--space-1);
   padding: var(--space-5);
   background: var(--md-surface-container-lowest);
-  border: 1px solid var(--md-surface-container-high);
-  border-radius: var(--rounded-lg);
-  box-shadow: var(--shadow-level-1);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
+  border-radius: var(--radius-xl);
   transition:
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow var(--transition-fast) ease;
+    background-color 150ms ease-out,
+    border-color 150ms ease-out;
 }
 .profile-stat:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-level-2);
+  background: color-mix(in srgb, var(--stat-tone) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--stat-tone) 30%, var(--md-outline-variant));
 }
 .profile-stat__icon {
   color: var(--stat-tone);
@@ -35,9 +36,9 @@
 }
 .profile-stat__value {
   font-family: var(--font-heading);
-  font-size: var(--text-headline-lg);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-headline-md);
   font-weight: var(--fw-extrabold);
-  line-height: 1;
   letter-spacing: var(--tracking-tight);
   color: var(--md-on-surface);
 }
@@ -80,9 +81,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profile-stat,
-  .profile-stat:hover {
-    transform: none;
+  .profile-stat {
     transition: none;
   }
   .profile-stat--skeleton {

@@ -4,14 +4,18 @@ import { useAuth } from "../../../features/auth/context/AuthContext"
 import { Icon } from "../Icon/Icon"
 import "./LandingNavbar.css"
 
-export function LandingNavbar({ onLanding }) {
+export function LandingNavbar({ onLanding, dark = false }) {
   const { user, isAuthenticated } = useAuth()
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
 
+  // Dark glass cuando flota sobre un hero oscuro (landing o marketplace).
+  const darkClass = dark || !onLanding ? " landing-navbar--dark" : ""
+
   return (
     <>
-      <nav className="landing-navbar" aria-label="Navegacion principal">
+      {/* Dark glass sobre hero oscuro; glass claro en Navbar de marketplace auditoria */}
+      <nav className={`landing-navbar${darkClass}`} aria-label="Navegacion principal">
         <Link to="/" className="landing-navbar-brand">
           <img src="/logo.png" alt="OpenPaw logo" />
           <span>OpenPaw</span>

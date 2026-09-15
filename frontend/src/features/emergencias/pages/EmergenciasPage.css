@@ -97,7 +97,7 @@
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 
 /* ===================================================== TARJETA CRITICA === */
@@ -110,8 +110,8 @@
 }
 
 .emerg-card--critica:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
+  background: color-mix(in srgb, var(--md-error) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--md-error) 25%, var(--md-outline-variant));
 }
 
 /* Barra decorativa izquierda (wireframe: w-2 bg-error) */
@@ -125,26 +125,9 @@
   border-radius: var(--radius-full) 0 0 var(--radius-full);
 }
 
-/* Glow hover (wireframe: gradiente error/20 blur) */
+/* Glow decorativo desactivado (ronda 4: sin halos coloreados en hover) */
 .emerg-card__glow {
-  position: absolute;
-  inset: -4px;
-  background: linear-gradient(
-    90deg,
-    color-mix(in srgb, var(--md-error) 18%, transparent),
-    transparent 40%,
-    transparent 60%,
-    color-mix(in srgb, var(--md-error) 18%, transparent)
-  );
-  filter: blur(20px);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-slow);
-  z-index: 0;
-}
-
-.emerg-card--critica:hover .emerg-card__glow {
-  opacity: 1;
+  display: none;
 }
 
 .emerg-card--critica > * {
@@ -414,8 +397,8 @@
 }
 
 .emerg-card--secundaria:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
+  background: color-mix(in srgb, var(--md-error) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--md-error) 25%, var(--md-outline-variant));
 }
 
 .emerg-card--secundaria .emerg-card__titulo {
@@ -686,12 +669,7 @@
 @media (prefers-reduced-motion: reduce) {
   .emerg-card,
   .emerg-card--critica,
-  .emerg-card__glow {
+  .emerg-card--secundaria {
     transition: none;
-  }
-
-  .emerg-card--critica:hover,
-  .emerg-card--secundaria:hover {
-    transform: none;
   }
 }

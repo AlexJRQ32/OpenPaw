@@ -1,6 +1,7 @@
 import { Modal } from '../../../shared/components/Modal/Modal'
 import { Button } from '../../../shared/components/Button/Button'
 import { Field } from '../../../shared/components/Field/Field'
+import { Icon } from '../../../shared/components/Icon/Icon'
 import { useRegisterExpress } from '../hooks/useRegisterExpress'
 import './RegisterExpressModal.css'
 
@@ -11,7 +12,7 @@ export function RegisterExpressModal({ open, onClose, title = 'Crear cuenta para
     <Modal open={open} onClose={onClose} className="reg-express-modal">
       <div className="reg-express">
         <div className="reg-express-head">
-          <span className="reg-express-icon"><i className="fas fa-bolt" /></span>
+          <span className="reg-express-icon"><Icon name="bolt" size={20} filled /></span>
           <div>
             <h2>{title}</h2>
             <p>Solo correo y contrasena. Tu cuenta queda lista al instante.</p>

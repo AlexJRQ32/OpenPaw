@@ -1,4 +1,4 @@
-@import "../../../shared/styles/tokens.css";
+﻿@import "../../../shared/styles/tokens.css";
 
 .cauth-modal {
   max-width: 460px !important;
@@ -18,7 +18,7 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: linear-gradient(135deg, var(--color-primary), #087dce);
+  background: var(--brand-blue-deep);
   color: #fff;
   border-radius: var(--radius-lg);
   font-size: 18px;
@@ -63,7 +63,7 @@
 
 .cauth-tab.active {
   background: var(--color-surface);
-  color: var(--color-primary);
+  color: var(--brand-blue-deep);
   box-shadow: var(--shadow-sm);
 }
 
@@ -101,8 +101,8 @@
 }
 
 .cauth-form .field input:focus {
-  border-color: var(--color-primary);
-  outline: 3px solid rgba(0, 102, 232, 0.12);
+  border-color: var(--brand-blue-deep);
+  outline: 3px solid color-mix(in srgb, var(--brand-blue-deep) 12%, transparent);
 }
 
 .cauth-form .field small {
@@ -115,7 +115,7 @@
   margin: 0;
   color: var(--color-error);
   background: var(--color-error-bg);
-  border: 1px solid #fecdca;
+  border: 1px solid var(--md-error-container);
   border-radius: var(--radius-md);
   font-size: var(--fs-sm);
 }

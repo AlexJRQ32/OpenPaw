@@ -8,7 +8,9 @@
 
 .marketplace-page {
   min-height: 100vh;
-  padding-top: 76px; /* LandingNavbar fija */
+  /* El hero navy arranca en y=0 DETRAS del LandingNavbar flotante
+     (glass dark): cero espacio muerto arriba en ningun breakpoint. */
+  padding-top: 0;
   padding-bottom: var(--space-xl);
   background: var(--md-background);
 }
@@ -34,32 +36,22 @@
   position: relative;
   overflow: hidden;
   border-radius: 0 0 var(--radius-3xl) var(--radius-3xl);
-  background: var(--md-primary);
+  /* Paleta landing: hero dark navy (antes azul plano #004fb7) */
+  background: var(--lp-ink-deep);
   color: var(--md-on-primary);
   box-shadow: var(--shadow-md);
 }
 
-/* Atmosfera: circulos difuminados del wireframe (surface-tint/secondary/
-   primary-container) sin hex — color-mix sobre tokens */
+/* Atmosfera hero: color solido M3 (antes: circulos radiales difuminados) */
 .mp-hero::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 12% 15%,
-      color-mix(in srgb, var(--md-secondary) 40%, transparent), transparent 42%),
-    radial-gradient(circle at 88% 90%,
-      color-mix(in srgb, var(--md-primary-container) 65%, transparent), transparent 55%),
-    radial-gradient(circle at 70% 10%,
-      color-mix(in srgb, var(--md-surface-tint) 45%, transparent), transparent 45%);
-  pointer-events: none;
-}
+  content: none;}
 
 .mp-hero__inner {
   position: relative;
   max-width: var(--container-max);
   margin: 0 auto;
-  padding: var(--space-lg) var(--gutter) calc(var(--space-lg) + var(--space-4));
+  /* Respiro superior: navbar fija (top 20 + 60) + 12px de aire */
+  padding: 92px var(--gutter) calc(var(--space-lg) + var(--space-4));
 }
 
 .mp-hero__top {
@@ -114,11 +106,10 @@
   font-size: var(--fs-label);
   font-weight: var(--fw-semibold);
   cursor: pointer;
-  transition: background-color var(--transition-fast), transform var(--transition-fast);
+  transition: background-color var(--transition-fast) ease;
 }
 .mp-hero__cart:hover {
   background: color-mix(in srgb, var(--md-surface-container) 34%, transparent);
-  transform: translateY(-1px);
 }
 .mp-hero__cart:focus-visible { outline: none; box-shadow: 0 0 0 3px var(--md-inverse-primary); }
 .mp-hero__cart-dot {
@@ -144,9 +135,11 @@
   align-items: center;
   gap: var(--space-3);
   max-width: 640px;
+  min-height: 48px;
   padding: var(--space-2) var(--space-2) var(--space-2) var(--space-md);
   border: 1px solid color-mix(in srgb, var(--md-outline-variant) 30%, transparent);
   border-radius: var(--radius-full);
+  overflow: hidden;
   background: color-mix(in srgb, var(--md-surface) 92%, transparent);
   backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
   -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturate));
@@ -158,6 +151,7 @@
 .mp-search input {
   flex: 1;
   min-width: 0;
+  height: 100%;
   border: 0;
   outline: 0;
   background: transparent;
@@ -166,6 +160,19 @@
   color: var(--md-on-surface);
 }
 .mp-search input::placeholder { color: var(--md-outline); }
+/* R19: los controles search nativos (webkit) rompen el pill en mobile;
+   se neutraliza la decoracion nativa (X gigante/estiramiento oval). */
+.mp-search input[type='search'] {
+  -webkit-appearance: none;
+  appearance: none;
+}
+.mp-search input[type='search']::-webkit-search-decoration,
+.mp-search input[type='search']::-webkit-search-cancel-button,
+.mp-search input[type='search']::-webkit-search-results-button,
+.mp-search input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+  appearance: none;
+}
 .mp-search__clear,
 .mp-search__go {
   display: grid;
@@ -188,7 +195,7 @@
   color: var(--md-on-primary);
   box-shadow: var(--shadow-glow);
 }
-.mp-search__go:hover { background: var(--md-surface-tint); transform: scale(1.06); }
+.mp-search__go:hover { background: var(--md-surface-tint); }
 .mp-search__go:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
 
 /* Toggle Productos / Servicios (tabs con roving tabindex) */
@@ -256,9 +263,7 @@
   letter-spacing: var(--tracking-tight);
   color: var(--md-on-surface);
 }
-.mp-h2__icon--primary { color: var(--md-primary); }
-.mp-h2__icon--secondary { color: var(--md-secondary); }
-.mp-h2__icon--tertiary { color: var(--md-tertiary); }
+/* Iconos de heading heredan color del título (sin decor random). */
 .mp-h2__count {
   align-self: flex-start;
   padding: 2px 10px;
@@ -333,55 +338,61 @@
   gap: var(--space-md);
 }
 
+/* Tarjeta editorial full-bleed: la foto cubre TODA la card y el texto
+   vive sobre ella con scrim navy semantico (unico gradiente del modulo,
+   justificado por legibilidad). Hover: lift sobrio de 2px (reportado). */
 .mp-card {
-  display: flex;
-  flex-direction: column;
-  border: 1px solid transparent;
+  position: relative;
+  height: 320px;
   border-radius: var(--rounded-xl);
-  background: var(--md-surface-container-lowest);
+  background: var(--lp-ink-deep);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal),
-    border-color var(--transition-normal);
+  transition: transform var(--transition-fast) ease, box-shadow var(--transition-fast) ease;
 }
 .mp-card:hover {
-  transform: translateY(-3px);
-  border-color: color-mix(in srgb, var(--md-primary) 25%, transparent);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
 }
 
-.mp-card__media {
-  display: grid;
-  place-items: center;
-  height: 150px;
-  padding: var(--space-3);
-  background: var(--md-surface-container-low);
-}
+/* Imagen full-bleed (cover, nunca contain) */
 .mp-card__img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  border-radius: var(--radius-lg);
-}
-.mp-card__placeholder {
-  display: grid;
-  place-items: center;
-  width: 100%;
-  height: 100%;
-  border-radius: var(--radius-lg);
-  background: color-mix(in srgb, var(--md-primary-fixed) 40%, transparent);
-  color: var(--md-primary);
-  font-size: 34px;
+  object-fit: cover;
 }
 
-.mp-card__body {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3);
+/* Card SIN imagen: navy solido + paw como marca de agua */
+.mp-card__placeholder {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: color-mix(in srgb, var(--md-on-primary) 28%, transparent);
+  font-size: 40px;
 }
-.mp-card__meta { display: flex; justify-content: flex-start; }
+
+/* Scrim + contenido inferior (postcard). El gradiente calibrado
+   garantiza contraste >= 4.5:1 del texto blanco en la zona inferior. */
+.mp-card__overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  /* SEMANTICO: leg sobre foto. transparent 42% -> ink-deep 88% abajo */
+  background: linear-gradient(
+    180deg,
+    transparent 42%,
+    color-mix(in srgb, var(--lp-ink-deep) 88%, transparent) 100%
+  );
+  color: var(--md-on-primary);
+}
+.mp-card__meta { display: flex; }
 .mp-card__name {
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -391,28 +402,105 @@
   font-size: var(--fs-base);
   font-weight: var(--fw-bold);
   line-height: var(--lh-body);
-  color: var(--md-on-surface);
+  color: var(--md-on-primary);
 }
 .mp-card__cat {
   margin: 0;
   font-size: var(--fs-caption);
-  color: var(--md-on-surface-variant);
+  color: color-mix(in srgb, var(--md-on-primary) 78%, transparent);
 }
 .mp-card__foot {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
-  margin-top: auto;
-  padding-top: var(--space-2);
+  margin-top: var(--space-2);
 }
 .mp-card__price {
   font-family: var(--font-heading);
   font-size: var(--fs-lg);
   font-weight: var(--fw-extrabold);
-  color: var(--md-primary);
+  color: var(--md-on-primary);
 }
-.mp-card__add.mp-card__add { padding-inline: 14px; }
+/* Boton carrito: navy se pierde sobre el scrim -> crema solida con icono navy */
+.mp-card__add.mp-card__add.mp-card__add {
+  padding-inline: 14px;
+  background: var(--md-surface-bright);
+  color: var(--lp-ink-deep);
+  border: 0;
+}
+.mp-card__add.mp-card__add.mp-card__add:hover {
+  background: #ffffff;
+  color: var(--lp-ink-deep);
+}
+.mp-card__add:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+/* ==========================================================================
+   R19 — SECCIONES POR CATEGORIA con fila de scroll horizontal
+   Pagina scrollea verticalmente por secciones; las cards deslizan en X
+   dentro de cada fila (mobile-first, igual en desktop: patron darker-tail).
+   ========================================================================== */
+
+.mp-cat { margin-bottom: var(--space-lg); }
+.mp-cat:last-child { margin-bottom: 0; }
+
+.mp-cat__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+.mp-cat__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--fs-lg);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--md-on-surface);
+}
+.mp-cat__count {
+  min-width: 24px;
+  padding: 1px 8px;
+  border-radius: var(--radius-full);
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface-variant);
+  font-size: var(--fs-caption);
+  font-weight: var(--fw-bold);
+  text-align: center;
+}
+.mp-cat__all {
+  margin-left: auto;
+  padding: 4px 10px;
+  border: 0;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--md-primary);
+  font: inherit;
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-fast);
+}
+.mp-cat__all:hover { background: var(--md-surface-container-high); text-decoration: underline; }
+.mp-cat__all:focus-visible { outline: none; box-shadow: var(--shadow-focus); }
+
+.mp-row {
+  display: flex;
+  gap: var(--space-md);
+  overflow-x: auto;
+  /* scroll-snap opcional: proximity permite paradas naturales */
+  scroll-snap-type: x proximity;
+  padding: 4px 0 8px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-gray-200) transparent;
+}
+.mp-row::-webkit-scrollbar { height: 6px; }
+.mp-row::-webkit-scrollbar-thumb { background: var(--color-gray-200); border-radius: 10px; }
+
+.mp-row .mp-card {
+  flex: 0 0 min(235px, 72vw);
+  scroll-snap-align: start;
+}
 
 /* ==========================================================================
    SERVICIOS ESPECIALIZADOS — tarjetas horizontales (wireframe md:2col)
@@ -431,13 +519,11 @@
   background: var(--md-surface-container-lowest);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal),
-    border-color var(--transition-normal);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 .mp-service:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--md-primary) 25%, transparent);
-  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-primary) 25%, var(--md-outline-variant));
 }
 
 /* Panel visual tintado por categoria (decorativo, sin fotos inventadas) */
@@ -449,19 +535,19 @@
   overflow: hidden;
 }
 .mp-service__visual--consulta {
-  background: linear-gradient(140deg, var(--md-primary-container), color-mix(in srgb, var(--md-primary-fixed-dim) 70%, transparent));
+  background: var(--md-primary-fixed);
   color: var(--md-on-primary-container);
 }
 .mp-service__visual--grooming {
-  background: linear-gradient(140deg, var(--md-tertiary-fixed), color-mix(in srgb, var(--md-tertiary-fixed-dim) 60%, transparent));
+  background: var(--md-tertiary-fixed);
   color: var(--md-on-tertiary-fixed);
 }
 .mp-service__visual--procedimiento {
-  background: linear-gradient(140deg, var(--md-secondary-fixed), color-mix(in srgb, var(--md-secondary-fixed-dim) 60%, transparent));
+  background: var(--md-secondary-fixed);
   color: var(--md-on-secondary-fixed);
 }
 .mp-service__visual--default {
-  background: linear-gradient(140deg, var(--md-surface-container-high), var(--md-surface-container));
+  background: var(--md-surface-container-high);
   color: var(--md-on-surface-variant);
 }
 
@@ -531,7 +617,7 @@
 
 /* Skeletons de carga */
 .mp-skeleton {
-  height: 280px;
+  height: 320px;
   border-radius: var(--rounded-xl);
   background: linear-gradient(100deg,
     var(--md-surface-container-low) 40%,
@@ -550,18 +636,45 @@
    ========================================================================== */
 
 @media (max-width: 720px) {
-  .marketplace-page { padding-top: 68px; }
+  .mp-skeleton { height: 260px; }
+  .marketplace-page { padding-top: 0; }
   .mp-hero { border-radius: 0 0 var(--rounded-xl) var(--rounded-xl); }
-  .mp-hero__inner { padding: var(--space-md) var(--space-4) var(--space-lg); }
+  /* Navbar movil: top 12 + 56 */
+  .mp-hero__inner { padding: 76px var(--space-4) var(--space-lg); }
   .mp-hero__search-row { flex-direction: column; align-items: stretch; }
-  .mp-search { max-width: none; }
+  /* R19 mobile: pill 48px fija (radio 999px sobre altura fija = pill normal,
+     NO ovalo gigante). CAUSA RAIZ: flex: 1 1 420px con la fila en columna
+     convierte el flex-basis en ALTURA de 420px -> ovalo gigante. Flex none. */
+  .mp-search {
+    max-width: none;
+    width: 100%;
+    flex: none;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 8px 0 14px;
+    gap: 8px;
+  }
+  .mp-search input {
+    font-size: 16px;
+    height: auto;
+    text-overflow: ellipsis;
+  }
+  .mp-search__icon { flex-shrink: 0; }
+  .mp-search__clear,
+  .mp-search__go { width: 38px; height: 38px; }
   .mp-tabs { align-self: center; }
   .mp-tab { flex: 1; padding: 10px 18px; text-align: center; }
   .mp-container { padding-top: var(--space-md); }
   .mp-service { flex-direction: column; }
   .mp-service__visual { width: 100%; height: 120px; }
   .mp-grid { grid-template-columns: repeat(2, 1fr); gap: var(--space-3); }
-  .mp-card__media { height: 120px; }
+  .mp-skeleton { height: 260px; }
+  .mp-card { height: 260px; }
+  .mp-card__overlay { padding: var(--space-3); }
+  /* R19 filas horizontales mobile: cards algo mas anchas relativas al viewport,
+     gap compacto, snap mas estricto */
+  .mp-row { gap: var(--space-3); scroll-padding-inline: var(--space-4); }
+  .mp-row .mp-card { flex-basis: min(220px, 74vw); }
 }
 
 /* ==========================================================================
@@ -578,6 +691,4 @@
   .mp-tab,
   .mp-filters input,
   .mp-filters select { transition: none; }
-  .mp-card:hover,
-  .mp-service:hover { transform: none; }
 }

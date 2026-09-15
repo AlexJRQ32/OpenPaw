@@ -74,16 +74,16 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  padding: var(--space-4);
-  background: var(--md-surface);
+  padding: var(--space-5);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
 }
 
 .func-stat:hover {
-  box-shadow: var(--shadow-md);
-  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 
 .func-stat__label {
@@ -99,9 +99,10 @@
 .func-stat__value {
   margin: 0;
   font-family: var(--font-heading);
-  font-size: var(--text-headline-lg);
-  font-weight: var(--fw-bold);
+  font-size: var(--fs-2xl);
+  font-weight: var(--fw-extrabold);
   line-height: var(--lh-headline-md);
+  letter-spacing: var(--tracking-tight);
   color: var(--md-on-surface);
 }
 
@@ -109,15 +110,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 40px;
+  height: 40px;
   border-radius: var(--radius-full);
   flex: none;
-  transition: transform var(--transition-normal);
-}
-
-.func-stat:hover .func-stat__icon {
-  transform: scale(1.08);
 }
 
 .func-stat--activos .func-stat__icon {
@@ -131,8 +127,8 @@
 }
 
 .func-stat--soporte .func-stat__icon {
-  background: color-mix(in srgb, var(--md-tertiary-container) 28%, transparent);
-  color: var(--md-tertiary);
+  background: var(--md-tertiary-container);
+  color: var(--md-on-tertiary-container);
 }
 
 /* ------------------------------------------------------------ tabs admin */
@@ -734,18 +730,9 @@
 /* -------------------------------------------------------- reduced motion */
 @media (prefers-reduced-motion: reduce) {
   .func-stat,
-  .func-stat__icon,
   .func-chip,
   .func-actions__btn,
   .func-rol-select {
     transition: none;
-  }
-
-  .func-stat:hover {
-    transform: none;
-  }
-
-  .func-stat:hover .func-stat__icon {
-    transform: none;
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Modal } from '../../../shared/components/Modal/Modal'
+import { Icon } from '../../../shared/components/Icon/Icon'
 import { Button } from '../../../shared/components/Button/Button'
 import { Field } from '../../../shared/components/Field/Field'
 import { useAuth } from '../context/AuthContext'
@@ -52,7 +53,7 @@ export function CheckoutAuthModal({ open, onClose, onSuccess, title = 'Para cont
     <Modal open={open} onClose={onClose} className="cauth-modal">
       <div className="cauth">
         <div className="cauth-head">
-          <span className="cauth-icon"><i className="fas fa-shopping-bag" /></span>
+          <span className="cauth-icon"><Icon name="shopping_bag" size={20} filled /></span>
           <div>
             <h2>{title}</h2>
             <p>Inicia sesion o crea tu cuenta al instante.</p>

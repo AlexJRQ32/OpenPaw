@@ -34,7 +34,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--md-primary), var(--md-primary-container));
+  background: var(--md-primary);
   color: var(--md-on-primary);
   font-family: var(--font-heading);
   font-size: 56px;
@@ -366,14 +366,12 @@
   cursor: pointer;
   transition:
     background-color var(--transition-fast) ease,
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow var(--transition-fast) ease;
+    border-color var(--transition-fast) ease;
 }
 .profile-social-tile:hover,
 .profile-social-tile:focus-visible {
   background: var(--md-surface-container);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 .profile-social-tile:focus-visible {
   outline: 2px solid var(--md-primary);
@@ -393,7 +391,7 @@
     background-color var(--transition-fast) ease;
 }
 .profile-social-tile:hover .profile-social-logo {
-  transform: scale(1.1);
+  background: color-mix(in srgb, var(--md-primary) 8%, var(--md-surface-container-highest));
 }
 .profile-social-name {
   font-size: var(--fs-label);
@@ -488,7 +486,7 @@
   padding: var(--space-6);
   text-align: center;
   border-radius: var(--rounded-xl);
-  background: linear-gradient(135deg, var(--md-surface-container-lowest), var(--md-surface-container-low));
+  background: var(--md-surface-container-low);
   border: 1px solid var(--md-surface-container-high);
   box-shadow: var(--shadow-level-1);
 }

@@ -17,9 +17,9 @@ const emptyForm = {
 export const CATEGORIAS = ['Consulta', 'Grooming', 'Procedimiento']
 
 const CATEGORIA_ICON = {
-  Consulta: 'fas fa-stethoscope',
-  Grooming: 'fas fa-scissors',
-  Procedimiento: 'fas fa-syringe',
+  Consulta: 'stethoscope',
+  Grooming: 'content_cut',
+  Procedimiento: 'vaccines',
 }
 
 function validar(form) {

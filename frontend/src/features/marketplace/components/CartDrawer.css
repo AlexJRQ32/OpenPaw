@@ -1,9 +1,13 @@
-@import "../../../shared/styles/tokens.css";
+﻿@import "../../../shared/styles/tokens.css";
 
+/* R18 — Escalera z-index completa (tokens.css --z-*):
+   toast 9999 > modal 2000 > drawer 1500/1501 > navbar 1000/1200 > topbar 100/200 > contenido.
+   El drawer quedó DEBAJO de la topbar fija (z 90/91 vs AppShell topbar 100) y era tapado;
+   1500/1501 lo ponen sobre toda barra superior con backdrop pantalla completa. */
 .cd-overlay {
   position: fixed;
   inset: 0;
-  z-index: 90;
+  z-index: var(--z-drawer);
   background: rgba(15, 23, 42, 0.55);
   backdrop-filter: blur(3px);
   animation: cd-fade 0.22s ease-out;
@@ -18,12 +22,12 @@
   position: fixed;
   top: 0;
   right: 0;
-  z-index: 91;
+  z-index: calc(var(--z-drawer) + 1);
   display: flex;
   flex-direction: column;
   width: min(420px, 100vw);
   height: 100dvh;
-  background: var(--color-bg);
+  background: var(--color-surface);
   box-shadow: -16px 0 48px rgba(0, 0, 0, 0.25);
   animation: cd-slide 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
   will-change: transform;
@@ -34,14 +38,16 @@
   to { transform: translateX(0); opacity: 1; }
 }
 
-/* Header */
+/* Header — R18: blanco superficie con acento deep (era barra --color-primary
+   #004fb7, el azul clarito saturado que desentonaba del app) */
 .cd-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 18px 20px;
-  color: var(--color-white);
-  background: linear-gradient(120deg, #0044cc, #087dce 62%, #08a29a);
+  color: var(--color-text);
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
   animation: cd-drop 0.4s cubic-bezier(0.2, 0.9, 0.25, 1);
 }
 
@@ -54,12 +60,12 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--brand-blue-deep);
 }
-
-.cd-header-title i { font-size: 18px; }
 
 .cd-header-title h2 {
   margin: 0;
+  color: var(--color-text);
   font-family: var(--font-heading);
   font-size: 19px;
   font-weight: var(--fw-bold);
@@ -73,8 +79,8 @@
   justify-content: center;
   padding: 0 7px;
   border-radius: var(--radius-full);
-  background: #ffd166;
-  color: #1a1a1a;
+  background: var(--brand-blue-deep);
+  color: var(--color-white);
   font-size: 12px;
   font-weight: var(--fw-bold);
   animation: cd-badge-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -93,14 +99,24 @@
   justify-content: center;
   border: 0;
   border-radius: var(--radius-full);
-  background: rgba(255, 255, 255, 0.18);
-  color: var(--color-white);
-  font-size: 15px;
+  background: var(--color-gray-100);
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
-.cd-close:hover { background: rgba(255, 255, 255, 0.3); }
+.cd-close:hover { background: var(--color-gray-150); color: var(--color-text); }
+
+/* Focus visible unificado con acento deep (R18) */
+.cd-close:focus-visible,
+.cd-empty-btn:focus-visible,
+.cd-item-remove:focus-visible,
+.cd-stepper button:focus-visible,
+.cd-checkout-btn:focus-visible,
+.cd-clear:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+}
 
 /* Empty state */
 .cd-empty {
@@ -121,9 +137,8 @@
   height: 92px;
   margin-bottom: 20px;
   border-radius: var(--radius-full);
-  background: var(--color-primary-light);
-  color: var(--color-primary);
-  font-size: 38px;
+  background: var(--md-primary-fixed); /* tint navy sobrio #cdd9ed */
+  color: var(--brand-blue-deep);
 }
 
 .cd-empty h3 {
@@ -139,7 +154,7 @@
   padding: 12px 26px;
   border: 0;
   border-radius: var(--radius-full);
-  background: var(--color-primary);
+  background: var(--brand-blue-deep);
   color: var(--color-white);
   font: inherit;
   font-weight: var(--fw-semibold);
@@ -147,7 +162,7 @@
   transition: background var(--transition-fast);
 }
 
-.cd-empty-btn:hover { background: var(--color-primary-hover); }
+.cd-empty-btn:hover { background: var(--brand-blue-deep-hover); }
 
 /* Items */
 .cd-items {
@@ -191,9 +206,8 @@
 .cd-item-img--placeholder {
   display: grid;
   place-items: center;
-  color: var(--color-primary);
-  font-size: 22px;
-  background: var(--color-primary-light);
+  color: var(--brand-blue-deep);
+  background: var(--md-primary-fixed);
 }
 
 .cd-item-body {
@@ -234,7 +248,7 @@
   transition: background var(--transition-fast);
 }
 
-.cd-item-remove:hover { background: #fde3e1; }
+.cd-item-remove:hover { background: var(--md-error-container); }
 
 .cd-item-vet {
   margin: 4px 0 0;
@@ -245,7 +259,7 @@
   text-overflow: ellipsis;
 }
 
-.cd-item-vet i { margin-right: 4px; color: var(--color-orange); }
+.cd-item-vet .material-symbols-outlined { margin-right: 4px; color: var(--color-orange); }
 
 .cd-item-alm {
   margin: 2px 0 0;
@@ -256,7 +270,7 @@
   text-overflow: ellipsis;
 }
 
-.cd-item-alm i { margin-right: 4px; color: var(--color-primary); }
+.cd-item-alm .material-symbols-outlined { margin-right: 4px; color: var(--brand-blue-deep); }
 
 .cd-item-foot {
   display: flex;
@@ -285,13 +299,12 @@
   border: 0;
   border-radius: var(--radius-full);
   background: transparent;
-  color: var(--color-primary);
-  font-size: 11px;
+  color: var(--brand-blue-deep);
   cursor: pointer;
   transition: background var(--transition-fast);
 }
 
-.cd-stepper button:hover:not(:disabled) { background: var(--color-primary-light); }
+.cd-stepper button:hover:not(:disabled) { background: var(--md-primary-fixed); }
 .cd-stepper button:disabled { color: var(--color-gray-200); cursor: not-allowed; }
 
 .cd-stepper span {
@@ -353,40 +366,26 @@
   padding: 14px 20px;
   border: 0;
   border-radius: var(--radius-md);
-  background: linear-gradient(120deg, #0044cc, #087dce 62%, #08a29a);
+  background: var(--brand-blue-deep);
   color: var(--color-white);
   font: inherit;
   font-size: 15px;
   font-weight: var(--fw-bold);
   cursor: pointer;
   box-shadow: var(--shadow-md);
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
   overflow: hidden;
   position: relative;
 }
 
-.cd-checkout-btn::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: -60%;
-  width: 40%;
-  height: 100%;
-  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.28), transparent);
-  transform: skewX(-20deg);
-  animation: cd-shine 2.6s ease-in-out infinite;
+.cd-checkout-btn:hover {
+  background: var(--brand-blue-deep-hover);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-lg);
 }
 
-@keyframes cd-shine {
-  0% { left: -60%; }
-  55% { left: 130%; }
-  100% { left: 130%; }
-}
-
-.cd-checkout-btn i { transition: transform var(--transition-fast); }
-
-.cd-checkout-btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-lg); }
-.cd-checkout-btn:hover i { transform: translateX(4px); }
+.cd-checkout-btn .material-symbols-outlined { transition: transform var(--transition-fast); }
+.cd-checkout-btn:hover .material-symbols-outlined { transform: translateX(4px); }
 
 .cd-clear {
   display: flex;
@@ -407,7 +406,54 @@
 
 .cd-clear:hover { color: var(--color-error); background: var(--color-error-bg); }
 
+/* R19 mobile — bottom-sheet: el panel full-screen dejaba paths de cierre
+   tapados/ambiguos (X lejos, teclado sobre el footer). En <=480px el drawer
+   sube desde abajo como sheet (max 85dvh), header con X SIEMPRE visible,
+   lista scrolleable, footer compacto. Cierre: X, backdrop y Escape. */
 @media (max-width: 480px) {
-  .cd-drawer { width: 100vw; }
+  .cd-drawer {
+    top: auto;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: 100vw;
+    max-height: 85dvh;
+    height: auto;
+    border-radius: var(--radius-xl, 16px) var(--radius-xl, 16px) 0 0;
+    animation: cd-slide-up 0.32s cubic-bezier(0.2, 0.9, 0.25, 1);
+  }
+
+  @keyframes cd-slide-up {
+    from { transform: translateY(110%); opacity: 0.6; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  /* Grab-handle: guia visual del sheet, tambien zona tap segura */
+  .cd-drawer::before {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 4px;
+    margin: 10px auto 0;
+    border-radius: var(--radius-full);
+    background: var(--color-gray-200);
+  }
+
+  /* Header compacto, X visible arriba a la derecha (target 44px) */
+  .cd-header { padding: 10px 14px; }
+  .cd-close { width: 44px; height: 44px; }
+
+  .cd-items {
+    min-height: 0;
+    padding: 10px 12px 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .cd-item { padding: 12px; gap: 10px; }
   .cd-item-img { width: 62px; height: 62px; }
+
+  .cd-footer { padding: 12px 16px calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .cd-summary { margin-bottom: 10px; }
+  .cd-summary-row { margin-bottom: 5px; }
+  .cd-checkout-btn { padding: 12px 16px; }
 }

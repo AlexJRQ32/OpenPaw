@@ -31,7 +31,7 @@
   background: var(--md-surface-container-high);
   box-shadow: inset 0 0 0 1px
     color-mix(in srgb, var(--md-outline-variant) 40%, transparent);
-  color: var(--md-primary);
+  color: var(--md-on-surface-variant);
 }
 
 .empty-state--dashed .empty-state__icon {

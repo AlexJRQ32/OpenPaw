@@ -69,10 +69,9 @@
   opacity: 1;
 }
 
-/* Barra resaltada: color pleno + glow del color de la serie */
+/* Barra resaltada: color pleno al hover (ronda 3: sin glow de color) */
 .barchart__col--highlight .barchart__bar {
   opacity: 1;
-  box-shadow: 0 0 10px color-mix(in srgb, currentColor 35%, transparent);
 }
 
 @keyframes barchart-grow {

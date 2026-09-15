@@ -24,6 +24,14 @@ const ROLE_BADGE_VARIANTS = {
 }
 
 export function AppShell({ children }) {
+  /* Sidebar collapsible (patron Trustride): estado persistido en localStorage,
+     transicion de width, labels ocultos en rail y tooltip via title. */
+  const [collapsed, setCollapsed] = useState(() => localStorage.getItem('sidebar-collapsed') === 'true')
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed)
+    localStorage.setItem('sidebar-collapsed', (!collapsed).toString())
+  }
+
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -86,9 +94,13 @@ export function AppShell({ children }) {
   }
 
   return (
-    <div className="app-shell">
+    <div className={`app-shell ${collapsed ? 'app-shell--sidebar-collapsed' : ''}`}>
       <header className="app-topbar">
         <div className="topbar-left">
+          {/* Solo visible en mobile (CSS): salida al landing desde el dashboard */}
+          <Link to="/" className="topbar-back" aria-label="Volver al inicio">
+            <Icon name="arrow_back" size={20} />
+          </Link>
           <Link to="/dashboard" className="topbar-brand">
             <img src="/logo.png" alt="OpenPaw" className="topbar-logo" />
             <span className="topbar-title">OpenPaw</span>
@@ -138,74 +150,94 @@ export function AppShell({ children }) {
         </div>
       </header>
       <div className="app-body">
-        <aside className="app-sidebar">
-          <nav className="sidebar-nav">
-            <Link to="/dashboard" className={isActive('/dashboard')}>
-              <Icon name="dashboard" />
-              Dashboard
+        <aside className="app-sidebar" aria-label="Navegacion del dashboard">
+          <div className="sidebar-top">
+            {/* Sin logo en el sidebar (solo el wordmark de texto; oculto en rail) */}
+            <Link to="/dashboard" className="sidebar-brand">
+              <span className="sidebar-brand-text">OpenPaw</span>
             </Link>
-            <Link to="/dashboard/perfil" className={isActive('/dashboard/perfil')}>
+            <button
+              type="button"
+              className="sidebar-toggle"
+              onClick={toggleCollapsed}
+              title={collapsed ? 'Expandir' : 'Colapsar'}
+              aria-label={collapsed ? 'Expandir sidebar' : 'Colapsar sidebar'}
+              aria-expanded={!collapsed}
+            >
+              {/* Icono panel estandar (M3 "left_panel_close": contorno con
+                  divisor vertical a la izquierda, analogo a Lucide PanelLeft);
+                  estatico en ambos estados, sin flip. */}
+              <Icon name="left_panel_close" size={20} className="sidebar-toggle-icon" />
+            </button>
+          </div>
+          <nav className="sidebar-nav">
+            {!collapsed && <span className="sidebar-section-label">Navegacion</span>}
+            <Link to="/dashboard" className={isActive('/dashboard')} title={collapsed ? 'Dashboard' : undefined}>
+              <Icon name="dashboard" />
+              <span className="sidebar-label">Dashboard</span>
+            </Link>
+            <Link to="/dashboard/perfil" className={isActive('/dashboard/perfil')} title={collapsed ? 'Perfil' : undefined}>
               <Icon name="person" />
-              Perfil
+              <span className="sidebar-label">Perfil</span>
             </Link>
             <div className="sidebar-divider" />
-            <Link to="/dashboard/mascotas" className={isActive('/dashboard/mascotas')}>
+            <Link to="/dashboard/mascotas" className={isActive('/dashboard/mascotas')} title={collapsed ? 'Mascotas' : undefined}>
               <Icon name="pets" />
-              Mascotas
+              <span className="sidebar-label">Mascotas</span>
             </Link>
-            <Link to="/dashboard/citas" className={isActive('/dashboard/citas')}>
+            <Link to="/dashboard/citas" className={isActive('/dashboard/citas')} title={collapsed ? 'Citas' : undefined}>
               <Icon name="calendar_today" />
-              Citas
+              <span className="sidebar-label">Citas</span>
             </Link>
             {roleId !== ROLE_IDS.ALMACEN && (
-              <Link to="/dashboard/traslados" className={isActive('/dashboard/traslados')}>
+              <Link to="/dashboard/traslados" className={isActive('/dashboard/traslados')} title={collapsed ? 'Traslados' : undefined}>
                 <Icon name="local_shipping" />
-                Traslados
+                <span className="sidebar-label">Traslados</span>
               </Link>
             )}
             {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA) && (
-              <Link to="/dashboard/emergencias" className={isActive('/dashboard/emergencias')}>
+              <Link to="/dashboard/emergencias" className={isActive('/dashboard/emergencias')} title={collapsed ? 'Emergencias' : undefined}>
                 <Icon name="emergency" />
-                Emergencias
+                <span className="sidebar-label">Emergencias</span>
               </Link>
             )}
             {(roleId === ROLE_IDS.CLIENTE || roleId === ROLE_IDS.VETERINARIA || userIsAdmin) && (
-              <Link to="/dashboard/expediente" className={isActive('/dashboard/expediente')}>
+              <Link to="/dashboard/expediente" className={isActive('/dashboard/expediente')} title={collapsed ? 'Expediente' : undefined}>
                 <Icon name="folder_shared" />
-                Expediente
+                <span className="sidebar-label">Expediente</span>
               </Link>
             )}
             {(userIsAdmin || roleId === ROLE_IDS.VETERINARIA) && (
-              <Link to="/dashboard/servicios" className={isActive('/dashboard/servicios')}>
+              <Link to="/dashboard/servicios" className={isActive('/dashboard/servicios')} title={collapsed ? 'Servicios' : undefined}>
                 <Icon name="medical_services" />
-                Servicios
+                <span className="sidebar-label">Servicios</span>
               </Link>
             )}
+            <div className="sidebar-divider" />
             {userCanManageFuncionarios && (
-              <Link to="/dashboard/inventario" className={isActive('/dashboard/inventario')}>
+              <Link to="/dashboard/inventario" className={isActive('/dashboard/inventario')} title={collapsed ? 'Inventario' : undefined}>
                 <Icon name="inventory_2" />
-                Inventario
+                <span className="sidebar-label">Inventario</span>
               </Link>
             )}
             {userIsAdmin && (
-              <>
-                <Link to="/dashboard/aprobaciones" className={isActive('/dashboard/aprobaciones')}>
-                  <Icon name="fact_check" />
-                  <span className="sidebar-link-text">Aprobaciones</span>{pendingLoading ? <span className="sidebar-spinner" /> : pendingCount > 0 && <span className="sidebar-dot" role="img" aria-label={`${pendingCount} aprobaciones pendientes`} title={pendingCount + " pendiente(s)"}></span>}
-                </Link>
-              </>
+              <Link to="/dashboard/aprobaciones" className={isActive('/dashboard/aprobaciones')} title={collapsed ? 'Aprobaciones' : undefined}>
+                <Icon name="fact_check" />
+                <span className="sidebar-label">Aprobaciones</span>
+                {pendingLoading ? <span className="sidebar-spinner" /> : pendingCount > 0 && <span className="sidebar-dot" role="img" aria-label={`${pendingCount} aprobaciones pendientes`} title={pendingCount + " pendiente(s)"}></span>}
+              </Link>
             )}
             {userCanManageFuncionarios && (
-              <Link to="/dashboard/funcionarios" className={isActive('/dashboard/funcionarios')}>
+              <Link to="/dashboard/funcionarios" className={isActive('/dashboard/funcionarios')} title={collapsed ? 'Funcionarios' : undefined}>
                 <Icon name="badge" />
-                Funcionarios
+                <span className="sidebar-label">Funcionarios</span>
               </Link>
             )}
           </nav>
           <div className="sidebar-spacer" />
-          <Link to="/" className="sidebar-link sidebar-link--home">
+          <Link to="/" className="sidebar-link sidebar-link--home" title={collapsed ? 'Volver al inicio' : undefined}>
             <Icon name="logout" />
-            Volver al inicio
+            <span className="sidebar-label">Volver al inicio</span>
           </Link>
         </aside>
         <main className="app-content">{children}</main>

@@ -202,14 +202,15 @@
   display: flex;
   gap: 0;
   background: var(--md-surface-container-lowest);
+  border: 1px solid transparent;
   border-radius: var(--rounded-lg);
   box-shadow: var(--shadow-sm);
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 
 .apr-card:hover {
-  box-shadow: var(--shadow-level-2);
-  transform: translateY(-2px);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 
 /* Borde decorativo por tipo (wireframe: barra izquierda redondeada). */
@@ -653,9 +654,5 @@
   .apr-adjunto,
   .apr-adjunto__go {
     transition: none;
-  }
-
-  .apr-card:hover {
-    transform: none;
   }
 }

@@ -112,15 +112,17 @@ describe('MarketplacePage (T39)', () => {
     expect(screen.getByRole('button', { name: /Abrir carrito/i })).toBeInTheDocument()
   })
 
-  test('muestra los productos destacados con badge de stock, precio y paginación', async () => {
+  test('muestra los productos con badge de stock, precio y secciones por categoría (R19)', async () => {
     renderPage()
 
     expect(await screen.findByText('Alimento Perro Premium 5kg')).toBeInTheDocument()
     expect(screen.getAllByText('Disponible').length).toBeGreaterThan(0)
     /* Intl es-CR agrupa miles con espacio (ICU del entorno) */
     expect(screen.getByText('₡10 000')).toBeInTheDocument()
-    /* Pagination DS visible con 9 productos y pageSize 8 */
-    expect(screen.getByText('Mostrando 1-8 de 9')).toBeInTheDocument()
+    /* R19: secciones por categoria con secciones de categoria agrupadas */
+    expect(screen.getAllByRole('list', { name: /Productos de /i }).length).toBeGreaterThan(0)
+    /* Todos los productos visibles (sin paginacion en la vista por categorias) */
+    expect(screen.getByText('Producto Veterinario 3')).toBeInTheDocument()
   })
 
   test('agregar al carrito actualiza el indicador del hero', async () => {
@@ -208,14 +210,17 @@ describe('MarketplacePage (T39)', () => {
     expect(await screen.findByText('9 productos con stock')).toBeInTheDocument()
   })
 
-  test('la paginación avanza a la segunda página', async () => {
+  test('el filtro de categoria via "Ver todos" de la seccion (R19) deja solo esa categoria', async () => {
     renderPage()
     await screen.findByText('Alimento Perro Premium 5kg')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Página siguiente' }))
+    const seccionAlimento = screen.getAllByRole('list', { name: /Productos de Alimento/i })[0]
+    const catTitle = seccionAlimento.closest('.mp-cat').querySelector('.mp-cat__title').textContent
+    fireEvent.click(screen.getAllByRole('button', { name: 'Ver todos' })[0])
 
-    expect(screen.getByText('Mostrando 9-9 de 9')).toBeInTheDocument()
-    expect(screen.queryByText('Alimento Perro Premium 5kg')).not.toBeInTheDocument()
+    expect(await screen.findByText('Alimento Perro Premium 5kg')).toBeInTheDocument()
+    expect(screen.getAllByRole('list', { name: new RegExp(`Productos de ${catTitle}`) }).length).toBe(1)
+    expect(screen.queryByText('Producto Veterinario 3')).not.toBeInTheDocument()
   })
 
   test('agenda cita desde servicios con deep-link hacia CitasPage', async () => {

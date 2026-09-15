@@ -13,33 +13,53 @@
 
 :root {
   /* ==========================================================================
-     MATERIAL 3 — PALETA COMPLETA (46 tokens) — DESIGN.md frontmatter
-     ========================================================================== */
+     PALETA LANDING (marca) — R12: identidad extendida al resto del app
+     ====================================================================== */
 
-  /* Surface */
-  --md-surface: #f9f9f9;
-  --md-surface-dim: #dadada;
-  --md-surface-bright: #f9f9f9;
+  --lp-paper: #f4efe5;      /* papel marfil (base surfaces) */
+  --lp-ink: #14263c;        /* tinta navy (texto / neutrales) */
+  --lp-blue: #004fb7;       /* azul primario */
+  --lp-ink-deep: #0a1727;   /* navy profundo (heroes oscuros) */
+
+  /* R13 — Blue deep: azul oscuro sobrio que reemplaza los acentos claros.
+     - --brand-blue-deep: acento sobre superficies CLARAS (paper/white).
+     - --brand-blue-deepsat: acento sobre superficies OSCURAS (hero navy),
+       #5a8bd0 = 5.18:1 sobre #0a1727 (>= 4.5 AA). El deep puro sobre navy
+       da 1.51:1 — ilegible, por eso existe la variante deepsat. */
+  --brand-blue-deep: #0a3d8f;
+  --brand-blue-deep-hover: #093781;   /* 10% más oscuro */
+  --brand-blue-deepsat: #5a8bd0;
+  --brand-blue-deepsat-hover: #7ea8dc;
+
+  /* ==========================================================================
+      MATERIAL 3 — PALETA COMPLETA (46 tokens) — DESIGN.md frontmatter
+      ========================================================================== */
+
+  /* Surface — escala neutral reasignada a tinta navy + papel marfil (R12) */
+  --md-surface: #f7f2e9;
+  --md-surface-dim: #e3ddd0;
+  --md-surface-bright: #f7f2e9;
   --md-surface-container-lowest: #ffffff;
-  --md-surface-container-low: #f3f3f3;
-  --md-surface-container: #eeeeee;
-  --md-surface-container-high: #e8e8e8;
-  --md-surface-container-highest: #e2e2e2;
-  --md-on-surface: #1a1c1c;
-  --md-on-surface-variant: #424654;
-  --md-surface-variant: #e2e2e2;
-  --md-inverse-surface: #2f3131;
-  --md-inverse-on-surface: #f1f1f1;
-  --md-outline: #727786;
-  --md-outline-variant: #c2c6d7;
+  --md-surface-container-low: #f6f2e9;
+  --md-surface-container: #f1ece1;
+  --md-surface-container-high: #eae4d7;
+  --md-surface-container-highest: #e3ddcf;
+  --md-on-surface: #14263c;
+  --md-on-surface-variant: #405066;
+  --md-surface-variant: #e5e1d6;
+  --md-inverse-surface: #14263c;
+  --md-inverse-on-surface: #f4efe5;
+  --md-outline: #6b7788;
+  --md-outline-variant: #c8cdd6;
   --md-surface-tint: #0058ca;
 
-  /* Primary */
+  /* Primary — R13: container pasa a blue-deep (sobrio); primary queda #004fb7
+     (blanco over primary = 7.49:1 AAA). on-container #edf0ff = 8.91:1. */
   --md-primary: #004fb7;
   --md-on-primary: #ffffff;
-  --md-primary-container: #0066e8;
+  --md-primary-container: var(--brand-blue-deep);
   --md-on-primary-container: #edf0ff;
-  --md-inverse-primary: #b0c6ff;
+  --md-inverse-primary: var(--brand-blue-deepsat);
   --md-primary-hover: #0052b8;
 
   /* Secondary */
@@ -60,9 +80,10 @@
   --md-error-container: #ffdad6;
   --md-on-error-container: #93000a;
 
-  /* Fixed / Dim (tonos) */
-  --md-primary-fixed: #d9e2ff;
-  --md-primary-fixed-dim: #b0c6ff;
+  /* Fixed / Dim (tonos) — R13: tints apagados hacia navy (#cdd9ed) y focus
+     ring oscurecido a 3.95:1 vs blanco (#6081b6, era #b0c6ff ~1.6:1) */
+  --md-primary-fixed: #cdd9ed;
+  --md-primary-fixed-dim: #6081b6;
   --md-on-primary-fixed: #001945;
   --md-on-primary-fixed-variant: #00429b;
   --md-secondary-fixed: #aaf1d6;
@@ -75,37 +96,37 @@
   --md-on-tertiary-fixed-variant: #683d00;
 
   /* Background */
-  --md-background: #f9f9f9;
-  --md-on-background: #1a1c1c;
+  --md-background: #f7f2e9;
+  --md-on-background: #14263c;
 
   /* ==========================================================================
-     COLORES LEGACY (compatibilidad) — actualizados al nuevo sistema
-     ========================================================================== */
+      COLORES LEGACY (compatibilidad) — neutral reasignado a escala navy-ink (R12)
+      ========================================================================== */
 
-  /* Primary palette */
+  /* Primary palette — R13: light/lighter alineados a los tints apagados */
   --color-primary: #004fb7;
   --color-primary-hover: #0052b8;
-  --color-primary-light: #d9e2ff;
-  --color-primary-lighter: #b0c6ff;
+  --color-primary-light: #cdd9ed;
+  --color-primary-lighter: #6081b6;
   --color-primary-dark: #00429b;
   --color-accent: #004fb7;
   --color-accent-hover: #0052b8;
   --color-accent-light: rgba(0, 79, 183, 0.1);
 
-  /* Neutral palette (sin cambio) */
+  /* Neutral palette (navy-ink tinted) */
   --color-black: #000000;
   --color-white: #ffffff;
-  --color-gray-900: #1a1a1a;
-  --color-gray-700: #333;
-  --color-gray-600: #555;
-  --color-gray-500: #666;
-  --color-gray-400: #888;
-  --color-gray-300: #999;
-  --color-gray-200: #ccc;
-  --color-gray-150: #d1d5db;
-  --color-gray-100: #e8e8e8;
-  --color-gray-50: #f0f0f0;
-  --color-gray-25: #f5f5f5;
+  --color-gray-900: #14263c;
+  --color-gray-700: #2c3c4f;
+  --color-gray-600: #4d5c70;
+  --color-gray-500: #63738a;
+  --color-gray-400: #8a97a8;
+  --color-gray-300: #b0b9c6;
+  --color-gray-200: #ccd2da;
+  --color-gray-150: #d8dde2;
+  --color-gray-100: #e7e9ec;
+  --color-gray-50: #f2f3f4;
+  --color-gray-25: #f6f4ee;
 
   /* Semantic colors */
   --color-success: #17624d;
@@ -126,12 +147,12 @@
   --color-teal-bg: #dff5fa;
 
   /* Surfaces & text */
-  --color-bg: #f9f9f9;
+  --color-bg: #f7f2e9;
   --color-surface: #ffffff;
   --color-surface-elevated: #ffffff;
-  --color-border: #dfe5ef;
-  --color-text: #1a1c1c;
-  --color-text-secondary: #424654;
+  --color-border: #e2ded2;
+  --color-text: #14263c;
+  --color-text-secondary: #405066;
 
   /* ==========================================================================
      TIPOGRAFÍA
@@ -244,7 +265,7 @@
   --shadow-md: 0 6px 24px rgba(0, 0, 0, 0.06); /* transición 1→2 */
   --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08); /* Level 2 — flotantes/modales */
   --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.12); /* extrema */
-  --shadow-glow: 0 4px 20px rgba(0, 79, 183, 0.35); /* glow botón primario */
+  --shadow-glow: 0 1px 2px rgba(0, 0, 0, 0.12); /* ronda 3: neutral — cero sombra de color en el proyecto */
   --shadow-focus: 0 0 0 3px rgba(0, 79, 183, 0.2); /* glow focus inputs */
 
   /* Alias por nivel */
@@ -263,10 +284,24 @@
   --glass-backdrop: blur(20px) saturate(1.6);
 
   /* ==========================================================================
-     TRANSICIONES
-     ========================================================================== */
+      TRANSICIONES
+      ========================================================================== */
 
   --transition-fast: 0.15s;
+
+  /* ==========================================================================
+      ESCALERA Z-INDEX (R18) — única fuente de verdad de capas.
+      Orden: toast > modal > drawer > navbar > contenido.
+      - navbar: 1000 (LandingNavbar, mobile menu 998-999 interno)
+      - drawer: 1500-1501 (R18: por encima de cualquier topbar sticky,
+        AppShell topbar 100/200 y Navbar 1200 incluidos)
+      - modal: 2000 (shared/components/Modal)
+      - toast: 9999
+      ====================================================================== */
+  --z-toast: 9999;
+  --z-modal: 2000;
+  --z-drawer: 1500;
+  --z-navbar: 1000;
   --transition-normal: 0.25s;
   --transition-slow: 0.35s;
 }

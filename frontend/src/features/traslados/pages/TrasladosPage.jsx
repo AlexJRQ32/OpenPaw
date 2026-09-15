@@ -57,12 +57,11 @@ const LOGISTICA_LABEL = {
 
 /* ---------------------------------------------------------------------------
    Stat bento (patrón wireframe traslados_openpaw): 4 tarjetas con icono en
-   círculo tintado + glow decorativo por esquina (misma base que inventario).
+   círculo tintado + sombra neutra corta (sin glows de color).
    --------------------------------------------------------------------------- */
 function StatCard({ label, value, icon, tone }) {
   return (
     <div className={`trl-stat trl-stat--${tone}`}>
-      <span className="trl-stat__glow" aria-hidden="true" />
       <div className="trl-stat__row">
         <span className="trl-stat__icon" aria-hidden="true">
           <Icon name={icon} size={24} filled />

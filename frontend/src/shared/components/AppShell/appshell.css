@@ -12,15 +12,12 @@
   --shell-header-h: 60px;
   --shell-gap: var(--space-3);
   --shell-sidebar-w: 220px;
+  --shell-sidebar-w-collapsed: 68px;
 
   min-height: 100svh;
   display: flex;
   flex-direction: column;
-  /* Fondo ambiental sutil (tokens M3 fixed) para dar profundidad al vidrio */
-  background:
-    radial-gradient(1100px 520px at 88% -8%, color-mix(in srgb, var(--md-primary-fixed) 30%, transparent), transparent 60%),
-    radial-gradient(900px 480px at -8% 102%, color-mix(in srgb, var(--md-secondary-fixed) 24%, transparent), transparent 55%),
-    var(--md-background);
+  background: var(--md-background);
 }
 
 /* ==========================================================================
@@ -46,6 +43,9 @@
   align-items: center;
   gap: var(--space-1);
 }
+.topbar-back {
+  display: none;
+}
 .topbar-brand {
   display: flex;
   align-items: center;
@@ -66,7 +66,7 @@
   font-size: var(--fs-md);
   font-weight: var(--fw-bold);
   letter-spacing: var(--tracking-tight);
-  color: var(--color-primary);
+  color: var(--brand-blue-deep);
 }
 
 /* --------------------------------------------------------------------------
@@ -168,9 +168,12 @@
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to top right, var(--md-primary), var(--md-secondary));
+  background: var(--md-primary);
   color: var(--md-on-primary);
   border-radius: var(--radius-full);
+  font-size: var(--fs-sm);
+  font-weight: var(--fw-bold);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-primary) 12%, transparent); /* ring wireframe: ring-primary/10 */
   font-size: var(--fs-sm);
   font-weight: var(--fw-bold);
   box-shadow: 0 0 0 2px color-mix(in srgb, var(--md-primary) 12%, transparent); /* ring wireframe: ring-primary/10 */
@@ -254,6 +257,74 @@
 }
 
 /* --------------------------------------------------------------------------
+   SIDEBAR TOP — brand compacto + boton toggle (patron Trustride)
+   -------------------------------------------------------------------------- */
+.sidebar-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  /* Alto fijo en ambos estados: en rail queda solo el toggle centrado */
+  height: 30px;
+  min-width: 0;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  min-width: 0;
+  overflow: hidden;
+}
+.sidebar-brand-text {
+  font-family: var(--font-heading);
+  font-size: var(--fs-md);
+  font-weight: var(--fw-bold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--brand-blue-deep);
+  white-space: nowrap;
+}
+.sidebar-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 60%, transparent);
+  border-radius: var(--radius-md);
+  background: var(--md-surface-container-lowest);
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  transition: background-color var(--transition-fast) ease-out, color var(--transition-fast) ease-out, border-color var(--transition-fast) ease-out;
+}
+.sidebar-toggle:hover {
+  background: var(--md-surface-container-high);
+  color: var(--md-on-surface);
+  border-color: var(--md-outline-variant);
+}
+.sidebar-toggle:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+}
+
+/* Etiqueta de seccion (jerarquia visual) */
+.sidebar-section-label {
+  padding: var(--space-1) var(--space-3) var(--space-1);
+  font-size: 10px;
+  font-weight: var(--fw-semibold);
+  color: var(--md-outline);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  white-space: nowrap;
+}
+.sidebar-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* --------------------------------------------------------------------------
    SIDEBAR FLOTANTE GLASS (wireframe: w-[220px] surface-container-lowest/60
    backdrop-blur-2xl rounded-xl border-white/40 shadow level-2)
    Separado del borde de la ventana con margen --shell-gap.
@@ -278,6 +349,60 @@
   box-shadow: var(--shadow-level-2);
   scrollbar-width: thin;
   scrollbar-color: var(--md-outline-variant) transparent;
+  /* Colapso: transicion de width (patron Trustride) */
+  transition: width 0.25s var(--ease-out, ease-out);
+}
+/* Rail colapsado (ronda 6): estructura limpia y centrada.
+   - Header solo con el toggle centrado en la columna de íconos
+   - Nav: pills uniformes 40px, gap consistente, sin desbordes
+   - Sin scrollbar visible y sin doble borde */
+.app-shell--sidebar-collapsed .app-sidebar {
+  width: var(--shell-sidebar-w-collapsed);
+  padding: var(--space-2) var(--space-2) var(--space-3);
+  overflow-y: auto;
+  /* Sin scrollbar visible en el rail: el contenido entra con scroll nativo
+     si el viewport es muy bajo, pero la barra no se pinta */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.app-shell--sidebar-collapsed .app-sidebar::-webkit-scrollbar {
+  display: none;
+}
+.app-shell--sidebar-collapsed .sidebar-top {
+  justify-content: center;
+  margin-bottom: var(--space-2);
+}
+.app-shell--sidebar-collapsed .sidebar-brand {
+  display: none;
+}
+/* Toggle centrado en el rail: mismo ancho que los pills de nav (40px) */
+.app-shell--sidebar-collapsed .sidebar-toggle {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+}
+.app-shell--sidebar-collapsed .sidebar-section-label,
+.app-shell--sidebar-collapsed .sidebar-label,
+.app-shell--sidebar-collapsed .sidebar-divider {
+  display: none;
+}
+.app-shell--sidebar-collapsed .sidebar-nav {
+  align-items: center;
+  gap: var(--space-2);
+}
+/* Pills uniformes: cuadrados centrados de 40px; el indicador activo
+   (primary-container) queda alineado a los 68px del rail sin desbordar */
+.app-shell--sidebar-collapsed .sidebar-link {
+  justify-content: center;
+  align-self: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border-radius: var(--radius-md);
+  overflow: visible;
+}
+.app-shell--sidebar-collapsed .sidebar-link--home {
+  margin-top: var(--space-2);
 }
 .sidebar-nav {
   display: flex;
@@ -347,14 +472,12 @@
   outline: 2px solid var(--color-primary);
   outline-offset: -2px;
 }
-/* Item activo (wireframe): primary-container + glow primario + translate-x-1 */
+/* Item activo (wireframe): primary-container + indicador sobrio */
 .sidebar-link.active {
   background: var(--md-primary-container);
   color: var(--md-on-primary-container);
   font-weight: var(--fw-semibold);
-  transform: translateX(4px);
-  /* Glow permitido por regla: color-mix sobre token primario */
-  box-shadow: 0 0 15px color-mix(in srgb, var(--md-primary-container) 30%, transparent);
+  transform: translateX(2px);
 }
 .sidebar-link.active:hover {
   background: var(--md-primary-container);
@@ -384,11 +507,25 @@
   height: 8px !important;
   border-radius: 50% !important;
   background: var(--md-error) !important;
-  box-shadow: 0 0 8px color-mix(in srgb, var(--md-error) 40%, transparent);
   position: absolute !important;
   right: 12px !important;
   top: 50% !important;
   transform: translateY(-50%);
+}
+/* Item activo (rail colapsado): sin desplazamiento para mantener el pill centrado */
+.app-shell--sidebar-collapsed .sidebar-link.active {
+  transform: none;
+}
+
+/* Dot de pendientes en rail: esquina superior derecha del pill de 40px */
+.app-shell--sidebar-collapsed .sidebar-dot {
+  top: 3px !important;
+  right: 3px !important;
+  transform: none !important;
+  margin-right: 0 !important;
+  width: 10px !important;
+  height: 10px !important;
+  box-shadow: 0 0 0 2px var(--md-surface-container-lowest);
 }
 .sidebar-spinner {
   display: inline-block;
@@ -402,6 +539,12 @@
   right: 12px;
   top: 50%;
   margin-top: -6px;
+}
+.app-shell--sidebar-collapsed .sidebar-spinner {
+  top: 8px !important;
+  right: 9px !important;
+  margin-top: 0 !important;
+  margin-right: 0 !important;
 }
 @keyframes sidebar-spin { to { transform: rotate(360deg); } }
 
@@ -435,6 +578,27 @@
   }
   .app-topbar {
     padding: 0 var(--space-4);
+  }
+  /* Back-link al landing: icono junto al wordmark, tap >=44px */
+  .topbar-back {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 44px; /* alto de toque completo, ancho compacto */
+    color: var(--md-on-surface-variant);
+    text-decoration: none;
+    border-radius: var(--radius-md);
+    transition: color var(--transition-fast) ease-out, background-color var(--transition-fast) ease-out;
+  }
+  .topbar-back:active {
+    background: var(--md-surface-container-high);
+    color: var(--md-on-surface);
+  }
+  .topbar-back:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: -2px;
   }
   .app-sidebar {
     display: none;
@@ -519,7 +683,7 @@
     white-space: nowrap;
     border-radius: var(--radius-md);
     -webkit-tap-highlight-color: transparent;
-    transition: color var(--transition-fast) ease-out, background-color var(--transition-fast) ease-out;
+    transition: color var(--transition-fast) ease-out;
   }
   .bottom-nav-link:active {
     transform: scale(0.96);
@@ -530,12 +694,12 @@
     flex-shrink: 0;
     transition: color var(--transition-fast) ease-out;
   }
-  /* Item activo: indicador pill primary-container (coherente con sidebar) */
+  /* Item activo: SOLO cambio de color (r21) — sin bg, sin inset border, sin pill.
+     Azul brand deep: glass clara sobre contenido claro del dashboard
+     (#0a3d8f sobre blanco ~10:1 AA); deepsat reservado a superficies oscuras. */
   .bottom-nav-link.active {
-    color: var(--color-primary);
+    color: var(--brand-blue-deep);
     font-weight: var(--fw-semibold);
-    background: color-mix(in srgb, var(--md-primary-container) 16%, transparent);
-    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--md-primary-container) 22%, transparent);
   }
   .bottom-nav-link:focus-visible {
     outline: 2px solid var(--color-primary);

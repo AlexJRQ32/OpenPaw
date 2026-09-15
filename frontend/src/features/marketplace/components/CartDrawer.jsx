@@ -7,6 +7,7 @@ import {
   clearCart,
 } from '../../../shared/utils/cart'
 import './CartDrawer.css'
+import { Icon } from '../../../shared/components/Icon/Icon'
 
 function formatPrice(value) {
   return new Intl.NumberFormat('es-CR', {
@@ -25,7 +26,7 @@ function CartItemImage({ item }) {
   if (!item.imagenUrl || failed) {
     return (
       <div className="cd-item-img cd-item-img--placeholder" aria-hidden="true">
-        <i className="fas fa-paw" />
+        <Icon name="pets" size={24} filled />
       </div>
     )
   }
@@ -58,6 +59,16 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
     return () => window.removeEventListener('storage', onStorage)
   }, [open, userId, refresh])
 
+  // Cierre con Escape (accesibilidad: unico path sin puntero)
+  useEffect(() => {
+    if (!open) return
+    const onKey = (event) => {
+      if (event.key === 'Escape') onClose?.()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+
   // Lee el carrito fresco en cada render cuando esta abierto (siempre sincronizado)
   const items = open ? getCart(userId) : []
   const subtotal = items.reduce((acc, i) => acc + (Number(i.precio) || 0) * i.cantidad, 0)
@@ -71,17 +82,17 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
       <aside className="cd-drawer" role="dialog" aria-label="Carrito de compras" aria-modal="true">
         <header className="cd-header">
           <div className="cd-header-title">
-            <i className="fas fa-shopping-cart" aria-hidden="true" />
+            <Icon name="shopping_cart" size={20} aria-hidden="true" />
             <h2>Tu carrito</h2>
             {count > 0 && <span className="cd-badge">{count}</span>}
           </div>
           <button type="button" className="cd-close" onClick={onClose} aria-label="Cerrar carrito">
-            <i className="fas fa-times" aria-hidden="true" />
+            <Icon name="close" size={20} aria-hidden="true" />
           </button>
         </header>
         {items.length === 0 ? (
           <div className="cd-empty">
-            <div className="cd-empty-icon"><i className="fas fa-shopping-basket" aria-hidden="true" /></div>
+            <div className="cd-empty-icon"><Icon name="shopping_basket" size={32} /></div>
             <h3>Tu carrito esta vacio</h3>
             <p>Explora el marketplace y agrega productos para tu mascota.</p>
             <button type="button" className="cd-empty-btn" onClick={onClose}>Explorar productos</button>
@@ -105,14 +116,14 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
                         onClick={() => { removeFromCart(userId, itemKey(item)); refresh() }}
                         aria-label={`Eliminar ${item.nombre}`}
                       >
-                        <i className="fas fa-trash-alt" aria-hidden="true" />
+                        <Icon name="delete" size={18} aria-hidden="true" />
                       </button>
                     </div>
                     {item.veterinariaNombre && (
-                      <p className="cd-item-vet"><i className="fas fa-hospital" aria-hidden="true" /> {item.veterinariaNombre}</p>
+                      <p className="cd-item-vet"><Icon name="local_hospital" size={14} aria-hidden="true" /> {item.veterinariaNombre}</p>
                     )}
                     {item.almacenNombre && item.almacenNombre !== item.veterinariaNombre && (
-                      <p className="cd-item-alm"><i className="fas fa-warehouse" aria-hidden="true" /> {item.almacenNombre}</p>
+                      <p className="cd-item-alm"><Icon name="warehouse" size={14} aria-hidden="true" /> {item.almacenNombre}</p>
                     )}
                     <div className="cd-item-foot">
                       <div className="cd-stepper">
@@ -122,7 +133,7 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
                           disabled={item.cantidad <= 1}
                           aria-label="Disminuir cantidad"
                         >
-                          <i className="fas fa-minus" aria-hidden="true" />
+                          <Icon name="remove" size={16} aria-hidden="true" />
                         </button>
                         <span>{item.cantidad}</span>
                         <button
@@ -131,7 +142,7 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
                           disabled={Number(item.stock) > 0 && item.cantidad >= Number(item.stock)}
                           aria-label="Aumentar cantidad"
                         >
-                          <i className="fas fa-plus" aria-hidden="true" />
+                          <Icon name="add" size={16} aria-hidden="true" />
                         </button>
                       </div>
                       <span className="cd-item-price">{formatPrice(item.precio * item.cantidad)}</span>
@@ -161,7 +172,7 @@ export function CartDrawer({ open, onClose, onCheckout, onChange }) {
               </div>
               <button type="button" className="cd-checkout-btn" onClick={onCheckout}>
                 <span>Finalizar compra</span>
-                <i className="fas fa-arrow-right" aria-hidden="true" />
+                <Icon name="arrow_forward" size={18} aria-hidden="true" />
               </button>
               <button type="button" className="cd-clear" onClick={() => { clearCart(userId); refresh() }}>
                 Vaciar carrito

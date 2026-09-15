@@ -19,7 +19,6 @@ import './MarketplacePage.css'
 const ALL_CATEGORIES = 'Todas las categorias'
 const ALL_VETS = 'todas'
 const ALL_SERVICIO_TIPOS = 'todos'
-const PRODUCTS_PAGE_SIZE = 8
 const SERVICES_PAGE_SIZE = 6
 
 /* Icono y variante M3 por categoria de servicio (wireframe: spa / salud) */
@@ -57,7 +56,7 @@ function ProductImage({ product }) {
   if (!product.imagenUrl || failed) {
     return (
       <div className="mp-card__placeholder" aria-hidden="true">
-        <i className="fas fa-paw" />
+        <Icon name="pets" size={22} filled />
       </div>
     )
   }
@@ -66,7 +65,7 @@ function ProductImage({ product }) {
     <img
       className="mp-card__img"
       src={product.imagenUrl}
-      alt=""
+      alt={product.nombre}
       loading="lazy"
       onError={() => setFailed(true)}
     />
@@ -106,7 +105,6 @@ export function MarketplacePage() {
   const [vista, setVista] = useState('productos')
   const [selectedVet, setSelectedVet] = useState(ALL_VETS)
   const [selectedServicioTipo, setSelectedServicioTipo] = useState(ALL_SERVICIO_TIPOS)
-  const [page, setPage] = useState(1)
   const [servicePage, setServicePage] = useState(1)
   const [selectedProduct, setSelectedProduct] = useState(null)
   const [cartOpen, setCartOpen] = useState(false)
@@ -120,21 +118,11 @@ export function MarketplacePage() {
     setCartItems(cartCount(user?.sub))
   }, [user?.sub])
 
-  /* Reinicia la paginacion cuando cambian los filtros (patron React:
-     ajuste de estado durante el render comparando la firma de filtros,
-     sin effects con setState que provocan renders en cascada) */
-  const productFilterSignature = `${query}|${category}|${minPrice}|${maxPrice}|${sort}|${selectedVet}`
+  /* Reinicia la paginacion de servicios cuando cambia la busqueda/vet/tipo */
   const serviceFilterSignature = `${query}|${selectedVet}|${selectedServicioTipo}`
-  const [pageSignatures, setPageSignatures] = useState({
-    product: productFilterSignature,
-    service: serviceFilterSignature,
-  })
-  if (pageSignatures.product !== productFilterSignature) {
-    setPageSignatures((prev) => ({ ...prev, product: productFilterSignature }))
-    setPage(1)
-  }
-  if (pageSignatures.service !== serviceFilterSignature) {
-    setPageSignatures((prev) => ({ ...prev, service: serviceFilterSignature }))
+  const [serviceSignature, setServiceSignature] = useState(serviceFilterSignature)
+  if (serviceSignature !== serviceFilterSignature) {
+    setServiceSignature(serviceFilterSignature)
     setServicePage(1)
   }
 
@@ -268,8 +256,20 @@ export function MarketplacePage() {
     }).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
   }, [services, vetMap, query, selectedVet, selectedServicioTipo])
 
-  const pagedProducts = filteredProducts.slice((page - 1) * PRODUCTS_PAGE_SIZE, page * PRODUCTS_PAGE_SIZE)
   const pagedServices = filteredServices.slice((servicePage - 1) * SERVICES_PAGE_SIZE, servicePage * SERVICES_PAGE_SIZE)
+
+  /* R19 — Agrupacion por categoria: cada categoria es una seccion con
+     fila de scroll horizontal (patron moderno mobile). Los filtros y la
+     busqueda siguen aplicando (filtra DENTRO de cada seccion). */
+  const productSections = useMemo(() => {
+    const map = new Map()
+    filteredProducts.forEach((p) => {
+      const key = p.categoria || 'Otros'
+      if (!map.has(key)) map.set(key, [])
+      map.get(key).push(p)
+    })
+    return [...map.entries()].map(([name, items]) => ({ name, items }))
+  }, [filteredProducts])
 
   /* Veterinarias para el carrusel, segun la vista activa */
   const carouselItems = useMemo(() => {
@@ -322,7 +322,7 @@ export function MarketplacePage() {
 
   return (
     <section className="marketplace-page">
-      <LandingNavbar onLanding />
+      <LandingNavbar onLanding dark />
 
       {/* ================================================================
           HERO AZUL — wireframe: eyebrow EXPLORAR + titulo + chip carrito +
@@ -520,47 +520,50 @@ export function MarketplacePage() {
             </div>
 
             {totalCount > 0 ? (
-              <>
-                <div className="mp-grid">
-                  {pagedProducts.map((product) => (
-                    <article key={`${product.id}-${product.almacenId}`} className="mp-card">
-                      <div className="mp-card__media">
-                        <ProductImage product={product} />
-                      </div>
-                      <div className="mp-card__body">
-                        <div className="mp-card__meta">
-                          <StockBadge stock={product.stock} stockMinimo={product.stockMinimo} />
-                        </div>
-                        <h3 className="mp-card__name">{product.nombre}</h3>
-                        <p className="mp-card__cat">
-                          {[product.categoria, product.almacenNombre].filter(Boolean).join(' · ') || 'Producto veterinario'}
-                        </p>
-                        <div className="mp-card__foot">
-                          <span className="mp-card__price">{formatPrice(product.precio)}</span>
-                          <Button
-                            variant="primary"
-                            size="sm"
-                            icon="add_shopping_cart"
-                            className="mp-card__add"
-                            aria-label={`Agregar ${product.nombre} al carrito`}
-                            onClick={() => handleBuy(product)}
-                          />
-                        </div>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-                {filteredProducts.length > PRODUCTS_PAGE_SIZE && (
-                  <div className="mp-pagination">
-                    <Pagination
-                      page={page}
-                      pageSize={PRODUCTS_PAGE_SIZE}
-                      total={filteredProducts.length}
-                      onChange={setPage}
-                    />
+              productSections.map((section) => (
+                <div key={section.name} className="mp-cat">
+                  <div className="mp-cat__head">
+                    <h3 className="mp-cat__title">{section.name}</h3>
+                    <span className="mp-cat__count">{section.items.length}</span>
+                    {category !== section.name && (
+                      <button
+                        type="button"
+                        className="mp-cat__all"
+                        onClick={() => setCategory(section.name)}
+                      >
+                        Ver todos
+                      </button>
+                    )}
                   </div>
-                )}
-              </>
+                  <div className="mp-row" role="list" aria-label={`Productos de ${section.name}`}>
+                    {section.items.map((product) => (
+                      <article key={product.inventarioId} className="mp-card" role="listitem">
+                        <ProductImage product={product} />
+                        <div className="mp-card__overlay">
+                          <div className="mp-card__meta">
+                            <StockBadge stock={product.stock} stockMinimo={product.stockMinimo} />
+                          </div>
+                          <h3 className="mp-card__name">{product.nombre}</h3>
+                          <p className="mp-card__cat">
+                            {[product.almacenNombre].filter(Boolean).join(' · ') || 'Producto veterinario'}
+                          </p>
+                          <div className="mp-card__foot">
+                            <span className="mp-card__price">{formatPrice(product.precio)}</span>
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              icon="add_shopping_cart"
+                              className="mp-card__add"
+                              aria-label={`Agregar ${product.nombre} al carrito`}
+                              onClick={() => handleBuy(product)}
+                            />
+                          </div>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </div>
+              ))
             ) : (
               <EmptyState
                 icon="search_off"

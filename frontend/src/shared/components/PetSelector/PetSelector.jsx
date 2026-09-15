@@ -49,7 +49,7 @@ export function PetSelector({
           onChange={() => onChange?.(id)}
         />
         {isAll ? (
-          <span className="pet-selector__avatar" aria-hidden="true">
+          <span className="pet-selector__avatar pet-selector__avatar--all" aria-hidden="true">
             <Icon name="pets" size={20} />
           </span>
         ) : fotoUrl ? (

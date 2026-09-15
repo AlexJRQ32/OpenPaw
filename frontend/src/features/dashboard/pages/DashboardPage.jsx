@@ -167,7 +167,7 @@ export function DashboardPage() {
       <Modal open={modal === 'vet'} onClose={() => setModal(null)} className="reg-modal">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <h2 style={{margin:0,fontSize:20}}>Registrar veterinaria</h2>
-          <button onClick={() => setModal(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888',padding:'4px 8px'}}>✕</button>
+          <button onClick={() => setModal(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'var(--md-on-surface-variant)',padding:'4px 8px'}}>✕</button>
         </div>
         <RegistrationForm />
       </Modal>
@@ -175,7 +175,7 @@ export function DashboardPage() {
       <Modal open={modal === 'store'} onClose={() => setModal(null)} className="reg-modal">
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}}>
           <h2 style={{margin:0,fontSize:20}}>Registrar almacen</h2>
-          <button onClick={() => setModal(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#888',padding:'4px 8px'}}>✕</button>
+          <button onClick={() => setModal(null)} style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'var(--md-on-surface-variant)',padding:'4px 8px'}}>✕</button>
         </div>
         <StoreRegistrationForm />
       </Modal>

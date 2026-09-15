@@ -1,4 +1,5 @@
 import { Modal } from '../../../shared/components/Modal/Modal'
+import { Icon } from '../../../shared/components/Icon/Icon'
 import './CheckoutSuccessModal.css'
 
 function formatPrice(value) {
@@ -31,12 +32,12 @@ export function CheckoutSuccessModal({ open, onClose, subtotal, count }) {
           </div>
           <div className="csm-resumen-row csm-muted">
             <span>Estado</span>
-            <span className="csm-estado"><i className="fas fa-circle" aria-hidden="true" /> Procesando</span>
+            <span className="csm-estado"><Icon name="circle" size={12} filled aria-hidden="true" /> Procesando</span>
           </div>
         </div>
 
         <p className="csm-note">
-          <i className="fas fa-truck" aria-hidden="true" />
+          <Icon name="local_shipping" size={18} aria-hidden="true" />
           El comercio preparara tu envio. Te notificaremos cuando este en camino.
         </p>
 

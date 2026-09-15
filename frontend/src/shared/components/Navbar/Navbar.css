@@ -1,4 +1,4 @@
-.navbar {
+﻿.navbar {
   position: fixed;
   top: 20px;
   left: 50%;
@@ -58,7 +58,7 @@
   font-family: "Plus Jakarta Sans", system-ui, sans-serif;
   font-size: 17px;
   font-weight: 700;
-  color: #000000;
+  color: var(--color-gray-900);
 }
 
 /* ===== Desktop links ===== */
@@ -85,7 +85,7 @@
 
 .navbar-links .btn-nav {
   padding: 8px 20px;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--color-gray-900);
   color: #ffffff;
   border-radius: 8px;
   font-weight: 600;
@@ -93,7 +93,7 @@
 }
 
 .navbar-links .btn-nav:hover {
-  background: #000000;
+  background: var(--color-black);
   color: #ffffff;
 }
 
@@ -229,7 +229,7 @@
 .navbar-mobile-link--primary {
   margin: 4px 12px 8px;
   padding: 14px 20px;
-  background: rgba(0, 0, 0, 0.85);
+  background: var(--color-gray-900);
   color: #fff !important;
   border-radius: 12px;
   justify-content: center;

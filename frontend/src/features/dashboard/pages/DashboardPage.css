@@ -61,11 +61,17 @@
   align-items: center;
   gap: var(--space-3);
 }
-/* Stats (T24 — wireframe dashboard_openpaw): grid 2×2 en desktop, 1 columna
-   en móvil. La anatomía interna de cada card vive en StatCards.css. */
+/* ==========================================================================
+   Stats + acciones rápidas (layout uniforme — sin bento): grilla simple de
+   cards iguales, hover sobrio 150ms. Tokens --md-*, cero gradientes/sombras.
+   ========================================================================== */
+/* Stats en UNA sola fila en desktop: el número de columnas depende de
+   cuántas cards lleguen. auto-fit colapsa las tracks sin items: con 4 cards
+   son 4 columnas iguales, con 2 son 2. min(min(150px,100%),1fr) garantiza
+   ~150px por card; si no caben, auto-fit envuelve a filas iguales (mobile). */
 .dashboard-stats {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(150px, 100%), 1fr));
   gap: var(--space-4);
   margin-bottom: var(--space-8);
 }
@@ -97,8 +103,8 @@
   gap: var(--space-4);
   padding: var(--space-6);
   background: var(--md-surface-container-lowest);
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
+  border-radius: var(--radius-xl);
   box-shadow: var(--shadow-level-1);
   cursor: pointer;
   width: 100%;
@@ -106,33 +112,17 @@
   font: inherit;
   text-decoration: none;
   transition:
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow var(--transition-fast) ease-out,
+    background-color var(--transition-fast) ease,
     border-color var(--transition-fast) ease;
 }
-/* Glow sutil del tono al interactuar (gradiente diagonal del wireframe) */
-.action-card::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(135deg, transparent 55%, var(--qa-tint));
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity var(--transition-fast) ease;
-}
+/* Hover sobrio (ronda 3): sin lift de sombra ni transform; feedback leve */
 .action-card:hover,
 .action-card:focus-visible {
-  transform: translateY(-4px);
-  border-color: var(--qa-tint);
-  box-shadow: var(--shadow-level-2), 0 0 0 3px var(--qa-tint);
-}
-.action-card:hover::after,
-.action-card:focus-visible::after {
-  opacity: 0.35;
+  background: color-mix(in srgb, var(--qa-tone) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--qa-tint) 60%, var(--md-outline-variant));
 }
 .action-card:active {
-  transform: translateY(-1px) scale(0.98);
+  background: color-mix(in srgb, var(--qa-tone) 8%, transparent);
 }
 .action-card:focus-visible {
   outline: 2px solid var(--color-primary);
@@ -143,7 +133,7 @@
 .action-card--tertiary { --qa-tone: var(--md-tertiary); --qa-on-tone: var(--md-on-tertiary); --qa-tint: var(--md-tertiary-fixed); }
 .action-card--success { --qa-tone: var(--color-success); --qa-on-tone: var(--color-white); --qa-tint: var(--color-success-bg); }
 .action-card--neutral { --qa-tone: var(--color-gray-700); --qa-on-tone: var(--color-white); --qa-tint: var(--color-gray-100); }
-/* Tile del icono: pasa de tinte a sólido al interactuar (patrón wireframe) */
+/* Tile del icono: al hover solo sube 4% el tinte (antes pasaba a color sólido) */
 .action-icon {
   width: var(--space-12);
   height: var(--space-12);
@@ -155,15 +145,11 @@
   background: var(--qa-tint);
   color: var(--qa-tone);
   transition:
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    background-color var(--transition-fast) ease,
-    color var(--transition-fast) ease;
+    background-color var(--transition-fast) ease;
 }
 .action-card:hover .action-icon,
 .action-card:focus-visible .action-icon {
-  transform: scale(1.08);
-  background: var(--qa-tone);
-  color: var(--qa-on-tone);
+  background: color-mix(in srgb, var(--qa-tone) 10%, var(--md-surface-container-lowest));
 }
 .action-body { display: block; }
 .action-title {
@@ -239,7 +225,6 @@
     min-width: 140px;
   }
   .dashboard-stats {
-    grid-template-columns: 1fr;
     gap: var(--space-3);
   }
   .dashboard-section-title {

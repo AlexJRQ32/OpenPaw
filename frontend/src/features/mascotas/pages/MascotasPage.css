@@ -1,13 +1,13 @@
-@import "../../../shared/styles/tokens.css";
+﻿@import "../../../shared/styles/tokens.css";
 
 /* ==========================================================================
-   Mascotas (T26 — wireframe mascotas_openpaw)
-   Header con icono pets + botón "Agregar mascota" con glow primary.
+   Mascotas (T26 â€” wireframe mascotas_openpaw)
+   Header con icono pets + botÃ³n "Agregar mascota" con glow primary.
    Cards photo-forward: avatar 80px con foto real + ring por estado de salud,
-   badge de salud (Saludable → secondary-container / Tratamiento → tertiary),
-   grid de datos con icono de género junto al sexo, y footer de alertas
-   próximas (vacuna con icono vaccines · medicación con icono medication).
-   Hover: elevación --shadow-level-2 + translateY(-4px) + glow decorativo.
+   badge de salud (Saludable â†’ secondary-container / Tratamiento â†’ tertiary),
+   grid de datos con icono de gÃ©nero junto al sexo, y footer de alertas
+   prÃ³ximas (vacuna con icono vaccines Â· medicaciÃ³n con icono medication).
+   Hover: elevaciÃ³n --shadow-level-2 + translateY(-4px) + glow decorativo.
    ========================================================================== */
 
 .mascotas-page {
@@ -198,7 +198,7 @@
 }
 
 /* ==========================================================================
-   Card de mascota — tono inyectado por variante (cero hex, solo tokens)
+   Card de mascota â€” tono inyectado por variante (cero hex, solo tokens)
    ========================================================================== */
 .mascota-card {
   --mascota-tone: var(--md-primary);
@@ -216,8 +216,7 @@
   border-radius: var(--radius-xl);
   box-shadow: var(--shadow-level-1);
   transition:
-    transform var(--transition-fast) cubic-bezier(0.23, 1, 0.32, 1),
-    box-shadow var(--transition-fast) ease-out,
+    background-color var(--transition-fast) ease,
     border-color var(--transition-fast) ease;
 }
 
@@ -243,15 +242,8 @@
 
 .mascota-card:hover,
 .mascota-card:focus-visible {
-  transform: translateY(-4px);
-  border-color: var(--mascota-tint);
-  box-shadow: var(--shadow-level-2), 0 0 0 3px color-mix(in srgb, var(--mascota-tone) 12%, transparent);
-}
-
-.mascota-card:hover .mascota-card__glow,
-.mascota-card:focus-visible .mascota-card__glow {
-  background: color-mix(in srgb, var(--mascota-tone) 12%, transparent);
-  transform: scale(1.2);
+  background: color-mix(in srgb, var(--mascota-tone) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--mascota-tint) 60%, var(--md-outline-variant));
 }
 
 .mascota-card:focus-visible {
@@ -288,7 +280,7 @@
   color: var(--mascota-tone);
 }
 
-/* Mini-badge pets sobre el avatar (wireframe: círculo inferior derecho) */
+/* Mini-badge pets sobre el avatar (wireframe: cÃ­rculo inferior derecho) */
 .mascota-card__minibadge {
   position: absolute;
   right: -2px;
@@ -373,7 +365,7 @@
 }
 
 /* ==========================================================================
-   Footer de alertas próximas (vacuna / medicación)
+   Footer de alertas prÃ³ximas (vacuna / medicaciÃ³n)
    ========================================================================== */
 .mascota-card__alerts {
   display: flex;
@@ -412,7 +404,7 @@
   color: var(--md-outline);
 }
 
-/* Alerta urgente (vacuna/medicación con fecha hoy o vencida) → error */
+/* Alerta urgente (vacuna/medicaciÃ³n con fecha hoy o vencida) â†’ error */
 .mascota-alert--urgent {
   color: var(--md-error);
 }
@@ -421,7 +413,7 @@
   color: var(--md-error);
 }
 
-/* --------------------------------------------------------------- móvil */
+/* --------------------------------------------------------------- mÃ³vil */
 @media (max-width: 640px) {
   .mascotas-page {
     padding: var(--space-5) 14px;
@@ -447,10 +439,6 @@
   .mascota-card__glow,
   .mascota-card__name {
     transition: none;
-  }
-  .mascota-card:hover,
-  .mascota-card:focus-visible {
-    transform: none;
   }
 }
 
@@ -480,7 +468,7 @@
   height: 52px;
   flex-shrink: 0;
   border-radius: var(--radius-lg);
-  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-dark) 100%);
+  background: var(--color-primary);
   color: var(--color-white);
   font-size: var(--fs-xl);
   box-shadow: var(--shadow-md);
@@ -665,7 +653,7 @@
   padding: 10px 14px;
   color: var(--color-error);
   background: var(--color-error-bg);
-  border: 1px solid #fecdca;
+  border: 1px solid var(--md-error-container);
   border-radius: var(--radius-md);
   font-size: var(--fs-sm);
 }

@@ -84,9 +84,11 @@
   max-width: 56ch;
 }
 
-/* Stats quick view (wireframe: dos tarjetas glass con número headline) */
+/* Stats quick view: grilla de 2 columnas — misma tipografía, bordes
+   alineados. Sin glass de color, bordes hairline, hover sobrio 150ms. */
 .approvals-stats {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-4);
   flex-shrink: 0;
 }
@@ -94,21 +96,26 @@
 .approvals-stat {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-width: 120px;
-  padding: var(--space-4);
-  background: color-mix(in srgb, var(--md-surface-container) 60%, transparent);
-  backdrop-filter: blur(var(--glass-blur));
+  justify-content: space-between;
+  gap: var(--space-1);
+  padding: var(--space-5);
+  background: var(--md-surface-container-lowest);
+  border: 1px solid color-mix(in srgb, var(--md-outline-variant) 55%, transparent);
   border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-sm);
+  transition: background-color 150ms ease-out, border-color 150ms ease-out;
+}
+
+.approvals-stat:hover {
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 
 .approvals-stat__number {
   font-family: var(--font-heading);
-  font-size: var(--text-headline-xl);
+  font-size: var(--fs-2xl);
+  line-height: var(--lh-headline-md);
   font-weight: var(--fw-extrabold);
-  line-height: var(--lh-headline-xl);
+  letter-spacing: var(--tracking-tight);
 }
 
 .approvals-stat__number--primary {
@@ -120,7 +127,7 @@
 }
 
 .approvals-stat__label {
-  font-size: var(--text-label-md);
+  font-size: var(--fs-xs);
   font-weight: var(--fw-semibold);
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
@@ -228,13 +235,13 @@
   gap: var(--space-2);
 }
 
-/* Chips de urgencia (wireframe: pills con hover scale) */
+/* Chips de urgencia (ronda 4: hover sobrio — fondo + borde tonal, sin scale) */
 .approvals-chip {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
   padding: 6px 14px;
-  border: none;
+  border: 1px solid transparent;
   border-radius: var(--radius-full);
   background: var(--md-surface-container);
   color: var(--md-on-surface);
@@ -243,11 +250,12 @@
   font-weight: var(--fw-semibold);
   cursor: pointer;
   box-shadow: var(--shadow-sm);
-  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 
 .approvals-chip:hover {
-  transform: scale(1.05);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 
 .approvals-chip:focus-visible {
@@ -395,15 +403,16 @@
   gap: var(--space-5);
   padding: var(--space-6);
   background: var(--md-surface);
+  border: 1px solid transparent;
   border-radius: var(--radius-2xl);
   box-shadow: var(--shadow-md);
   overflow: hidden;
-  transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 
 .approval-card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-xl);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 
 /* Borde de urgencia (wireframe: absolute left w-2 bg-error) */
@@ -627,11 +636,7 @@
   position: relative;
   margin: -24px -24px 0;
   padding: var(--space-6);
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--md-primary-container) 22%, var(--md-surface)) 0%,
-    color-mix(in srgb, var(--md-primary-fixed-dim) 55%, var(--md-surface)) 100%
-  );
+  background: color-mix(in srgb, var(--md-primary-container) 22%, var(--md-surface));
   border-bottom: 1px solid var(--md-outline-variant);
   border-radius: var(--radius-lg) var(--radius-lg) 0 0;
   display: flex;
@@ -881,9 +886,7 @@
 
 /* -------------------------------------------------------- reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  .approval-card,
-  .approval-card:hover {
-    transform: none;
+  .approval-card {
     transition: none;
     animation: none;
   }
@@ -891,9 +894,5 @@
   .approval-feed-item,
   .approval-feed-item--leaving {
     transition: none;
-  }
-
-  .approvals-chip:hover {
-    transform: none;
   }
 }

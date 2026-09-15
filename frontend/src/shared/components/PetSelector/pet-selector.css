@@ -72,6 +72,14 @@
     opacity var(--transition-normal);
 }
 
+/* "Ver Todos" pill: el icono hereda el color del texto de la pill (crema
+   sobre primary-container activa, on-surface-variant inactiva). Sin tint
+   verde si aterriza sobre la pill navy activa. */
+.pet-selector__avatar--all {
+  color: inherit;
+  opacity: 0.9;
+}
+
 /* Sin foto -> iniciales sobre secondary-container */
 .pet-selector__avatar--initials {
   font-family: var(--font-heading);

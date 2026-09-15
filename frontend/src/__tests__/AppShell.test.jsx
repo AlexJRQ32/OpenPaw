@@ -40,6 +40,10 @@ describe('AppShell', () => {
     expect(screen.getByText('Volver al inicio')).toBeInTheDocument()
     // Gating admin: Aprobaciones visible (sidebar y bottom-nav)
     expect(screen.getAllByText('Aprobaciones').length).toBeGreaterThan(0)
+    // Back-link mobile al landing (icono arrow_back en el topbar)
+    expect(screen.getByLabelText('Volver al inicio')).toBeInTheDocument()
+    // Bottom-nav mantiene link "Inicio" al landing
+    expect(screen.getAllByText('Inicio').length).toBeGreaterThan(0)
   })
 
   test('cliente: muestra su badge, sin Aprobaciones y con Expediente', () => {

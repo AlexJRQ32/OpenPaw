@@ -32,13 +32,13 @@
   outline-offset: 2px;
 }
 
+/* Ronda 3: hover sobrio — fondo sutilmente más oscuro, sin glow ni lift */
 .fab:hover {
-  transform: translateY(-2px) scale(1.04);
-  box-shadow: var(--shadow-glow), var(--shadow-level-2);
+  filter: brightness(0.94);
 }
 
 .fab:active {
-  transform: translateY(0) scale(0.96);
+  filter: brightness(0.9);
 }
 
 .fab__icon {
@@ -72,17 +72,9 @@
   background-color: var(--md-secondary-container);
   color: var(--md-on-secondary-container);
 }
-.fab--secondary:hover {
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--md-secondary) 35%, transparent),
-    var(--shadow-level-2);
-}
 .fab--error {
   background-color: var(--md-error);
   color: var(--md-on-error);
-}
-.fab--error:hover {
-  box-shadow: 0 4px 20px color-mix(in srgb, var(--md-error) 35%, transparent),
-    var(--shadow-level-2);
 }
 
 /* --------------------------------------------------------------- disabled */

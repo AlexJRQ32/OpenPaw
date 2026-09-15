@@ -105,12 +105,11 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
-  transition: box-shadow var(--transition-normal), transform var(--transition-normal),
-    border-color var(--transition-normal), background-color var(--transition-normal);
+  transition: background-color var(--transition-fast) ease, border-color var(--transition-fast) ease;
 }
 .vet-carousel__slide-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, var(--md-primary) 4%, var(--md-surface-container-lowest));
+  border-color: color-mix(in srgb, var(--md-outline-variant) 75%, transparent);
 }
 .vet-carousel__slide-btn:focus-visible {
   outline: none;
@@ -132,9 +131,7 @@
   place-items: center;
   height: 76px;
   border-radius: var(--radius-xl);
-  background: linear-gradient(120deg,
-    color-mix(in srgb, var(--md-primary-container) 22%, transparent),
-    color-mix(in srgb, var(--md-secondary-container) 30%, transparent));
+  background: var(--md-primary-fixed);
   color: var(--md-primary);
   overflow: hidden;
 }
